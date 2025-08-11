@@ -1,0 +1,53 @@
+import { NextRequest } from "next/server";
+import { makeZip, type ZipFile } from "../../../lib/utils/zip";
+
+export const runtime = "edge";
+
+function headersZip(name: string, size: number, shaHex: string) {
+  return {
+    "Cache-Control": "no-store",
+    "Content-Type": "application/zip",
+    "Content-Disposition": `attachment; filename="${name}"`,
+    "X-Content-Type-Options": "nosniff",
+    "ETag": `"sha256:${shaHex}"`,
+    "Content-Length": String(size),
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, X-OpenAI-Key, X-DeepSeek-Key"
+  };
+}
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: headersZip("noop.zip", 0, "") as any });
+}
+
+/**
+ * POST body:
+ * {
+ *   "files":[ {"path":"paper/revtex/en/draft.tex","content":"..."},
+ *             {"path":"manifest.json","content":"..."} ],
+ *   "name":"qaadi_export.zip"
+ * }
+ * No server state; client decides contents.
+ */
+export async function POST(req: NextRequest) {
+  let body: any;
+  try { body = await req.json(); } catch { return new Response(JSON.stringify({ error: "bad_input" }), { status: 400 }); }
+
+  const files = Array.isArray(body?.files) ? body.files as ZipFile[] : null;
+  const name = (body?.name && typeof body.name === "string") ? body.name : "qaadi_export.zip";
+  if (!files || !files.length) {
+    return new Response(JSON.stringify({ error: "no_files" }), { status: 400 });
+  }
+
+  // Build ZIP (STORE method)
+  const zip = makeZip(files);
+  // Compute sha256 (Web Crypto, Edge-safe)
+  const digest = await crypto.subtle.digest("SHA-256", zip);
+  const shaHex = [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, "0")).join("");
+
+  return new Response(zip, {
+    status: 200,
+    headers: headersZip(name, zip.byteLength, shaHex)
+  });
+}
