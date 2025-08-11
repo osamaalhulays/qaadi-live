@@ -1,0 +1,49 @@
+import { NextRequest } from "next/server";
+import { InputSchema, OutputSchema } from "../../../lib/schema/io";
+import { runWithFallback } from "../../../lib/providers/router";
+import { baseHeaders } from "../../../lib/utils/json";
+
+export const runtime = "edge";
+
+export async function OPTIONS() {
+  return new Response(null, { status: 204, headers: baseHeaders() });
+}
+
+export async function POST(req: NextRequest) {
+  let input;
+  try {
+    input = InputSchema.parse(await req.json());
+  } catch {
+    return new Response(JSON.stringify({ error: "bad_input" }), { status: 400, headers: baseHeaders() });
+  }
+
+  // BYOK keys via headers (client-side only)
+  const openaiKey = req.headers.get("x-openai-key") ?? "";
+  const deepseekKey = req.headers.get("x-deepseek-key") ?? "";
+  if (!openaiKey && !deepseekKey) {
+    return new Response(JSON.stringify({ error: "no_keys_provided" }), { status: 400, headers: baseHeaders() });
+  }
+
+  // Simple template prompt (server doesn’t store state)
+  const prompt = buildPrompt(input.template, input.text);
+
+  try {
+    const out = await runWithFallback(
+      input.model === "auto" ? "auto" : (input.model as any),
+      { openai: openaiKey || undefined, deepseek: deepseekKey || undefined },
+      prompt,
+      input.max_tokens
+    );
+    const final = OutputSchema.parse(out);
+    return new Response(JSON.stringify(final), { status: 200, headers: baseHeaders() });
+  } catch (e: any) {
+    const msg = (e?.message || "provider_error").toString();
+    return new Response(JSON.stringify({ error: "provider_error", detail: msg }), { status: 502, headers: baseHeaders() });
+  }
+}
+
+function buildPrompt(template: "WideAR" | "ReVTeX" | "InquiryTR", userText: string) {
+  if (template === "WideAR") return `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${userText}`;
+  if (template === "InquiryTR") return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}`;
+  return `REVTEX/EN: Produce TeX draft body (no \\documentclass). Input:\n${userText}`;
+}
