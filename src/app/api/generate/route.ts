@@ -1,71 +1,58 @@
-import { NextRequest, NextResponse } from 'next/server';
-export const runtime = 'edge';
-export const dynamic = 'force-dynamic';
+import { NextRequest } from "next/server";
+import { InputSchema, OutputSchema } from "../../../lib/schema/io";
+import { runWithFallback } from "../../../lib/providers/router";
 
-type Provider = 'openai' | 'deepseek';
-type Body = {
-  preferred?: Provider,
-  openaiKey?: string,
-  deepseekKey?: string,
-  mode?: string,
-  model?: string,
-  max_tokens?: number,
-  sys?: string,
-  prompt?: string
-};
+export const runtime = "edge";
 
-async function callUpstream(url: string, key: string, model: string, sys: string, prompt: string, max_tokens: number) {
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      model,
-      messages: [{ role:'system', content: sys||'' }, { role:'user', content: prompt||'' }],
-      max_tokens: max_tokens || 800,
-      temperature: 0.2
-    })
+export async function OPTIONS() {
+  return new Response(null, {
+    status: 204,
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+      "X-Content-Type-Options": "nosniff",
+      "Access-Control-Allow-Origin": "*",
+      "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
+      "Access-Control-Allow-Headers": "Content-Type, X-OpenAI-Key, X-DeepSeek-Key"
+    }
   });
-  const text = await r.text();
-  let j: any = null; try { j = JSON.parse(text); } catch {}
-  if (!r.ok) throw new Error(j?.error?.message || text || `upstream ${r.status}`);
-  return j?.choices?.[0]?.message?.content || '';
 }
 
 export async function POST(req: NextRequest) {
-  try {
-    const body = await req.json() as Body;
-    const pref = body.preferred || 'openai';
-    const sys = body.sys || '';
-    const prompt = body.prompt || '';
-    const model = body.model || (pref==='openai' ? 'gpt-4o-mini' : 'deepseek-chat');
-    const max_tokens = body.max_tokens || 800;
+  let input;
+  try { input = InputSchema.parse(await req.json()); }
+  catch { return new Response(JSON.stringify({ error: "bad_input" }), { status: 400 }); }
 
-    const order: Provider[] = pref==='openai' ? ['openai','deepseek'] : ['deepseek','openai'];
-    let output = '';
-    let lastErr: any = null;
-    for (const p of order) {
-      try {
-        if (p==='openai') {
-          if (!body.openaiKey) throw new Error('missing OpenAI key');
-          output = await callUpstream('https://api.openai.com/v1/chat/completions', body.openaiKey, model, sys, prompt, max_tokens);
-        } else {
-          if (!body.deepseekKey) throw new Error('missing DeepSeek key');
-          const mdl = model==='gpt-4o-mini' ? 'deepseek-chat' : model;
-          output = await callUpstream('https://api.deepseek.com/v1/chat/completions', body.deepseekKey, mdl, sys, prompt, max_tokens);
-        }
-        if (output) break;
-      } catch (e) { lastErr = e; }
-    }
-
-    if (!output) throw lastErr || new Error('no output');
-    const res = NextResponse.json({ output });
-    res.headers.set('Cache-Control','no-store');
-    res.headers.set('X-Content-Type-Options','nosniff');
-    return res;
-  } catch (e:any) {
-    const res = NextResponse.json({ error:'upstream_error', detail:String(e?.message||e) }, { status: 502 });
-    res.headers.set('Cache-Control','no-store');
-    res.headers.set('X-Content-Type-Options','nosniff');
-    return res;
+  const openaiKey = req.headers.get("x-openai-key") ?? "";
+  const deepseekKey = req.headers.get("x-deepseek-key") ?? "";
+  if (!openaiKey && !deepseekKey) {
+    return new Response(JSON.stringify({ error: "no_keys_provided" }), { status: 400 });
   }
+
+  const prompt = buildPrompt(input.template, input.text);
+  try {
+    const out = await runWithFallback(
+      input.model === "auto" ? "auto" : (input.model as any),
+      { openai: openaiKey || undefined, deepseek: deepseekKey || undefined },
+      prompt,
+      input.max_tokens
+    );
+    const final = OutputSchema.parse(out);
+    return new Response(JSON.stringify(final), {
+      headers: {
+        "Content-Type": "application/json",
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+        "Access-Control-Allow-Origin": "*"
+      }
+    });
+  } catch (e:any) {
+    return new Response(JSON.stringify({ error: "provider_error", detail: e?.message || String(e) }), { status: 502 });
+  }
+}
+
+function buildPrompt(template: "WideAR" | "ReVTeX" | "InquiryTR", userText: string) {
+  if (template === "WideAR")   return `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${userText}`;
+  if (template === "InquiryTR") return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}`;
+  return `REVTEX/EN: Produce TeX draft body (no \\documentclass). Input:\n${userText}`;
 }
