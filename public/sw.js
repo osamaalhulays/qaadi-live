@@ -1,7 +1,16 @@
 const CACHE_NAME = "qaadi-cache-v1";
-const CORE_ASSETS = ["/"];
+const CORE_ASSETS = ["/", "/manifest.webmanifest", "/favicon.png"];
 self.addEventListener("install", (e) => {
-  e.waitUntil(caches.open(CACHE_NAME).then((c)=>c.addAll(CORE_ASSETS)).then(()=>self.skipWaiting()));
+  e.waitUntil(
+    caches
+      .open(CACHE_NAME)
+      .then((c) =>
+        Promise.all(
+          CORE_ASSETS.map((asset) => c.add(asset).catch(() => {}))
+        )
+      )
+      .then(() => self.skipWaiting())
+  );
 });
 self.addEventListener("activate", (e) => {
   e.waitUntil(caches.keys().then((ks)=>Promise.all(ks.filter(k=>k!==CACHE_NAME).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
