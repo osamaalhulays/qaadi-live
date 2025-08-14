@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
+import KeyManager from "../components/KeyManager";
 
 type Template = "WideAR" | "ReVTeX" | "InquiryTR";
 type ModelSel = "openai" | "deepseek" | "auto";
@@ -17,15 +18,6 @@ export default function Page() {
   const [busy, setBusy] = useState(false);
   const [zipBusy, setZipBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
-
-  useEffect(() => {
-    try {
-      setOpenaiKey(localStorage.getItem("OPENAI_KEY") || "");
-      setDeepseekKey(localStorage.getItem("DEEPSEEK_KEY") || "");
-    } catch {}
-  }, []);
-  useEffect(() => { try { localStorage.setItem("OPENAI_KEY", openaiKey); } catch {} }, [openaiKey]);
-  useEffect(() => { try { localStorage.setItem("DEEPSEEK_KEY", deepseekKey); } catch {} }, [deepseekKey]);
 
   const headers = useMemo(() => ({
     "Content-Type": "application/json",
@@ -114,18 +106,14 @@ export default function Page() {
 
   return (
     <>
-      <h1 className="h1"><span className="badge">⚖️</span> Qaadi Live</h1>
+        <h1 className="h1"><span className="badge">⚖️</span> Qaadi Live</h1>
 
-      <div className="card grid grid-2" style={{marginBottom:12}}>
-        <div>
-          <label>DeepSeek Key</label>
-          <input value={deepseekKey} onChange={e=>setDeepseekKey(e.target.value)} placeholder="...ds" />
-        </div>
-        <div>
-          <label>OpenAI Key</label>
-          <input value={openaiKey} onChange={e=>setOpenaiKey(e.target.value)} placeholder="...sk" />
-        </div>
-      </div>
+        <KeyManager
+          openaiKey={openaiKey}
+          setOpenaiKey={setOpenaiKey}
+          deepseekKey={deepseekKey}
+          setDeepseekKey={setDeepseekKey}
+        />
 
       <div className="card grid grid-3" style={{marginBottom:12}}>
         <div>
