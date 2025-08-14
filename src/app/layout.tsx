@@ -1,8 +1,12 @@
-import "./globals.css";
+'use client';
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import "./globals.css";
+import { LanguageProvider, useLanguage } from "../components/LanguageProvider";
+
+function AppLayout({ children }: { children: React.ReactNode }) {
+  const { lang, dir } = useLanguage();
   return (
-    <html lang="ar" dir="rtl">
+    <html lang={lang} dir={dir}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <title>Qaadi Live</title>
@@ -28,3 +32,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     </html>
   );
 }
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <LanguageProvider>
+      <AppLayout>{children}</AppLayout>
+    </LanguageProvider>
+  );
+}
+
