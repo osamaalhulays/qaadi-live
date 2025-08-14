@@ -53,7 +53,7 @@ function buildTreeFromCompose(payload: any) {
   //   judge?: { report: any },
   //   consultant?: { plan: string },
   //   journalist?: { summary: string },
-  //   meta?: { template?: string, model?: string, max_tokens?: number }
+  //   meta?: { target?: string, lang?: string, model?: string, max_tokens?: number }
   // }
   const files: ZipFile[] = [];
   const name = typeof payload?.name === "string" ? payload.name : "qaadi_export.zip";

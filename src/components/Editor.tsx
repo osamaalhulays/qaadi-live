@@ -1,14 +1,16 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 
-type Template = "WideAR" | "ReVTeX" | "InquiryTR";
+type Target = "wide" | "revtex" | "inquiry";
+type Lang = "ar" | "en" | "tr";
 type ModelSel = "openai" | "deepseek" | "auto";
 
 export default function Editor() {
   const [openaiKey, setOpenaiKey] = useState("");
   const [deepseekKey, setDeepseekKey] = useState("");
 
-  const [template, setTemplate] = useState<Template>("ReVTeX");
+  const [target, setTarget] = useState<Target | "">("");
+  const [lang, setLang] = useState<Lang | "">("");
   const [model, setModel] = useState<ModelSel>("auto");
   const [maxTokens, setMaxTokens] = useState(2048);
   const [text, setText] = useState("");
@@ -37,10 +39,11 @@ export default function Editor() {
   async function doGenerate() {
     setBusy(true); setMsg("");
     try {
+      if (!target || !lang) throw new Error("missing_target_lang");
       const res = await fetch("/api/generate", {
         method: "POST",
         headers,
-        body: JSON.stringify({ template, model, max_tokens: maxTokens, text })
+        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text })
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "generate_failed");
@@ -48,7 +51,7 @@ export default function Editor() {
       setVerify(j?.checks || null);
       setMsg(`OK • model=${j?.model_used} • in=${j?.tokens_in} • out=${j?.tokens_out} • ${j?.latency_ms}ms`);
     } catch (e:any) {
-      setMsg(`ERROR: ${e?.message || e}`);
+      setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `ERROR: ${e?.message || e}`);
       setVerify(null);
     } finally { setBusy(false); }
   }
@@ -82,6 +85,7 @@ export default function Editor() {
   async function exportCompose() {
     setZipBusy(true); setMsg("");
     try {
+      if (!target || !lang) throw new Error("missing_target_lang");
       const res = await fetch("/api/export", {
         method: "POST",
         headers,
@@ -93,7 +97,7 @@ export default function Editor() {
           judge: { report: { score_total: 110, criteria: [], notes: "demo" } },
           consultant: { plan: out || "plan(demo)" },
           journalist: { summary: (out && out.slice(0, 400)) || "summary(demo)" },
-          meta: { template, model, max_tokens: maxTokens }
+          meta: { target, lang, model, max_tokens: maxTokens }
         })
       });
       if (!res.ok) {
@@ -104,7 +108,7 @@ export default function Editor() {
       downloadBlob(blob, "qaadi_export.zip");
       setMsg("ZIP جاهز (compose).");
     } catch (e:any) {
-      setMsg(`EXPORT ERROR: ${e?.message || e}`);
+      setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `EXPORT ERROR: ${e?.message || e}`);
     } finally { setZipBusy(false); }
   }
 
@@ -128,7 +132,7 @@ export default function Editor() {
         </div>
       </div>
 
-      <div className="card grid grid-3" style={{marginBottom:12}}>
+      <div className="card grid grid-4" style={{marginBottom:12}}>
         <div>
           <label>max_tokens</label>
           <input type="number" value={maxTokens} min={256} max={8192} onChange={e=>setMaxTokens(parseInt(e.target.value||"2048"))} />
@@ -142,11 +146,21 @@ export default function Editor() {
           </select>
         </div>
         <div>
-          <label>Template</label>
-          <select value={template} onChange={e=>setTemplate(e.target.value as Template)}>
-            <option value="ReVTeX">ReVTeX (EN)</option>
-            <option value="WideAR">Wide/AR (AR)</option>
-            <option value="InquiryTR">Inquiry (TR)</option>
+          <label>Target</label>
+          <select value={target} onChange={e=>setTarget(e.target.value as Target)}>
+            <option value="">--</option>
+            <option value="revtex">ReVTeX</option>
+            <option value="wide">Wide</option>
+            <option value="inquiry">Inquiry</option>
+          </select>
+        </div>
+        <div>
+          <label>Language</label>
+          <select value={lang} onChange={e=>setLang(e.target.value as Lang)}>
+            <option value="">--</option>
+            <option value="en">EN</option>
+            <option value="ar">AR</option>
+            <option value="tr">TR</option>
           </select>
         </div>
       </div>
