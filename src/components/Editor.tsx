@@ -1,8 +1,25 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 
-type Target = "wide" | "revtex" | "inquiry";
-type Lang = "ar" | "en" | "tr";
+type Target =
+  | "wide"
+  | "revtex"
+  | "inquiry"
+  | "iop"
+  | "sn-jnl"
+  | "elsevier"
+  | "ieee"
+  | "arxiv";
+type Lang =
+  | "ar"
+  | "en"
+  | "tr"
+  | "fr"
+  | "de"
+  | "es"
+  | "ru"
+  | "fa"
+  | "zh";
 type ModelSel = "openai" | "deepseek" | "auto";
 
 export default function Editor() {
@@ -150,6 +167,11 @@ export default function Editor() {
           <select value={target} onChange={e=>setTarget(e.target.value as Target)}>
             <option value="">--</option>
             <option value="revtex">ReVTeX</option>
+            <option value="iop">IOP</option>
+            <option value="sn-jnl">SN-JNL</option>
+            <option value="elsevier">Elsevier</option>
+            <option value="ieee">IEEE</option>
+            <option value="arxiv">arXiv</option>
             <option value="wide">Wide</option>
             <option value="inquiry">Inquiry</option>
           </select>
@@ -161,6 +183,12 @@ export default function Editor() {
             <option value="en">EN</option>
             <option value="ar">AR</option>
             <option value="tr">TR</option>
+            <option value="fr">FR</option>
+            <option value="de">DE</option>
+            <option value="es">ES</option>
+            <option value="ru">RU</option>
+            <option value="fa">FA</option>
+            <option value="zh">ZH</option>
           </select>
         </div>
       </div>

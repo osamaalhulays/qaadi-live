@@ -36,8 +36,14 @@ export async function POST(req: NextRequest) {
   const glossary = await loadGlossary(req);
 
   let prompt;
-  try { prompt = buildPrompt(input.target, input.lang, frozen.text, glossary); }
-  catch { return new Response(JSON.stringify({ error: "unsupported_target_lang" }), { status: 400 }); }
+  try {
+    prompt = buildPrompt(input.target, input.lang, frozen.text, glossary);
+  } catch (e: any) {
+    return new Response(
+      JSON.stringify({ error: e?.message || "unsupported_target_lang" }),
+      { status: 400 }
+    );
+  }
 
   try {
     const out = await runWithFallback(
@@ -72,21 +78,71 @@ export async function POST(req: NextRequest) {
 }
 
 function buildPrompt(
-  target: "wide" | "revtex" | "inquiry",
-  lang: "ar" | "en" | "tr",
+  target:
+    | "wide"
+    | "revtex"
+    | "inquiry"
+    | "iop"
+    | "sn-jnl"
+    | "elsevier"
+    | "ieee"
+    | "arxiv",
+  lang:
+    | "ar"
+    | "en"
+    | "tr"
+    | "fr"
+    | "de"
+    | "es"
+    | "ru"
+    | "fa"
+    | "zh",
   userText: string,
   glossary: Record<string, string> | null
 ) {
-  const gloss = glossary && Object.keys(glossary).length
-    ? "\nGlossary:\n" + Object.entries(glossary).map(([k,v])=>`${k} = ${v}`).join("\n")
-    : "";
-  if (target === "wide" && lang === "ar")
-    return `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${userText}${gloss}`;
+  const gloss =
+    glossary && Object.keys(glossary).length
+      ? "\nGlossary:\n" +
+        Object.entries(glossary)
+          .map(([k, v]) => `${k} = ${v}`)
+          .join("\n")
+      : "";
+
+  if (target === "wide") {
+    if (lang === "ar")
+      return `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${userText}${gloss}`;
+    if (lang === "en")
+      return `WIDE/EN: You are the Qaadi engine. Edit a wide English text intended for the paper (bundle.md). Input:\n${userText}${gloss}`;
+    if (lang === "tr")
+      return `WIDE/TR: Qaadi motorusun. Makale için geniş Türkçe metni düzenle (bundle.md). Girdi:\n${userText}${gloss}`;
+    if (lang === "fr")
+      return `WIDE/FR: Tu es le moteur Qaadi. Édite un texte français étendu destiné au papier (bundle.md). Entrée :\n${userText}${gloss}`;
+    if (lang === "de")
+      return `WIDE/DE: Du bist der Qaadi-Motor. Bearbeite einen ausführlichen deutschen Text für das Papier (bundle.md). Eingabe:\n${userText}${gloss}`;
+    if (lang === "es")
+      return `WIDE/ES: Eres el motor Qaadi. Edita texto español amplio dirigido al artículo (bundle.md). Entrada:\n${userText}${gloss}`;
+    if (lang === "ru")
+      return `WIDE/RU: Ты движок Qaadi. Редактируй широкий русский текст для статьи (bundle.md). Ввод:\n${userText}${gloss}`;
+    if (lang === "fa")
+      return `WIDE/FA: شما موتور Qaadi هستید. متن فارسی گسترده برای مقاله (bundle.md) را ویرایش کنید. ورودی:\n${userText}${gloss}`;
+    if (lang === "zh")
+      return `WIDE/ZH: 你是 Qaadi 引擎。编辑面向论文的中文长文 (bundle.md)。输入:\n${userText}${gloss}`;
+  }
   if (target === "inquiry" && lang === "tr")
     return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}${gloss}`;
   if (target === "revtex" && lang === "en")
     return `REVTEX/EN: Produce TeX draft body (no \\documentclass). Input:\n${userText}${gloss}`;
-  throw new Error("unsupported_target_lang");
+  if (target === "iop" && lang === "en")
+    return `IOP/EN: Produce LaTeX draft body (no \\documentclass) for IOP style. Input:\n${userText}${gloss}`;
+  if (target === "sn-jnl" && lang === "en")
+    return `SN-JNL/EN: Produce LaTeX draft body (no \\documentclass) for Springer Nature Journal style. Input:\n${userText}${gloss}`;
+  if (target === "elsevier" && lang === "en")
+    return `ELSEVIER/EN: Produce LaTeX draft body (no \\documentclass) for Elsevier class. Input:\n${userText}${gloss}`;
+  if (target === "ieee" && lang === "en")
+    return `IEEE/EN: Produce LaTeX draft body (no \\documentclass) for IEEE style. Input:\n${userText}${gloss}`;
+  if (target === "arxiv" && lang === "en")
+    return `ARXIV/EN: Produce LaTeX draft body (no \\documentclass) for arXiv submission. Input:\n${userText}${gloss}`;
+  throw new Error(`unsupported_target_lang:${target}:${lang}`);
 }
 
 async function loadGlossary(req: NextRequest): Promise<Record<string, string> | null> {
