@@ -281,29 +281,6 @@ function buildPrompt(
     if (lang === "other")
       return `WIDE/OTHER: You are the Qaadi engine. Edit a long text in its original language intended for the paper (bundle.md). Input:\n${userText}${gloss}`;
   }
-  if (target === "inquiry") {
-    if (lang === "ar")
-      return `INQUIRY/AR: أنت محرّك Qaadi Inquiry. أنشئ مجموعة أسئلة. المدخل:\n${userText}${gloss}`;
-    if (lang === "en")
-      return `INQUIRY/EN: You are the Qaadi Inquiry engine. Generate a question set. Input:\n${userText}${gloss}`;
-    if (lang === "tr")
-      return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}${gloss}`;
-    if (lang === "fr")
-      return `INQUIRY/FR: Tu es le moteur Qaadi Inquiry. Génère un ensemble de questions. Entrée :\n${userText}${gloss}`;
-    if (lang === "de")
-      return `INQUIRY/DE: Du bist der Qaadi-Inquiry-Motor. Erzeuge einen Fragenkatalog. Eingabe:\n${userText}${gloss}`;
-    if (lang === "es")
-      return `INQUIRY/ES: Eres el motor Qaadi Inquiry. Genera un conjunto de preguntas. Entrada:\n${userText}${gloss}`;
-    if (lang === "ru")
-      return `INQUIRY/RU: Ты движок Qaadi Inquiry. Сгенерируй набор вопросов. Ввод:\n${userText}${gloss}`;
-    if (lang === "zh-Hans")
-      return `INQUIRY/ZH-HANS: 你是 Qaadi Inquiry 引擎。生成一个问题集合。输入:\n${userText}${gloss}`;
-    if (lang === "ja")
-      return `INQUIRY/JA: あなたは Qaadi Inquiry エンジンです。質問セットを生成してください。入力:\n${userText}${gloss}`;
-    if (lang === "other")
-      return `INQUIRY/OTHER: You are the Qaadi Inquiry engine. Generate a question set in the original language. Input:\n${userText}${gloss}`;
-    throw new Error("unsupported_inquiry_lang");
-  }
   const templateTargets = new Set(["revtex", "iop", "sn-jnl", "elsevier", "ieee", "arxiv"]);
   if (templateTargets.has(target)) {
     if (lang === "other") throw new Error(`unsupported_template_lang:${target}:${lang}`);
