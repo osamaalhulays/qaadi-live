@@ -12,6 +12,16 @@ function tsFolder(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
+/**
+ * Persist generated files to the public snapshots directory and update the
+ * manifest.
+ *
+ * Each file is written under `public/snapshots/<timestamp>/paper/<target>/<lang>`
+ * and its SHA-256 checksum recorded. A `manifest.json` file at
+ * `public/snapshots/manifest.json` is appended with metadata about every saved
+ * file. The function returns the relative paths of the stored files so callers
+ * can reference them.
+ */
 export async function saveSnapshot(
   files: { path: string; content: string | Uint8Array }[],
   target: string,
