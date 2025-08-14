@@ -210,7 +210,21 @@ export async function saveSnapshot(
   return entries.map((e) => e.path);
 }
 
-const TARGET_LANG_PROMPTS: Record<string, Record<string, (u: string, g: string) => string>> = {
+type Lang =
+  | "ar"
+  | "en"
+  | "tr"
+  | "fr"
+  | "es"
+  | "de"
+  | "ru"
+  | "zh-Hans"
+  | "ja"
+  | "other";
+type DirectTarget = "wide" | "inquiry";
+type PromptFn = (u: string, g: string) => string;
+
+const TARGET_LANG_PROMPTS: Record<DirectTarget, Record<Lang, PromptFn>> = {
   wide: {
     ar: (u, g) =>
       `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${u}${g}`,
