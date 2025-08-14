@@ -1,6 +1,10 @@
 const CACHE_NAME = "qaadi-cache-v1";
 const CORE_ASSETS = ["/"];
-const OPTIONAL_CORE_ASSETS = ["/manifest.webmanifest", "/favicon.png"];
+const OPTIONAL_CORE_ASSETS = [
+  "/manifest.webmanifest",
+  "/favicon-16x16.png",
+  "/favicon-32x32.png",
+];
 self.addEventListener("install", (e) => {
   e.waitUntil(
     (async () => {
