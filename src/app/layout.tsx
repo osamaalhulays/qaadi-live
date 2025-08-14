@@ -1,4 +1,5 @@
 import "./globals.css";
+import Script from "next/script";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -9,17 +10,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#111111" />
         <link rel="icon" href="/favicon.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-(function(){
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js').catch(function(){});
-    });
-  }
-})();`
-          }}
+        <Script
+          src="/sw.js"
+          strategy="lazyOnload"
+          onLoad={() => navigator.serviceWorker.register("/sw.js")}
         />
       </head>
       <body>
