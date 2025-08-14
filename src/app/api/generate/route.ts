@@ -92,13 +92,14 @@ export async function POST(req: NextRequest) {
         : input.target === "inquiry"
         ? "inquiry.md"
         : "draft.tex";
+    const files = [{ path: `paper/${fileName}`, content: final.text }];
+    if (fileName === "draft.tex") {
+      files.push({ path: "paper/biblio.bib", content: "" });
+      files.push({ path: "paper/figs/.gitkeep", content: "" });
+    }
     let saved: string[] = [];
     try {
-      saved = await saveSnapshot(
-        [{ path: `paper/${fileName}`, content: final.text }],
-        input.target,
-        input.lang
-      );
+      saved = await saveSnapshot(files, input.target, input.lang);
     } catch (e: any) {
       return new Response(
         JSON.stringify({ error: "snapshot_failed", detail: e?.message || String(e) }),
