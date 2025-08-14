@@ -35,25 +35,37 @@ test('determinism and provenance non-empty', async () => {
   assert.ok(Array.isArray(provenance.sources) && provenance.sources.length > 0);
 });
 
-test('reads snapshots manifest and uses v6 archive name', async () => {
+test('reads snapshots manifest, filters by slug/version and uses v6 archive name', async () => {
   const dir = path.join(process.cwd(), 'public', 'snapshots');
   await mkdir(dir, { recursive: true });
   const manifest = [
-    { timestamp: '20240101T000000', path: 'file', sha256: 'aaa' },
-    { timestamp: '20240102T000000', path: 'file', sha256: 'bbb' }
+    { slug: 'demo', v: 'v1.0', timestamp: '20240101T000000', path: 'file', sha256: 'aaa' },
+    { slug: 'demo', v: 'v1.0', timestamp: '20240102T000000', path: 'file', sha256: 'bbb' },
+    { slug: 'demo', v: 'v2.0', timestamp: '20240101T000000', path: 'file', sha256: 'ccc' },
+    { slug: 'other', v: 'v1.0', timestamp: '20240101T000000', path: 'file', sha256: 'ddd' }
   ];
   await writeFile(path.join(dir, 'manifest.json'), JSON.stringify(manifest), 'utf-8');
-  const req = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
-  const res = await GET(req);
-  assert.strictEqual(res.status, 200);
-  const disp = res.headers.get('Content-Disposition');
+
+  const req1 = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
+  const res1 = await GET(req1);
+  assert.strictEqual(res1.status, 200);
+  const disp = res1.headers.get('Content-Disposition');
   assert.ok(disp && /attachment; filename="qaadi_v6_demo_v1\.0_\d{14}\.zip"/.test(disp));
-  const buf = Buffer.from(await res.arrayBuffer());
-  const files = unzipStore(buf);
-  const determinism = JSON.parse(Buffer.from(files['determinism_matrix.json']).toString());
-  assert.deepStrictEqual(determinism.matrix, [
+  const buf1 = Buffer.from(await res1.arrayBuffer());
+  const files1 = unzipStore(buf1);
+  const determinism1 = JSON.parse(Buffer.from(files1['determinism_matrix.json']).toString());
+  assert.deepStrictEqual(determinism1.matrix, [
     [1, 0],
     [0, 1]
   ]);
+
+  const req2 = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v2.0');
+  const res2 = await GET(req2);
+  assert.strictEqual(res2.status, 200);
+  const buf2 = Buffer.from(await res2.arrayBuffer());
+  const files2 = unzipStore(buf2);
+  const determinism2 = JSON.parse(Buffer.from(files2['determinism_matrix.json']).toString());
+  assert.deepStrictEqual(determinism2.matrix, [[1]]);
+
   await rm(path.join(dir, 'manifest.json'));
 });

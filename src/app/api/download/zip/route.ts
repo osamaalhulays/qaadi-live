@@ -61,24 +61,34 @@ export async function GET(req: NextRequest) {
     try {
       const snapPath = path.join(root, "public", "snapshots", "manifest.json");
       const snapRaw = await readFile(snapPath, "utf-8");
-      const snapEntries = JSON.parse(snapRaw) as Array<{ timestamp: string; path: string; sha256: string }>;
-      const groups: Record<string, Record<string, string>> = {};
-      for (const e of snapEntries) {
-        if (!groups[e.timestamp]) groups[e.timestamp] = {};
-        groups[e.timestamp][e.path] = e.sha256;
+      const snapEntries = (JSON.parse(snapRaw) as Array<{
+        timestamp: string;
+        path: string;
+        sha256: string;
+        slug?: string;
+        v?: string;
+      }>).filter((e) => e.slug === slug && e.v === v);
+      if (snapEntries.length === 0) {
+        matrix = [[1]];
+      } else {
+        const groups: Record<string, Record<string, string>> = {};
+        for (const e of snapEntries) {
+          if (!groups[e.timestamp]) groups[e.timestamp] = {};
+          groups[e.timestamp][e.path] = e.sha256;
+        }
+        const stamps = Object.keys(groups).sort();
+        matrix = stamps.map((a) =>
+          stamps.map((b) => {
+            const A = groups[a];
+            const B = groups[b];
+            const keys = new Set([...Object.keys(A), ...Object.keys(B)]);
+            for (const k of keys) {
+              if (A[k] !== B[k]) return 0;
+            }
+            return 1;
+          })
+        );
       }
-      const stamps = Object.keys(groups).sort();
-      matrix = stamps.map((a) =>
-        stamps.map((b) => {
-          const A = groups[a];
-          const B = groups[b];
-          const keys = new Set([...Object.keys(A), ...Object.keys(B)]);
-          for (const k of keys) {
-            if (A[k] !== B[k]) return 0;
-          }
-          return 1;
-        })
-      );
     } catch {
       matrix = [[1]];
     }
