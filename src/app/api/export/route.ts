@@ -1,9 +1,12 @@
 import { NextRequest } from "next/server";
+import { promises as fs } from "node:fs";
+import path from "node:path";
+import { createHash } from "node:crypto";
 import { makeZip, type ZipFile } from "../../../lib/utils/zip";
 import { runWithFallback } from "../../../lib/providers/router";
 
-// Edge-only
-export const runtime = "edge";
+// Node runtime for file system access
+export const runtime = "nodejs";
 
 /* ---------- Common headers ---------- */
 function headersZip(name: string, size: number, shaHex: string) {
@@ -37,9 +40,46 @@ export async function OPTIONS() {
 }
 
 /* ---------- Helpers ---------- */
-async function sha256Hex(u8: Uint8Array) {
-  const d = await crypto.subtle.digest("SHA-256", u8);
-  return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, "0")).join("");
+function sha256Hex(u8: Uint8Array) {
+  return createHash("sha256").update(u8).digest("hex");
+}
+
+async function saveSnapshot(
+  files: ZipFile[],
+  target: string,
+  lang: string,
+  slug: string,
+  version: string,
+  zip: Uint8Array,
+  zipSha: string
+) {
+  const ts = Date.now().toString();
+  const baseDir = path.join(process.cwd(), "snapshots", ts, "paper", target, lang);
+  const manifest: any[] = [];
+
+  for (const f of files) {
+    const rel = f.path.replace(/^paper\//, "");
+    const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
+    const fileSha = createHash("sha256").update(data).digest("hex");
+    const filePath = path.join(baseDir, rel);
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    await fs.writeFile(filePath, data);
+    manifest.push({
+      path: path.join("paper", target, lang, rel).replace(/\\/g, "/"),
+      sha256: fileSha,
+      target,
+      lang,
+      timestamp: ts
+    });
+  }
+
+  const zipName = `qaadi_v5_${slug}_${version}_${ts}.zip`;
+  const snapDir = path.join(process.cwd(), "snapshots", ts);
+  await fs.mkdir(snapDir, { recursive: true });
+  await fs.writeFile(path.join(snapDir, zipName), Buffer.from(zip));
+  manifest.push({ path: zipName, sha256: zipSha, target, lang, timestamp: ts });
+  await fs.writeFile(path.join(snapDir, "manifest.json"), JSON.stringify(manifest, null, 2));
+  return { zipName };
 }
 
 function isoNow() { return new Date().toISOString(); }
@@ -129,28 +169,34 @@ export async function POST(req: NextRequest) {
   }
 
   const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
+  const target = typeof body?.target === "string" ? body.target : "default";
+  const lang = typeof body?.lang === "string" ? body.lang : "en";
+  const slug = (typeof body?.slug === "string" ? body.slug : "export").replace(/[^a-z0-9_-]/gi, "_");
+  const version = typeof body?.v === "string" ? body.v : "0";
+
+  async function finalize(files: ZipFile[]) {
+    const zip = makeZip(files);
+    const shaHex = sha256Hex(zip);
+    const { zipName } = await saveSnapshot(files, target, lang, slug, version, zip, shaHex);
+    return new Response(zip, { status: 200, headers: headersZip(zipName, zip.byteLength, shaHex) });
+  }
 
   // Mode A: raw → same as old behavior (accept ready files[])
   if (mode === "raw") {
     const files = Array.isArray(body?.files) ? (body.files as ZipFile[]) : null;
-    const name = (body?.name && typeof body.name === "string") ? body.name : "qaadi_export.zip";
     if (!files || !files.length) {
       return new Response(JSON.stringify({ error: "no_files" }), { status: 400, headers: headersJSON() });
     }
-    const zip = makeZip(files);
-    const shaHex = await sha256Hex(zip);
-    return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
+    return finalize(files);
   }
 
   // Mode B: compose → client provides unit outputs; server builds canonical tree
   if (mode === "compose") {
-    const { name, files } = buildTreeFromCompose(body);
+    const { files } = buildTreeFromCompose(body);
     if (!files.length) {
       return new Response(JSON.stringify({ error: "compose_empty" }), { status: 400, headers: headersJSON() });
     }
-    const zip = makeZip(files);
-    const shaHex = await sha256Hex(zip);
-    return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
+    return finalize(files);
   }
 
   // Mode C: orchestrate → server calls providers (BYOK headers), then exports
@@ -199,10 +245,8 @@ export async function POST(req: NextRequest) {
       meta: { model: selection, max_tokens }
     };
 
-    const { name, files } = buildTreeFromCompose(composePayload);
-    const zip = makeZip(files);
-    const shaHex = await sha256Hex(zip);
-    return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
+    const { files } = buildTreeFromCompose(composePayload);
+    return finalize(files);
   }
 
   // Unknown mode
