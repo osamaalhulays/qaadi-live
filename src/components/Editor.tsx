@@ -62,6 +62,12 @@ export default function Editor() {
     return "default";
   }, []);
 
+  const snapshotPath = useMemo(() => {
+    if (!files.length) return null;
+    const latest = files.find(f => f.startsWith(`${v}/`)) || files[0];
+    return `/snapshots/${slug}/${latest}`;
+  }, [files, slug, v]);
+
   useEffect(() => {
     try {
       setOpenaiKey(localStorage.getItem("OPENAI_KEY") || "");
@@ -263,8 +269,11 @@ export default function Editor() {
           <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export (compose demo)"}</button>
           <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy}>{zipBusy ? "..." : "Export ZIP"}</button>
           <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang}>{busy ? "جارٍ…" : "Generate"}</button>
-          <a className="btn" href="/snapshots/" target="_blank" rel="noopener noreferrer">Open Snapshot</a>
+          {snapshotPath && (
+            <a className="btn" href={snapshotPath} target="_blank" rel="noopener noreferrer">Open Snapshot</a>
+          )}
         </div>
+        {!snapshotPath && <div className="note">No snapshot yet</div>}
         {msg && <div className="note">{msg}</div>}
         {verify && (
           <div className="verify-bar">
