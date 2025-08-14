@@ -41,6 +41,27 @@ export default function Editor() {
   const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
   const [files, setFiles] = useState<string[]>([]);
 
+  const slug = useMemo(() => {
+    if (typeof window !== "undefined") {
+      return (
+        window.location.pathname.split("/").filter(Boolean)[0] ||
+        new URLSearchParams(window.location.search).get("slug") ||
+        "default"
+      );
+    }
+    return "default";
+  }, []);
+  const v = useMemo(() => {
+    if (typeof window !== "undefined") {
+      return (
+        window.location.pathname.split("/").filter(Boolean)[1] ||
+        new URLSearchParams(window.location.search).get("v") ||
+        "default"
+      );
+    }
+    return "default";
+  }, []);
+
   useEffect(() => {
     try {
       setOpenaiKey(localStorage.getItem("OPENAI_KEY") || "");
@@ -76,7 +97,7 @@ export default function Editor() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers,
-        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text })
+        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text, slug, v })
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "generate_failed");
@@ -102,6 +123,10 @@ export default function Editor() {
           model,
           max_tokens: maxTokens,
           name: "qaadi_export.zip",
+          target,
+          lang,
+          slug,
+          v,
           input: { text }
         })
       });
@@ -128,6 +153,8 @@ export default function Editor() {
         body: JSON.stringify({
           mode: "compose",
           name: "qaadi_export.zip",
+          slug,
+          v,
           input: { text },
           secretary: { audit: { ready_percent: 50, issues: [{ type: "demo", note: "example only" }] } },
           judge: { report: { score_total: 110, criteria: [], notes: "demo" } },
@@ -158,18 +185,6 @@ export default function Editor() {
 
   async function refreshFiles() {
     try {
-      const slug =
-        typeof window !== "undefined"
-          ? window.location.pathname.split("/").filter(Boolean)[0] ||
-            new URLSearchParams(window.location.search).get("slug") ||
-            "default"
-          : "default";
-      const v =
-        typeof window !== "undefined"
-          ? window.location.pathname.split("/").filter(Boolean)[1] ||
-            new URLSearchParams(window.location.search).get("v") ||
-            "default"
-          : "default";
       const res = await fetch("/snapshots/manifest.json");
       if (!res.ok) { setFiles([]); return; }
       const list = await res.json();

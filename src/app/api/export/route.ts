@@ -53,7 +53,7 @@ function tsFolder(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
-async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug: string) {
+async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug: string, v: string) {
   const safeSlug = sanitizeSlug(slug);
   const now = new Date();
   const tsDir = tsFolder(now);
@@ -72,6 +72,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
       target,
       lang,
       slug: safeSlug,
+      v,
       timestamp
     });
   }
@@ -180,6 +181,7 @@ export async function POST(req: NextRequest) {
   const target = typeof body?.target === "string" ? body.target : "default";
   const lang = typeof body?.lang === "string" ? body.lang : "en";
   const slug = typeof body?.slug === "string" ? body.slug : "default";
+  const v = typeof body?.v === "string" ? body.v : "default";
 
   // Mode A: raw → same as old behavior (accept ready files[])
   if (mode === "raw") {
@@ -188,7 +190,7 @@ export async function POST(req: NextRequest) {
     if (!files || !files.length) {
       return new Response(JSON.stringify({ error: "no_files" }), { status: 400, headers: headersJSON() });
     }
-    await saveSnapshot(files, target, lang, slug);
+    await saveSnapshot(files, target, lang, slug, v);
     const zip = makeZip(files);
     const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
@@ -200,7 +202,7 @@ export async function POST(req: NextRequest) {
     if (!files.length) {
       return new Response(JSON.stringify({ error: "compose_empty" }), { status: 400, headers: headersJSON() });
     }
-    await saveSnapshot(files, target, lang, slug);
+    await saveSnapshot(files, target, lang, slug, v);
     const zip = makeZip(files);
     const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
@@ -253,7 +255,7 @@ export async function POST(req: NextRequest) {
     };
 
     const { name, files } = buildTreeFromCompose(composePayload);
-    await saveSnapshot(files, target, lang, slug);
+    await saveSnapshot(files, target, lang, slug, v);
     const zip = makeZip(files);
     const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });

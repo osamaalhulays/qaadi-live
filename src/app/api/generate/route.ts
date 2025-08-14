@@ -33,9 +33,7 @@ export async function POST(req: NextRequest) {
   let input;
   try { input = InputSchema.parse(await req.json()); }
   catch { return new Response(JSON.stringify({ error: "bad_input" }), { status: 400 }); }
-
-  const { searchParams } = new URL(req.url);
-  const slug = searchParams.get("slug") ?? "default";
+  const { slug, v } = input;
 
   const idemKey = req.headers.get("Idempotency-Key");
   if (idemKey && !checkIdempotency(`generate:${idemKey}`, input)) {
@@ -103,7 +101,7 @@ export async function POST(req: NextRequest) {
     let saved: string[] = [];
     let covers: string[] = [];
     try {
-      const res = await saveSnapshot(files, input.target, input.lang, slug);
+      const res = await saveSnapshot(files, input.target, input.lang, slug, v);
       saved = res.files;
       covers = res.covers;
     } catch (e: any) {

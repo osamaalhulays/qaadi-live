@@ -8,7 +8,8 @@ export interface SnapshotEntry {
   target: string;
   lang: string;
   timestamp: string;
-  slug?: string;
+  slug: string;
+  v: string;
 }
 
 const slugRe = /^[a-zA-Z0-9_-]+$/;
@@ -34,7 +35,8 @@ export async function saveSnapshot(
   files: { path: string; content: string | Uint8Array }[],
   target: string,
   lang: string,
-  slug: string = "default"
+  slug: string,
+  v: string
 ) {
   const now = new Date();
   const tsDir = tsFolder(now);
@@ -57,9 +59,11 @@ export async function saveSnapshot(
     });
   }
 
+  const safeSlug = sanitizeSlug(slug);
+
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
-    const rel = path.join("snapshots", slug, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
+    const rel = path.join("snapshots", safeSlug, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
     const full = path.join(process.cwd(), "public", rel);
     await mkdir(path.dirname(full), { recursive: true });
     await writeFile(full, data);
@@ -68,13 +72,14 @@ export async function saveSnapshot(
       sha256: sha256Hex(data),
       target,
       lang,
-      slug,
+      slug: safeSlug,
+      v,
       timestamp
     });
   }
 
   if (target !== "wide" && target !== "inquiry") {
-    const base = path.join("snapshots", slug, tsDir, "paper", target, lang);
+    const base = path.join("snapshots", safeSlug, tsDir, "paper", target, lang);
 
     const relBib = path.join(base, "biblio.bib");
     const fullBib = path.join(process.cwd(), "public", relBib);
@@ -85,7 +90,8 @@ export async function saveSnapshot(
       sha256: sha256Hex(""),
       target,
       lang,
-      slug,
+      slug: safeSlug,
+      v,
       timestamp
     });
 
@@ -97,7 +103,8 @@ export async function saveSnapshot(
       sha256: sha256Hex(""),
       target,
       lang,
-      slug,
+      slug: safeSlug,
+      v,
       timestamp
     });
   }
