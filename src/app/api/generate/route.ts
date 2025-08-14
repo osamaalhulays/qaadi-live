@@ -129,7 +129,11 @@ function tsFolder(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
-async function saveSnapshot(files: { path: string; content: string | Uint8Array }[], target: string, lang: string) {
+export async function saveSnapshot(
+  files: { path: string; content: string | Uint8Array }[],
+  target: string,
+  lang: string
+) {
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
@@ -144,6 +148,33 @@ async function saveSnapshot(files: { path: string; content: string | Uint8Array 
     entries.push({
       path: rel.replace(/\\/g, "/"),
       sha256: sha256Hex(data),
+      target,
+      lang,
+      timestamp
+    });
+  }
+
+  if (target !== "wide" && target !== "inquiry") {
+    const base = path.join("snapshots", tsDir, "paper", target, lang);
+
+    const relBib = path.join(base, "biblio.bib");
+    const fullBib = path.join(process.cwd(), "public", relBib);
+    await mkdir(path.dirname(fullBib), { recursive: true });
+    await writeFile(fullBib, "");
+    entries.push({
+      path: relBib.replace(/\\/g, "/"),
+      sha256: sha256Hex(""),
+      target,
+      lang,
+      timestamp
+    });
+
+    const relFigs = path.join(base, "figs");
+    const fullFigs = path.join(process.cwd(), "public", relFigs);
+    await mkdir(fullFigs, { recursive: true });
+    entries.push({
+      path: (relFigs + "/").replace(/\\/g, "/"),
+      sha256: sha256Hex(""),
       target,
       lang,
       timestamp
