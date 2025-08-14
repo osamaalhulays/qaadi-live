@@ -27,7 +27,8 @@ type ModelSel = "openai" | "deepseek" | "auto";
 export default function Editor() {
   const [openaiKey, setOpenaiKey] = useState("");
   const [deepseekKey, setDeepseekKey] = useState("");
-
+  const [slug, setSlug] = useState("");
+  const [v, setV] = useState("");
   const [target, setTarget] = useState<Target | "">("");
   const [lang, setLang] = useState<Lang | "">("");
   const [model, setModel] = useState<ModelSel>("auto");
@@ -41,33 +42,18 @@ export default function Editor() {
   const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
   const [files, setFiles] = useState<string[]>([]);
 
-  const slug = useMemo(() => {
-    if (typeof window !== "undefined") {
-      return (
-        window.location.pathname.split("/").filter(Boolean)[0] ||
-        new URLSearchParams(window.location.search).get("slug") ||
-        "default"
-      );
-    }
-    return "default";
-  }, []);
-  const v = useMemo(() => {
-    if (typeof window !== "undefined") {
-      return (
-        window.location.pathname.split("/").filter(Boolean)[1] ||
-        new URLSearchParams(window.location.search).get("v") ||
-        "default"
-      );
-    }
-    return "default";
-  }, []);
-
   useEffect(() => {
     try {
       setOpenaiKey(localStorage.getItem("OPENAI_KEY") || "");
       setDeepseekKey(localStorage.getItem("DEEPSEEK_KEY") || "");
       const storedLang = localStorage.getItem("lang");
       if (storedLang) setLang(storedLang as Lang);
+      if (typeof window !== "undefined") {
+        const params = new URLSearchParams(window.location.search);
+        const parts = window.location.pathname.split("/").filter(Boolean);
+        setSlug(parts[0] || params.get("slug") || "");
+        setV(parts[1] || params.get("v") || "");
+      }
     } catch {}
   }, []);
   useEffect(() => { try { localStorage.setItem("OPENAI_KEY", openaiKey); } catch {} }, [openaiKey]);
@@ -93,7 +79,7 @@ export default function Editor() {
   async function doGenerate() {
     setBusy(true); setMsg("");
     try {
-      if (!target || !lang) throw new Error("missing_target_lang");
+      if (!target || !lang || !slug || !v) throw new Error("missing_params");
       const res = await fetch("/api/generate", {
         method: "POST",
         headers,
@@ -107,7 +93,7 @@ export default function Editor() {
       if (Array.isArray(j?.files)) setFiles(j.files);
       else await refreshFiles();
     } catch (e:any) {
-      setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `ERROR: ${e?.message || e}`);
+      setMsg(e?.message === "missing_params" ? "Please set slug, version, target and language" : `ERROR: ${e?.message || e}`);
       setVerify(null);
     } finally { setBusy(false); }
   }
@@ -115,6 +101,7 @@ export default function Editor() {
   async function exportOrchestrate() {
     setZipBusy(true); setMsg("");
     try {
+      if (!slug || !v) throw new Error("missing_params");
       const res = await fetch("/api/export", {
         method: "POST",
         headers,
@@ -139,14 +126,14 @@ export default function Editor() {
       setMsg("ZIP جاهز (orchestrate).");
       await refreshFiles();
     } catch (e:any) {
-      setMsg(`EXPORT ERROR: ${e?.message || e}`);
+      setMsg(e?.message === "missing_params" ? "Please set slug and version" : `EXPORT ERROR: ${e?.message || e}`);
     } finally { setZipBusy(false); }
   }
 
   async function exportCompose() {
     setZipBusy(true); setMsg("");
     try {
-      if (!target || !lang) throw new Error("missing_target_lang");
+      if (!target || !lang || !slug || !v) throw new Error("missing_params");
       const res = await fetch("/api/export", {
         method: "POST",
         headers,
@@ -172,7 +159,7 @@ export default function Editor() {
       setMsg("ZIP جاهز (compose).");
       await refreshFiles();
     } catch (e:any) {
-      setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `EXPORT ERROR: ${e?.message || e}`);
+      setMsg(e?.message === "missing_params" ? "Please set slug, version, target and language" : `EXPORT ERROR: ${e?.message || e}`);
     } finally { setZipBusy(false); }
   }
 
@@ -197,6 +184,17 @@ export default function Editor() {
 
   return (
     <>
+      <div className="card grid grid-2" style={{marginBottom:12}}>
+        <div>
+          <label>Slug</label>
+          <input value={slug} onChange={e=>setSlug(e.target.value)} placeholder="slug" />
+        </div>
+        <div>
+          <label>Version</label>
+          <input value={v} onChange={e=>setV(e.target.value)} placeholder="version" />
+        </div>
+      </div>
+
       <div className="card grid grid-2" style={{marginBottom:12}}>
         <div>
           <label>DeepSeek Key</label>
@@ -254,15 +252,15 @@ export default function Editor() {
       </div>
 
       <div className="card" style={{marginBottom:12}}>
-        <label>النص</label>
-        <textarea rows={12} placeholder="ألصق هنا النص المبعثر…" value={text} onChange={e=>setText(e.target.value)} />
-      </div>
+          <label>النص</label>
+          <textarea rows={12} placeholder="ألصق هنا النص المبعثر…" value={text} onChange={e=>setText(e.target.value)} />
+        </div>
 
       <div className="card" style={{marginBottom:12}}>
         <div className="actions">
-          <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export (compose demo)"}</button>
-          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy}>{zipBusy ? "..." : "Export ZIP"}</button>
-          <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang}>{busy ? "جارٍ…" : "Generate"}</button>
+          <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang || !slug || !v}>{zipBusy ? "..." : "Export (compose demo)"}</button>
+          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy || !slug || !v}>{zipBusy ? "..." : "Export ZIP"}</button>
+          <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang || !slug || !v}>{busy ? "جارٍ…" : "Generate"}</button>
           <a className="btn" href="/snapshots/" target="_blank" rel="noopener noreferrer">Open Snapshot</a>
         </div>
         {msg && <div className="note">{msg}</div>}
