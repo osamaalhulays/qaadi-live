@@ -60,6 +60,7 @@ export default function Editor() {
       }
     } catch {}
   }, [lang]);
+  useEffect(() => { refreshFiles(); }, []);
 
   const headers = useMemo(() => ({
     "Content-Type": "application/json",

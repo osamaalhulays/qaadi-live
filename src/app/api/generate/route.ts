@@ -2,8 +2,12 @@ import { NextRequest } from "next/server";
 import { InputSchema, OutputSchema } from "../../../lib/schema/io";
 import { runWithFallback } from "../../../lib/providers/router";
 import { freezeText, restoreText, countEquations } from "../../../lib/utils/freeze";
+import type { ZipFile } from "../../../lib/utils/zip";
+import { mkdir, readFile, writeFile } from "fs/promises";
+import path from "path";
+import crypto from "crypto";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function OPTIONS() {
   return new Response(null, {
@@ -25,6 +29,48 @@ function detectDir(s: string): "rtl" | "ltr" | "mixed" {
   if (hasRTL && hasLTR) return "mixed";
   if (hasRTL) return "rtl";
   return "ltr";
+}
+
+function sha256Hex(data: Uint8Array | string) {
+  const buf = typeof data === "string" ? Buffer.from(data) : Buffer.from(data);
+  return crypto.createHash("sha256").update(buf).digest("hex");
+}
+
+function tsFolder(d = new Date()) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+
+async function saveSnapshot(files: ZipFile[], target: string, lang: string) {
+  const now = new Date();
+  const tsDir = tsFolder(now);
+  const timestamp = now.toISOString();
+  const entries: any[] = [];
+
+  for (const f of files) {
+    const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
+    const rel = path.join("snapshots", tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
+    const full = path.join(process.cwd(), rel);
+    await mkdir(path.dirname(full), { recursive: true });
+    await writeFile(full, data);
+    entries.push({
+      path: rel.replace(/\\/g, "/"),
+      sha256: sha256Hex(data),
+      target,
+      lang,
+      timestamp
+    });
+  }
+
+  const manifestPath = path.join(process.cwd(), "snapshots", "manifest.json");
+  let manifest: any[] = [];
+  try {
+    const existing = await readFile(manifestPath, "utf-8");
+    manifest = JSON.parse(existing);
+  } catch {}
+  manifest.push(...entries);
+  await mkdir(path.dirname(manifestPath), { recursive: true });
+  await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
 }
 
 export async function POST(req: NextRequest) {
@@ -76,6 +122,13 @@ export async function POST(req: NextRequest) {
         idempotency: restored === text
       }
     });
+    const filePath =
+      input.target === "wide"
+        ? `paper/${input.target}/${input.lang}/bundle.md`
+        : input.target === "inquiry"
+        ? `paper/${input.target}/${input.lang}/inquiry.json`
+        : `paper/${input.target}/${input.lang}/draft.tex`;
+    await saveSnapshot([{ path: filePath, content: text }], input.target, input.lang);
     return new Response(JSON.stringify(final), {
       headers: {
         "Content-Type": "application/json",
