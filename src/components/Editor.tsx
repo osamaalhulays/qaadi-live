@@ -115,6 +115,7 @@ export default function Editor() {
   async function exportOrchestrate() {
     setZipBusy(true); setMsg("");
     try {
+      if (!target || !lang) throw new Error("missing_target_lang");
       const res = await fetch("/api/export", {
         method: "POST",
         headers,
@@ -139,7 +140,7 @@ export default function Editor() {
       setMsg("ZIP جاهز (orchestrate).");
       await refreshFiles();
     } catch (e:any) {
-      setMsg(`EXPORT ERROR: ${e?.message || e}`);
+      setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `EXPORT ERROR: ${e?.message || e}`);
     } finally { setZipBusy(false); }
   }
 
@@ -261,7 +262,7 @@ export default function Editor() {
       <div className="card" style={{marginBottom:12}}>
         <div className="actions">
           <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export (compose demo)"}</button>
-          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy}>{zipBusy ? "..." : "Export ZIP"}</button>
+          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export ZIP"}</button>
           <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang}>{busy ? "جارٍ…" : "Generate"}</button>
           <a className="btn" href="/snapshots/" target="_blank" rel="noopener noreferrer">Open Snapshot</a>
         </div>
