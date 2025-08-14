@@ -1,5 +1,6 @@
 import "./globals.css";
 import type { Metadata } from "next";
+import Script from "next/script";
 
 export const metadata: Metadata = {
   title: "Qaadi Live",
@@ -18,18 +19,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#111111" />
         <link rel="icon" href="/favicon.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-(function(){
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', function() {
-      navigator.serviceWorker.register('/sw.js').catch(function(){});
-    });
-  }
-})();`
-          }}
-        />
+        <Script id="sw-register" strategy="afterInteractive">
+          {`
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      });
+    }
+  `}
+        </Script>
       </head>
       <body>
         <div className="wrapper">{children}</div>
