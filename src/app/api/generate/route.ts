@@ -108,7 +108,9 @@ function buildPrompt(
     | "es"
     | "ru"
     | "fa"
-    | "zh",
+    | "zh"
+    | "ja"
+    | "other",
   userText: string,
   glossary: Record<string, string> | null
 ) {
@@ -139,21 +141,42 @@ function buildPrompt(
       return `WIDE/FA: شما موتور Qaadi هستید. متن فارسی گسترده برای مقاله (bundle.md) را ویرایش کنید. ورودی:\n${userText}${gloss}`;
     if (lang === "zh")
       return `WIDE/ZH: 你是 Qaadi 引擎。编辑面向论文的中文长文 (bundle.md)。输入:\n${userText}${gloss}`;
+    if (lang === "ja")
+      return `WIDE/JA: あなたは Qaadi エンジンです。論文用の日本語の長文を編集してください (bundle.md)。入力:\n${userText}${gloss}`;
+    if (lang === "other")
+      return `WIDE/OTHER: You are the Qaadi engine. Edit a long text in its original language intended for the paper (bundle.md). Input:\n${userText}${gloss}`;
   }
   if (target === "inquiry" && lang === "tr")
     return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}${gloss}`;
-  if (target === "revtex" && lang === "en")
-    return `REVTEX/EN: Produce TeX draft body (no \\documentclass). Input:\n${userText}${gloss}`;
-  if (target === "iop" && lang === "en")
-    return `IOP/EN: Produce LaTeX draft body (no \\documentclass) for IOP style. Input:\n${userText}${gloss}`;
-  if (target === "sn-jnl" && lang === "en")
-    return `SN-JNL/EN: Produce LaTeX draft body (no \\documentclass) for Springer Nature Journal style. Input:\n${userText}${gloss}`;
-  if (target === "elsevier" && lang === "en")
-    return `ELSEVIER/EN: Produce LaTeX draft body (no \\documentclass) for Elsevier class. Input:\n${userText}${gloss}`;
-  if (target === "ieee" && lang === "en")
-    return `IEEE/EN: Produce LaTeX draft body (no \\documentclass) for IEEE style. Input:\n${userText}${gloss}`;
-  if (target === "arxiv" && lang === "en")
-    return `ARXIV/EN: Produce LaTeX draft body (no \\documentclass) for arXiv submission. Input:\n${userText}${gloss}`;
+  const templateTargets = new Set(["revtex", "iop", "sn-jnl", "elsevier", "ieee", "arxiv"]);
+  if (templateTargets.has(target)) {
+    if (lang === "other") throw new Error(`unsupported_template_lang:${target}:${lang}`);
+    const langNames: Record<string, string> = {
+      ar: "Arabic",
+      en: "English",
+      tr: "Turkish",
+      fr: "French",
+      de: "German",
+      es: "Spanish",
+      ru: "Russian",
+      fa: "Persian",
+      zh: "Chinese",
+      ja: "Japanese"
+    };
+    const targetNames: Record<string, string> = {
+      revtex: "ReVTeX",
+      iop: "IOP",
+      "sn-jnl": "Springer Nature Journal",
+      elsevier: "Elsevier",
+      ieee: "IEEE",
+      arxiv: "arXiv"
+    };
+    const langName = langNames[lang];
+    const tName = targetNames[target];
+    if (!langName || !tName)
+      throw new Error(`unsupported_target_lang:${target}:${lang}`);
+    return `${target.toUpperCase()}/${lang.toUpperCase()}: Produce LaTeX draft body (no \\documentclass) for ${tName} style in ${langName}. Input:\n${userText}${gloss}`;
+  }
   throw new Error(`unsupported_target_lang:${target}:${lang}`);
 }
 
