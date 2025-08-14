@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import JSZip from "jszip";
+import HistoryPanel from "../components/HistoryPanel";
+import { addHistory } from "../lib/utils/history";
 
 type Template = "WideAR" | "ReVTeX" | "InquiryTR";
 type ModelSel = "openai" | "deepseek" | "auto";
@@ -17,6 +20,7 @@ export default function Page() {
   const [busy, setBusy] = useState(false);
   const [zipBusy, setZipBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
+  const [showHist, setShowHist] = useState(false);
 
   useEffect(() => {
     try {
@@ -70,6 +74,7 @@ export default function Page() {
       }
       const blob = await res.blob();
       downloadBlob(blob, "qaadi_export.zip");
+      await saveSnapshot(blob);
       setMsg("ZIP جاهز (orchestrate).");
     } catch (e:any) {
       setMsg(`EXPORT ERROR: ${e?.message || e}`);
@@ -99,6 +104,7 @@ export default function Page() {
       }
       const blob = await res.blob();
       downloadBlob(blob, "qaadi_export.zip");
+      await saveSnapshot(blob);
       setMsg("ZIP جاهز (compose).");
     } catch (e:any) {
       setMsg(`EXPORT ERROR: ${e?.message || e}`);
@@ -112,9 +118,30 @@ export default function Page() {
     URL.revokeObjectURL(url);
   }
 
+  async function saveSnapshot(blob: Blob) {
+    try {
+      const zip = await JSZip.loadAsync(blob);
+      const paths = Object.keys(zip.files).sort();
+      const u8 = new Uint8Array(await blob.arrayBuffer());
+      let binary = "";
+      for (let i = 0; i < u8.length; i++) binary += String.fromCharCode(u8[i]);
+      const base64 = btoa(binary);
+      const lang = template === "WideAR" ? "ar" : template === "InquiryTR" ? "tr" : "en";
+      addHistory({
+        timestamp: new Date().toISOString(),
+        target: "qaadi_export.zip",
+        lang,
+        paths,
+        zip: base64
+      });
+    } catch {}
+  }
+
   return (
     <>
+      {showHist && <HistoryPanel onClose={() => setShowHist(false)} />}
       <h1 className="h1"><span className="badge">⚖️</span> Qaadi Live</h1>
+      <button className="btn" style={{marginBottom:12}} onClick={() => setShowHist(s => !s)}>History</button>
 
       <div className="card grid grid-2" style={{marginBottom:12}}>
         <div>
