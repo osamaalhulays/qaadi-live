@@ -10,17 +10,20 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState("ar");
-  const [dir, setDir] = useState<"ltr" | "rtl">("rtl");
-
-  useEffect(() => {
+  const [lang, setLang] = useState(() => {
     try {
-      const l = localStorage.getItem("lang");
+      return localStorage.getItem("lang") ?? "ar";
+    } catch {
+      return "ar";
+    }
+  });
+  const [dir, setDir] = useState<"ltr" | "rtl">(() => {
+    try {
       const d = localStorage.getItem("dir");
-      if (l) setLang(l);
-      if (d === "rtl" || d === "ltr") setDir(d as "rtl" | "ltr");
+      if (d === "rtl" || d === "ltr") return d;
     } catch {}
-  }, []);
+    return "rtl";
+  });
 
   useEffect(() => {
     document.documentElement.lang = lang;
@@ -34,6 +37,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#0f1115" />
         <link rel="icon" href="/favicon.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
+        <Script id="init-lang-dir" strategy="beforeInteractive">
+          {`
+    try {
+      const l = localStorage.getItem('lang');
+      const d = localStorage.getItem('dir');
+      if (l) document.documentElement.lang = l;
+      if (d === 'rtl' || d === 'ltr') document.documentElement.dir = d;
+    } catch {}
+  `}
+        </Script>
         <Script id="sw-register" strategy="afterInteractive">
           {`
     if ('serviceWorker' in navigator) {
