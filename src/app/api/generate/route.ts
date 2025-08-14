@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
 
 export { saveSnapshot };
 
-function buildPrompt(
+export function buildPrompt(
   target:
     | "wide"
     | "revtex"
@@ -179,6 +179,27 @@ function buildPrompt(
       return `WIDE/JA: あなたは Qaadi エンジンです。論文用の日本語の長文を編集してください (bundle.md)。入力:\n${userText}${gloss}`;
     if (lang === "other")
       return `WIDE/OTHER: You are the Qaadi engine. Edit a long text in its original language intended for the paper (bundle.md). Input:\n${userText}${gloss}`;
+  }
+  if (target === "inquiry") {
+    if (lang === "ar")
+      return `INQUIRY/AR: أنت محرّك Qaadi. أجب على استفسار عربي موجه للورقة (inquiry.md). المدخل:\n${userText}${gloss}`;
+    if (lang === "en")
+      return `INQUIRY/EN: You are the Qaadi engine. Answer an English inquiry intended for the paper (inquiry.md). Input:\n${userText}${gloss}`;
+    if (lang === "tr")
+      return `INQUIRY/TR: Qaadi motorusun. Makale için Türkçe bir soruyu yanıtla (inquiry.md). Girdi:\n${userText}${gloss}`;
+    if (lang === "fr")
+      return `INQUIRY/FR: Tu es le moteur Qaadi. Réponds à une requête française destinée à l'article (inquiry.md). Entrée :\n${userText}${gloss}`;
+    if (lang === "de")
+      return `INQUIRY/DE: Du bist der Qaadi-Motor. Beantworte eine deutsche Anfrage für den Artikel (inquiry.md). Eingabe:\n${userText}${gloss}`;
+    if (lang === "es")
+      return `INQUIRY/ES: Eres el motor Qaadi. Responde una consulta en español destinada al artículo (inquiry.md). Entrada:\n${userText}${gloss}`;
+    if (lang === "ru")
+      return `INQUIRY/RU: Ты движок Qaadi. Ответь на русский запрос для статьи (inquiry.md). Ввод:\n${userText}${gloss}`;
+    if (lang === "zh-Hans")
+      return `INQUIRY/ZH-HANS: 你是 Qaadi 引擎。用中文回答一个面向论文的询问 (inquiry.md)。输入:\n${userText}${gloss}`;
+    if (lang === "ja")
+      return `INQUIRY/JA: あなたは Qaadi エンジンです。論文用の日本語の問いに答えてください (inquiry.md)。入力:\n${userText}${gloss}`;
+    throw new Error("unsupported_inquiry_lang");
   }
   const templateTargets = new Set(["revtex", "iop", "sn-jnl", "elsevier", "ieee", "arxiv"]);
   if (templateTargets.has(target)) {
