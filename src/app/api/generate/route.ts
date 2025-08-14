@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
 
   const glossary = await loadGlossary(req);
 
-  const prompt = buildPrompt(input.template, frozen.text, glossary);
+  const prompt = buildPrompt(input.target, input.language, frozen.text, glossary);
   try {
     const out = await runWithFallback(
       input.model === "auto" ? "auto" : (input.model as any),
@@ -49,10 +49,10 @@ export async function POST(req: NextRequest) {
       ...out,
       text,
       checks: {
-        eq_before: eqBefore,
-        eq_after: eqAfter,
-        eq_match: eqBefore === eqAfter,
-        glossary_entries: glossary ? Object.keys(glossary).length : 0
+        equations_count: eqAfter,
+        glossary_applied: glossary ? Object.keys(glossary).length : 0,
+        rtl_ltr: input.language === "AR" ? "rtl" : "ltr",
+        idempotency: eqBefore === eqAfter
       }
     });
     return new Response(JSON.stringify(final), {
@@ -69,15 +69,18 @@ export async function POST(req: NextRequest) {
 }
 
 function buildPrompt(
-  template: "WideAR" | "ReVTeX" | "InquiryTR",
+  target: "Wide" | "ReVTeX" | "Inquiry",
+  language: "AR" | "EN" | "TR",
   userText: string,
   glossary: Record<string, string> | null
 ) {
   const gloss = glossary && Object.keys(glossary).length
     ? "\nGlossary:\n" + Object.entries(glossary).map(([k,v])=>`${k} = ${v}`).join("\n")
     : "";
-  if (template === "WideAR")   return `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${userText}${gloss}`;
-  if (template === "InquiryTR") return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}${gloss}`;
+  if (target === "Wide" && language === "AR")
+    return `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${userText}${gloss}`;
+  if (target === "Inquiry" && language === "TR")
+    return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}${gloss}`;
   return `REVTEX/EN: Produce TeX draft body (no \\documentclass). Input:\n${userText}${gloss}`;
 }
 

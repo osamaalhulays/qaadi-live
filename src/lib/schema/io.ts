@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const InputSchema = z.object({
-  template: z.enum(["WideAR", "ReVTeX", "InquiryTR"]).default("ReVTeX"),
+  target: z.enum(["Wide", "ReVTeX", "Inquiry"]),
+  language: z.enum(["AR", "EN", "TR"]),
   model: z.enum(["openai", "deepseek", "auto"]).default("auto"),
   max_tokens: z.number().int().min(256).max(8192).default(2048),
   text: z.string().min(1)
@@ -15,10 +16,10 @@ export const OutputSchema = z.object({
   latency_ms: z.number().int().nonnegative(),
   model_used: z.string(),
   checks: z.object({
-    eq_before: z.number().int().nonnegative(),
-    eq_after: z.number().int().nonnegative(),
-    eq_match: z.boolean(),
-    glossary_entries: z.number().int().nonnegative()
+    equations_count: z.number().int().nonnegative(),
+    glossary_applied: z.number().int().nonnegative(),
+    rtl_ltr: z.enum(["rtl", "ltr"]),
+    idempotency: z.boolean()
   })
 });
 export type Output = z.infer<typeof OutputSchema>;
