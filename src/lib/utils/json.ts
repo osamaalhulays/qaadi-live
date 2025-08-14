@@ -29,6 +29,8 @@ export async function readStreamToText(stream: ReadableStream<Uint8Array>): Prom
     if (done) break;
     all += dec.decode(value, { stream: true });
   }
+  // Flush decoder's internal buffer to avoid truncating multi-byte chars
+  all += dec.decode();
   // Try full JSON first
   const j = safeJSON<any>(all, null as any);
   if (j?.choices?.[0]?.message?.content) return j.choices[0].message.content as string;
