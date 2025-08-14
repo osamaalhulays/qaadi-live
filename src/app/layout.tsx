@@ -31,7 +31,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang={lang} dir={dir}>
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta name="theme-color" content="#111111" />
+        <meta name="theme-color" content="#0f1115" />
         <link rel="icon" href="/favicon.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
         <Script id="sw-register" strategy="afterInteractive">
