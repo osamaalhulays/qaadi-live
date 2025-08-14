@@ -20,7 +20,9 @@ export const InputSchema = z.object({
     "es",
     "ru",
     "fa",
-    "zh"
+    "zh",
+    "ja",
+    "other"
   ]),
   model: z
     .enum(["openai", "deepseek", "auto"])
