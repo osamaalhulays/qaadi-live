@@ -156,13 +156,22 @@ export default function Editor() {
 
   async function refreshFiles() {
     try {
+      const slug =
+        typeof window !== "undefined"
+          ? window.location.pathname.split("/").filter(Boolean)[0] ||
+            new URLSearchParams(window.location.search).get("slug") ||
+            "default"
+          : "default";
       const res = await fetch("/snapshots/manifest.json");
       if (!res.ok) { setFiles([]); return; }
       const list = await res.json();
       if (Array.isArray(list) && list.length) {
-        const latest = list.reduce((m:any, c:any) => c.timestamp > m ? c.timestamp : m, "");
-        const fl = list.filter((f:any) => f.timestamp === latest).map((f:any) => f.path);
-        setFiles(fl);
+        const scoped = list.filter((f:any) => f.slug === slug);
+        if (scoped.length) {
+          const latest = scoped.reduce((m:any, c:any) => c.timestamp > m ? c.timestamp : m, "");
+          const fl = scoped.filter((f:any) => f.timestamp === latest).map((f:any) => f.path);
+          setFiles(fl);
+        } else setFiles([]);
       } else setFiles([]);
     } catch { setFiles([]); }
   }
