@@ -47,9 +47,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#0f1115" />
         <link
           rel="icon"
-          href="/favicon.png"
+          href="/favicon-16x16.png"
           type="image/png"
-          sizes="512x512"
+          sizes="16x16"
+        />
+        <link
+          rel="icon"
+          href="/favicon-32x32.png"
+          type="image/png"
+          sizes="32x32"
         />
         <link rel="manifest" href="/manifest.webmanifest" />
         <Script
