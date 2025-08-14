@@ -98,8 +98,11 @@ export async function POST(req: NextRequest) {
       files.push({ path: "paper/figs/.gitkeep", content: "" });
     }
     let saved: string[] = [];
+    let covers: string[] = [];
     try {
-      saved = await saveSnapshot(files, input.target, input.lang);
+      const res = await saveSnapshot(files, input.target, input.lang);
+      saved = res.files;
+      covers = res.covers;
     } catch (e: any) {
       return new Response(
         JSON.stringify({ error: "snapshot_failed", detail: e?.message || String(e) }),
@@ -107,7 +110,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return new Response(JSON.stringify({ ...final, files: saved }), {
+    return new Response(JSON.stringify({ ...final, files: saved, covers }), {
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
@@ -139,16 +142,16 @@ export async function saveSnapshot(
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
   const entries: any[] = [];
+  const covers: string[] = [];
 
   if (target === "inquiry") {
-    const covers: Record<string, string> = {};
     try {
       const planData = await readFile(path.join(process.cwd(), "paper", "plan.md"));
-      covers.plan = sha256Hex(planData);
+      covers.push(sha256Hex(planData));
     } catch {}
     try {
       const judgeData = await readFile(path.join(process.cwd(), "paper", "judge.json"));
-      covers.judge = sha256Hex(judgeData);
+      covers.push(sha256Hex(judgeData));
     } catch {}
     files.push({
       path: "paper/inquiry.json",
@@ -207,7 +210,7 @@ export async function saveSnapshot(
   manifest.push(...entries);
   await mkdir(path.dirname(manifestPath), { recursive: true });
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
-  return entries.map((e) => e.path);
+  return { files: entries.map((e) => e.path), covers };
 }
 
 function buildPrompt(
