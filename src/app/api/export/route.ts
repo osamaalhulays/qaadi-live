@@ -5,6 +5,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
+import { SlugSchema } from "../../../lib/schema/io";
 
 export const runtime = "nodejs";
 
@@ -177,7 +178,11 @@ export async function POST(req: NextRequest) {
   const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
   const target = typeof body?.target === "string" ? body.target : "default";
   const lang = typeof body?.lang === "string" ? body.lang : "en";
-  const slug = typeof body?.slug === "string" ? body.slug : "default";
+  const slugResult = SlugSchema.safeParse(typeof body?.slug === "string" ? body.slug : "default");
+  if (!slugResult.success) {
+    return new Response(JSON.stringify({ error: "invalid_slug" }), { status: 400, headers: headersJSON() });
+  }
+  const slug = slugResult.data;
 
   // Mode A: raw → same as old behavior (accept ready files[])
   if (mode === "raw") {

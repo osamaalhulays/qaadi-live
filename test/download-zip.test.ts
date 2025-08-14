@@ -57,3 +57,15 @@ test('reads snapshots manifest and uses v6 archive name', async () => {
   ]);
   await rm(path.join(dir, 'manifest.json'));
 });
+
+test('rejects path traversal attempts', async () => {
+  const req = new NextRequest('http://localhost/api/download/zip?slug=../demo&v=v1.0');
+  const res = await GET(req);
+  assert.strictEqual(res.status, 400);
+});
+
+test('rejects path traversal in version', async () => {
+  const req = new NextRequest('http://localhost/api/download/zip?slug=demo&v=../v1.0');
+  const res = await GET(req);
+  assert.strictEqual(res.status, 400);
+});

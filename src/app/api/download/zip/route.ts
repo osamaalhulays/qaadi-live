@@ -3,6 +3,7 @@ import { makeZip, type ZipFile } from "../../../../lib/utils/zip";
 import { readFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import { SlugVersionSchema } from "../../../../lib/schema/io";
 
 export const runtime = "nodejs";
 
@@ -41,11 +42,17 @@ function tsNow() {
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
-  const slug = searchParams.get("slug");
-  const v = searchParams.get("v");
-  if (!slug || !v) {
-    return new Response(JSON.stringify({ error: "missing_params" }), { status: 400, headers: headersJSON() });
+  const params = SlugVersionSchema.safeParse({
+    slug: searchParams.get("slug"),
+    v: searchParams.get("v")
+  });
+  if (!params.success) {
+    return new Response(JSON.stringify({ error: "invalid_params" }), {
+      status: 400,
+      headers: headersJSON()
+    });
   }
+  const { slug, v } = params.data;
 
   try {
     const root = process.cwd();

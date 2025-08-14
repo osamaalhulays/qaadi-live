@@ -53,3 +53,7 @@ export const OutputSchema = z.object({
   files: z.array(z.string()).optional()
 });
 export type Output = z.infer<typeof OutputSchema>;
+
+export const SlugSchema = z.string().regex(/^[A-Za-z0-9._-]+$/);
+export const VersionSchema = z.string().regex(/^[A-Za-z0-9._-]+$/);
+export const SlugVersionSchema = z.object({ slug: SlugSchema, v: VersionSchema });
