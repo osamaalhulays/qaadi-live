@@ -45,7 +45,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#0f1115" />
-        <link rel="icon" href="/favicon.png" />
+        <link
+          rel="icon"
+          href="/favicon.png"
+          type="image/png"
+          sizes="512x512"
+        />
         <link rel="manifest" href="/manifest.webmanifest" />
         <Script
           id="sw-register"
