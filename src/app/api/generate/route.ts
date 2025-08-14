@@ -6,7 +6,7 @@ import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import type { SnapshotEntry } from "../../../lib/utils/snapshot";
+import { sanitizeSlug, type SnapshotEntry } from "../../../lib/utils/snapshot";
 
 export const runtime = "nodejs";
 
@@ -149,6 +149,7 @@ export async function saveSnapshot(
   lang: Lang,
   slug: string = "default"
 ) {
+  const safeSlug = sanitizeSlug(slug);
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
@@ -172,7 +173,7 @@ export async function saveSnapshot(
 
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
-    const rel = path.join("snapshots", slug, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
+    const rel = path.join("snapshots", safeSlug, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
     const full = path.join(process.cwd(), "public", rel);
     await mkdir(path.dirname(full), { recursive: true });
     await writeFile(full, data);
@@ -181,13 +182,13 @@ export async function saveSnapshot(
       sha256: sha256Hex(data),
       target,
       lang,
-      slug,
+      slug: safeSlug,
       timestamp
     });
   }
 
   if (target !== "wide" && target !== "inquiry") {
-    const base = path.join("snapshots", slug, tsDir, "paper", target, lang);
+    const base = path.join("snapshots", safeSlug, tsDir, "paper", target, lang);
 
     const relBib = path.join(base, "biblio.bib");
     const fullBib = path.join(process.cwd(), "public", relBib);
@@ -198,7 +199,7 @@ export async function saveSnapshot(
       sha256: sha256Hex(""),
       target,
       lang,
-      slug,
+      slug: safeSlug,
       timestamp
     });
 
@@ -210,7 +211,7 @@ export async function saveSnapshot(
       sha256: sha256Hex(""),
       target,
       lang,
-      slug,
+      slug: safeSlug,
       timestamp
     });
   }
