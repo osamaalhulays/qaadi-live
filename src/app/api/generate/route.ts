@@ -100,10 +100,6 @@ export async function POST(req: NextRequest) {
         ? "inquiry.md"
         : "draft.tex";
     const files = [{ path: `paper/${fileName}`, content: final.text }];
-    if (fileName === "draft.tex") {
-      files.push({ path: "paper/biblio.bib", content: "" });
-      files.push({ path: "paper/figs/.gitkeep", content: "" });
-    }
     let saved: string[] = [];
     let covers: string[] = [];
     try {
