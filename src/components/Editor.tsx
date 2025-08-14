@@ -40,6 +40,15 @@ export default function Editor() {
   const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
   const [files, setFiles] = useState<string[]>([]);
 
+  const slug = useMemo(() => {
+    if (typeof window === "undefined") return "default";
+    return (
+      window.location.pathname.split("/").filter(Boolean)[0] ||
+      new URLSearchParams(window.location.search).get("slug") ||
+      "default"
+    );
+  }, []);
+
   useEffect(() => {
     try {
       setOpenaiKey(localStorage.getItem("OPENAI_KEY") || "");
@@ -75,7 +84,7 @@ export default function Editor() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers,
-        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text })
+        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text, slug })
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "generate_failed");
@@ -157,12 +166,6 @@ export default function Editor() {
 
   async function refreshFiles() {
     try {
-      const slug =
-        typeof window !== "undefined"
-          ? window.location.pathname.split("/").filter(Boolean)[0] ||
-            new URLSearchParams(window.location.search).get("slug") ||
-            "default"
-          : "default";
       const res = await fetch("/snapshots/manifest.json");
       if (!res.ok) { setFiles([]); return; }
       const list = await res.json();
