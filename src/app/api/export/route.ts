@@ -1,9 +1,12 @@
 import { NextRequest } from "next/server";
 import { makeZip, type ZipFile } from "../../../lib/utils/zip";
 import { runWithFallback } from "../../../lib/providers/router";
+import { promises as fs } from "fs";
+import path from "path";
+import { createHash } from "crypto";
 
-// Edge-only
-export const runtime = "edge";
+// Needs Node.js for filesystem access
+export const runtime = "nodejs";
 
 /* ---------- Common headers ---------- */
 function headersZip(name: string, size: number, shaHex: string) {
@@ -37,9 +40,18 @@ export async function OPTIONS() {
 }
 
 /* ---------- Helpers ---------- */
-async function sha256Hex(u8: Uint8Array) {
-  const d = await crypto.subtle.digest("SHA-256", u8);
-  return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, "0")).join("");
+function sha256Hex(data: Uint8Array | string) {
+  const hash = createHash("sha256");
+  if (typeof data === "string") {
+    hash.update(data);
+  } else {
+    hash.update(data);
+  }
+  return hash.digest("hex");
+}
+
+function safeTimestamp() {
+  return new Date().toISOString().replace(/[:.]/g, "-");
 }
 
 function isoNow() { return new Date().toISOString(); }
@@ -119,6 +131,29 @@ function promptsForOrchestrate(inputText: string) {
   };
 }
 
+async function persistSnapshot(files: ZipFile[], target: string, lang: string, timestamp: string) {
+  const baseDir = path.join(process.cwd(), "snapshots", timestamp, "paper", target, lang);
+  const manifest: { path: string; sha256: string; target: string; lang: string; timestamp: string }[] = [];
+  for (const f of files) {
+    const rel = f.path.replace(/^paper\//, "");
+    const filePath = path.join(baseDir, rel);
+    await fs.mkdir(path.dirname(filePath), { recursive: true });
+    const data = typeof f.content === "string" ? f.content : Buffer.from(f.content);
+    await fs.writeFile(filePath, data);
+    manifest.push({
+      path: path.join("paper", target, lang, rel).replace(/\\/g, "/"),
+      sha256: sha256Hex(data),
+      target,
+      lang,
+      timestamp
+    });
+  }
+  manifest.sort((a, b) => a.path.localeCompare(b.path));
+  const manifestPath = path.join(process.cwd(), "snapshots", timestamp, "manifest.json");
+  await fs.mkdir(path.dirname(manifestPath), { recursive: true });
+  await fs.writeFile(manifestPath, JSON.stringify({ files: manifest }, null, 2));
+}
+
 /* ---------- POST ---------- */
 export async function POST(req: NextRequest) {
   let body: any;
@@ -129,6 +164,9 @@ export async function POST(req: NextRequest) {
   }
 
   const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
+  const target = typeof body?.target === "string" ? body.target : "default";
+  const lang = typeof body?.lang === "string" ? body.lang : "en";
+  const timestamp = typeof body?.timestamp === "string" ? body.timestamp : safeTimestamp();
 
   // Mode A: raw → same as old behavior (accept ready files[])
   if (mode === "raw") {
@@ -137,8 +175,9 @@ export async function POST(req: NextRequest) {
     if (!files || !files.length) {
       return new Response(JSON.stringify({ error: "no_files" }), { status: 400, headers: headersJSON() });
     }
+    await persistSnapshot(files, target, lang, timestamp);
     const zip = makeZip(files);
-    const shaHex = await sha256Hex(zip);
+    const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
   }
 
@@ -148,8 +187,9 @@ export async function POST(req: NextRequest) {
     if (!files.length) {
       return new Response(JSON.stringify({ error: "compose_empty" }), { status: 400, headers: headersJSON() });
     }
+    await persistSnapshot(files, target, lang, timestamp);
     const zip = makeZip(files);
-    const shaHex = await sha256Hex(zip);
+    const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
   }
 
@@ -200,8 +240,9 @@ export async function POST(req: NextRequest) {
     };
 
     const { name, files } = buildTreeFromCompose(composePayload);
+    await persistSnapshot(files, target, lang, timestamp);
     const zip = makeZip(files);
-    const shaHex = await sha256Hex(zip);
+    const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
   }
 
