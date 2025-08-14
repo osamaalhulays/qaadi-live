@@ -5,6 +5,7 @@ import { freezeText, restoreText, countEquations } from "../../../lib/utils/free
 import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { saveSnapshot } from "../../../lib/utils/snapshot";
 
+// Re-export for testing and reuse
 export { saveSnapshot };
 
 export const runtime = "nodejs";
