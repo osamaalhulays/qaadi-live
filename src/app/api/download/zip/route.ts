@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
 
   try {
     const root = process.cwd();
-    const regPath = path.join(root, "QaadiDB", "registry.json");
+    const regPath = path.join(root, "QaadiDB", `theory-${slug}`, "registry.json");
     const registry = await readFile(regPath, "utf-8");
     const registrySha = crypto.createHash("sha256").update(registry).digest("hex");
     const canonicalPath = path.join(root, "QaadiDB", `theory-${slug}`, "canonical", v, "canonical.json");
@@ -97,7 +97,7 @@ export async function GET(req: NextRequest) {
       {
         built_at: builtAt,
         sources: [
-          { path: "registry.json", sha256: registrySha },
+          { path: `QaadiDB/theory-${slug}/registry.json`, sha256: registrySha },
           { path: `QaadiDB/theory-${slug}/canonical/${v}/canonical.json`, sha256: canonicalSha }
         ]
       },
@@ -106,7 +106,7 @@ export async function GET(req: NextRequest) {
     );
 
     const files: ZipFile[] = [
-      { path: "registry.json", content: registry },
+      { path: `QaadiDB/theory-${slug}/registry.json`, content: registry },
       { path: `QaadiDB/theory-${slug}/canonical/${v}/canonical.json`, content: canonical },
       { path: "manifest.json", content: manifest },
       { path: "determinism_matrix.json", content: determinism },
