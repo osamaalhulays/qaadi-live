@@ -56,6 +56,12 @@ export async function POST(req: NextRequest) {
   try {
     prompt = buildPrompt(input.target, input.lang, frozen.text, glossary);
   } catch (e: any) {
+    if (e?.message === "unsupported_inquiry_lang") {
+      return new Response(
+        JSON.stringify({ error: "unsupported_inquiry_lang", detail: input.lang }),
+        { status: 400 }
+      );
+    }
     return new Response(
       JSON.stringify({ error: e?.message || "unsupported_target_lang" }),
       { status: 400 }
@@ -285,7 +291,7 @@ function buildPrompt(
       return `INQUIRY/JA: あなたは Qaadi Inquiry エンジンです。質問セットを生成してください。入力:\n${userText}${gloss}`;
     if (lang === "other")
       return `INQUIRY/OTHER: You are the Qaadi Inquiry engine. Generate a question set in the original language. Input:\n${userText}${gloss}`;
-    throw new Error(`unsupported_target_lang:${target}:${lang}`);
+    throw new Error("unsupported_inquiry_lang");
   }
   const templateTargets = new Set(["revtex", "iop", "sn-jnl", "elsevier", "ieee", "arxiv"]);
   if (templateTargets.has(target)) {
