@@ -4,6 +4,7 @@ import { runWithFallback } from "../../../lib/providers/router";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import { checkIdempotency } from "../../../lib/utils/idempotency";
 
 export const runtime = "nodejs";
 
@@ -165,6 +166,11 @@ export async function POST(req: NextRequest) {
     body = await req.json();
   } catch {
     return new Response(JSON.stringify({ error: "bad_input" }), { status: 400, headers: headersJSON() });
+  }
+
+  const idemKey = req.headers.get("Idempotency-Key");
+  if (idemKey && !checkIdempotency(`export:${idemKey}`, body)) {
+    return new Response(JSON.stringify({ error: "idempotency_conflict" }), { status: 409, headers: headersJSON() });
   }
 
   const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
