@@ -45,7 +45,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#0f1115" />
-        <link rel="icon" href="/favicon.png" />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="16x16"
+          href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAGUlEQVR4nGPgFxT9TwlmGDVg1IBRA4aLAQBeoDQQqp48wwAAAABJRU5ErkJggg=="
+        />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="32x32"
+          href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAL0lEQVR4nO3OIREAAAgEMBpwCPpHhRhvJuZXPXtJJSAgICAgICAgICAgICAgkA48refQPXwsR6EAAAASUVORK5CYII="
+        />
         <link rel="manifest" href="/manifest.webmanifest" />
         <Script
           id="sw-register"
