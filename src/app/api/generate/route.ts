@@ -6,6 +6,7 @@ import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import type { SnapshotEntry } from "../../../lib/utils/snapshot";
 
 export const runtime = "nodejs";
 
@@ -147,7 +148,7 @@ export async function saveSnapshot(
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
-  const entries: any[] = [];
+  const entries: SnapshotEntry[] = [];
   const covers: string[] = [];
 
   if (target === "inquiry") {
@@ -208,7 +209,7 @@ export async function saveSnapshot(
   }
 
   const manifestPath = path.join(process.cwd(), "public", "snapshots", "manifest.json");
-  let manifest: any[] = [];
+  let manifest: SnapshotEntry[] = [];
   try {
     const existing = await readFile(manifestPath, "utf-8");
     manifest = JSON.parse(existing);
