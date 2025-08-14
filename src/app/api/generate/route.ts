@@ -234,7 +234,7 @@ type Lang =
 type DirectTarget = "wide" | "inquiry";
 type PromptFn = (u: string, g: string) => string;
 
-const TARGET_LANG_PROMPTS: Record<DirectTarget, Record<Lang, PromptFn>> = {
+const TARGET_LANG_PROMPTS = {
   wide: {
     ar: (u, g) =>
       `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${u}${g}`,
@@ -279,7 +279,7 @@ const TARGET_LANG_PROMPTS: Record<DirectTarget, Record<Lang, PromptFn>> = {
     other: (u, g) =>
       `INQUIRY/OTHER: You are the Qaadi Inquiry engine. Generate a question set in the original language. Input:\n${u}${g}`
   }
-};
+} as const satisfies Record<DirectTarget, Record<Lang, PromptFn>>;
 
 function buildPrompt(
   target:

@@ -4,6 +4,5 @@ export interface SnapshotEntry {
   target: string;
   lang: string;
   timestamp: string;
-  slug?: string;
 }
 
