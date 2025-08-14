@@ -180,8 +180,8 @@ export async function POST(req: NextRequest) {
   const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
   const target = typeof body?.target === "string" ? body.target : "default";
   const lang = typeof body?.lang === "string" ? body.lang : "en";
-  const slug = typeof body?.slug === "string" && body.slug.trim() ? body.slug : null;
-  const v = typeof body?.v === "string" && body.v.trim() ? body.v : null;
+  const slug = typeof body?.slug === "string" ? body.slug.trim() : "";
+  const v = typeof body?.v === "string" ? body.v.trim() : "";
   if (!slug || !v) {
     return new Response(JSON.stringify({ error: "missing_slug_v" }), { status: 400, headers: headersJSON() });
   }

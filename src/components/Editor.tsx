@@ -51,8 +51,8 @@ export default function Editor() {
       if (typeof window !== "undefined") {
         const params = new URLSearchParams(window.location.search);
         const parts = window.location.pathname.split("/").filter(Boolean);
-        setSlug(parts[0] || params.get("slug") || "");
-        setV(parts[1] || params.get("v") || "");
+        setSlug((parts[0] || params.get("slug") || "").trim());
+        setV((parts[1] || params.get("v") || "").trim());
       }
     } catch {}
   }, []);
@@ -76,14 +76,17 @@ export default function Editor() {
     "X-DeepSeek-Key": deepseekKey || ""
   }), [openaiKey, deepseekKey]);
 
+  const slugVal = slug.trim();
+  const vVal = v.trim();
+
   async function doGenerate() {
     setBusy(true); setMsg("");
     try {
-      if (!target || !lang || !slug || !v) throw new Error("missing_params");
+      if (!target || !lang || !slugVal || !vVal) throw new Error("missing_params");
       const res = await fetch("/api/generate", {
         method: "POST",
         headers,
-        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text, slug, v })
+        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text, slug: slugVal, v: vVal })
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "generate_failed");
@@ -101,7 +104,7 @@ export default function Editor() {
   async function exportOrchestrate() {
     setZipBusy(true); setMsg("");
     try {
-      if (!slug || !v) throw new Error("missing_params");
+      if (!slugVal || !vVal) throw new Error("missing_params");
       const res = await fetch("/api/export", {
         method: "POST",
         headers,
@@ -112,8 +115,8 @@ export default function Editor() {
           name: "qaadi_export.zip",
           target,
           lang,
-          slug,
-          v,
+          slug: slugVal,
+          v: vVal,
           input: { text }
         })
       });
@@ -133,15 +136,15 @@ export default function Editor() {
   async function exportCompose() {
     setZipBusy(true); setMsg("");
     try {
-      if (!target || !lang || !slug || !v) throw new Error("missing_params");
+      if (!target || !lang || !slugVal || !vVal) throw new Error("missing_params");
       const res = await fetch("/api/export", {
         method: "POST",
         headers,
         body: JSON.stringify({
           mode: "compose",
           name: "qaadi_export.zip",
-          slug,
-          v,
+          slug: slugVal,
+          v: vVal,
           input: { text },
           secretary: { audit: { ready_percent: 50, issues: [{ type: "demo", note: "example only" }] } },
           judge: { report: { score_total: 110, criteria: [], notes: "demo" } },
@@ -176,7 +179,7 @@ export default function Editor() {
       if (!res.ok) { setFiles([]); return; }
       const list = await res.json();
       if (Array.isArray(list) && list.length) {
-        const fl = latestFilesFor(list, slug, v);
+        const fl = latestFilesFor(list, slugVal, vVal);
         setFiles(fl);
       } else setFiles([]);
     } catch { setFiles([]); }
@@ -258,9 +261,9 @@ export default function Editor() {
 
       <div className="card" style={{marginBottom:12}}>
         <div className="actions">
-          <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang || !slug || !v}>{zipBusy ? "..." : "Export (compose demo)"}</button>
-          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy || !slug || !v}>{zipBusy ? "..." : "Export ZIP"}</button>
-          <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang || !slug || !v}>{busy ? "جارٍ…" : "Generate"}</button>
+          <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang || !slugVal || !vVal}>{zipBusy ? "..." : "Export (compose demo)"}</button>
+          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy || !slugVal || !vVal}>{zipBusy ? "..." : "Export ZIP"}</button>
+          <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang || !slugVal || !vVal}>{busy ? "جارٍ…" : "Generate"}</button>
           <a className="btn" href="/snapshots/" target="_blank" rel="noopener noreferrer">Open Snapshot</a>
         </div>
         {msg && <div className="note">{msg}</div>}
