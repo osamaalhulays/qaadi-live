@@ -36,7 +36,8 @@ export default function Editor() {
   const [busy, setBusy] = useState(false);
   const [zipBusy, setZipBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
-  const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number }>(null);
+  const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
+  const [files, setFiles] = useState<string[]>([]);
 
   useEffect(() => {
     try {
@@ -67,6 +68,7 @@ export default function Editor() {
       setOut(j?.text || "");
       setVerify(j?.checks || null);
       setMsg(`OK • model=${j?.model_used} • in=${j?.tokens_in} • out=${j?.tokens_out} • ${j?.latency_ms}ms`);
+      await refreshFiles();
     } catch (e:any) {
       setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `ERROR: ${e?.message || e}`);
       setVerify(null);
@@ -94,6 +96,7 @@ export default function Editor() {
       const blob = await res.blob();
       downloadBlob(blob, "qaadi_export.zip");
       setMsg("ZIP جاهز (orchestrate).");
+      await refreshFiles();
     } catch (e:any) {
       setMsg(`EXPORT ERROR: ${e?.message || e}`);
     } finally { setZipBusy(false); }
@@ -124,6 +127,7 @@ export default function Editor() {
       const blob = await res.blob();
       downloadBlob(blob, "qaadi_export.zip");
       setMsg("ZIP جاهز (compose).");
+      await refreshFiles();
     } catch (e:any) {
       setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `EXPORT ERROR: ${e?.message || e}`);
     } finally { setZipBusy(false); }
@@ -134,6 +138,19 @@ export default function Editor() {
     const a = document.createElement("a");
     a.href = url; a.download = name; a.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function refreshFiles() {
+    try {
+      const res = await fetch("/snapshots/manifest.json");
+      if (!res.ok) { setFiles([]); return; }
+      const list = await res.json();
+      if (Array.isArray(list) && list.length) {
+        const latest = list.reduce((m:any, c:any) => c.timestamp > m ? c.timestamp : m, "");
+        const fl = list.filter((f:any) => f.timestamp === latest).map((f:any) => f.path);
+        setFiles(fl);
+      } else setFiles([]);
+    } catch { setFiles([]); }
   }
 
   return (
@@ -203,6 +220,8 @@ export default function Editor() {
           <button className="btn" onClick={exportCompose} disabled={zipBusy}>{zipBusy ? "..." : "Export (compose demo)"}</button>
           <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy}>{zipBusy ? "..." : "Export (orchestrate)"}</button>
           <button className="btn" onClick={doGenerate} disabled={busy}>{busy ? "جارٍ…" : "Generate"}</button>
+          <a className="btn" href="/api/export">Export ZIP</a>
+          <a className="btn" href="/snapshots/" target="_blank" rel="noopener noreferrer">Open Snapshot</a>
         </div>
         {msg && <div className="note">{msg}</div>}
         {verify && (
@@ -214,6 +233,15 @@ export default function Editor() {
             {verify.glossary_entries > 0 && (
               <span>Glossary: {verify.glossary_entries}</span>
             )}
+            <span>Dir: {verify.rtl_ltr}</span>
+            <span>Idempotent: {verify.idempotency ? <span className="verify-ok">✓</span> : <span className="verify-warn">⚠️</span>}</span>
+          </div>
+        )}
+        {files.length > 0 && (
+          <div className="file-list">
+            <ul>
+              {files.map(f => <li key={f}>{f}</li>)}
+            </ul>
           </div>
         )}
       </div>

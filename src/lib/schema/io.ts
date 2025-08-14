@@ -45,7 +45,9 @@ export const OutputSchema = z.object({
     eq_before: z.number().int().nonnegative(),
     eq_after: z.number().int().nonnegative(),
     eq_match: z.boolean(),
-    glossary_entries: z.number().int().nonnegative()
+    glossary_entries: z.number().int().nonnegative(),
+    rtl_ltr: z.enum(["rtl", "ltr", "mixed"]),
+    idempotency: z.boolean()
   })
 });
 export type Output = z.infer<typeof OutputSchema>;
