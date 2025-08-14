@@ -1,9 +1,9 @@
 export default function Footer() {
   return (
-    <footer className="footer" style={{marginTop:24, textAlign:"center"}}>
+    <footer className="mt-6 text-center text-sm">
       <small>© {new Date().getFullYear()} Qaadi</small>
-      <span style={{margin: "0 8px"}}>|</span>
-      <a href="mailto:contact@qaadi.live">اتصل بنا</a>
+      <span className="mx-2">|</span>
+      <a href="mailto:contact@qaadi.live" className="underline">اتصل بنا</a>
     </footer>
   );
 }

@@ -114,33 +114,58 @@ export default function Editor() {
 
   return (
     <>
-      <div className="card grid grid-2" style={{marginBottom:12}}>
+      <div className="mb-3 grid gap-3 md:grid-cols-2 rounded-lg border border-gray-700 bg-gray-800 p-4 shadow">
         <div>
-          <label>DeepSeek Key</label>
-          <input value={deepseekKey} onChange={e=>setDeepseekKey(e.target.value)} placeholder="...ds" />
+          <label className="mb-1 block text-xs text-gray-400">DeepSeek Key</label>
+          <input
+            className="w-full rounded-md border border-gray-700 bg-gray-900 p-2 text-gray-100 placeholder-gray-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            value={deepseekKey}
+            onChange={e=>setDeepseekKey(e.target.value)}
+            placeholder="...ds"
+          />
         </div>
         <div>
-          <label>OpenAI Key</label>
-          <input value={openaiKey} onChange={e=>setOpenaiKey(e.target.value)} placeholder="...sk" />
+          <label className="mb-1 block text-xs text-gray-400">OpenAI Key</label>
+          <input
+            className="w-full rounded-md border border-gray-700 bg-gray-900 p-2 text-gray-100 placeholder-gray-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+            value={openaiKey}
+            onChange={e=>setOpenaiKey(e.target.value)}
+            placeholder="...sk"
+          />
         </div>
       </div>
 
-      <div className="card grid grid-3" style={{marginBottom:12}}>
+      <div className="mb-3 grid gap-3 md:grid-cols-3 rounded-lg border border-gray-700 bg-gray-800 p-4 shadow">
         <div>
-          <label>max_tokens</label>
-          <input type="number" value={maxTokens} min={256} max={8192} onChange={e=>setMaxTokens(parseInt(e.target.value||"2048"))} />
+          <label className="mb-1 block text-xs text-gray-400">max_tokens</label>
+          <input
+            type="number"
+            value={maxTokens}
+            min={256}
+            max={8192}
+            onChange={e=>setMaxTokens(parseInt(e.target.value||"2048"))}
+            className="w-full rounded-md border border-gray-700 bg-gray-900 p-2 text-gray-100 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          />
         </div>
         <div>
-          <label>Model</label>
-          <select value={model} onChange={e=>setModel(e.target.value as ModelSel)}>
+          <label className="mb-1 block text-xs text-gray-400">Model</label>
+          <select
+            value={model}
+            onChange={e=>setModel(e.target.value as ModelSel)}
+            className="w-full rounded-md border border-gray-700 bg-gray-900 p-2 text-gray-100 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          >
             <option value="auto">auto (OpenAI→DeepSeek)</option>
             <option value="openai">openai</option>
             <option value="deepseek">deepseek</option>
           </select>
         </div>
         <div>
-          <label>Template</label>
-          <select value={template} onChange={e=>setTemplate(e.target.value as Template)}>
+          <label className="mb-1 block text-xs text-gray-400">Template</label>
+          <select
+            value={template}
+            onChange={e=>setTemplate(e.target.value as Template)}
+            className="w-full rounded-md border border-gray-700 bg-gray-900 p-2 text-gray-100 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+          >
             <option value="ReVTeX">ReVTeX (EN)</option>
             <option value="WideAR">Wide/AR (AR)</option>
             <option value="InquiryTR">Inquiry (TR)</option>
@@ -148,23 +173,51 @@ export default function Editor() {
         </div>
       </div>
 
-      <div className="card" style={{marginBottom:12}}>
-        <label>النص</label>
-        <textarea rows={12} placeholder="ألصق هنا النص المبعثر…" value={text} onChange={e=>setText(e.target.value)} />
+      <div className="mb-3 rounded-lg border border-gray-700 bg-gray-800 p-4 shadow">
+        <label className="mb-1 block text-xs text-gray-400">النص</label>
+        <textarea
+          rows={12}
+          placeholder="ألصق هنا النص المبعثر…"
+          value={text}
+          onChange={e=>setText(e.target.value)}
+          className="w-full rounded-md border border-gray-700 bg-gray-900 p-2 text-gray-100 placeholder-gray-500 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+        />
       </div>
 
-      <div className="card" style={{marginBottom:12}}>
-        <div className="actions">
-          <button className="btn" onClick={exportCompose} disabled={zipBusy}>{zipBusy ? "..." : "Export (compose demo)"}</button>
-          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy}>{zipBusy ? "..." : "Export (orchestrate)"}</button>
-          <button className="btn" onClick={doGenerate} disabled={busy}>{busy ? "جارٍ…" : "Generate"}</button>
+      <div className="mb-3 rounded-lg border border-gray-700 bg-gray-800 p-4 shadow">
+        <div className="flex flex-wrap gap-2">
+          <button
+            className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 font-semibold text-white hover:bg-gray-700 disabled:opacity-50"
+            onClick={exportCompose}
+            disabled={zipBusy}
+          >
+            {zipBusy ? "..." : "Export (compose demo)"}
+          </button>
+          <button
+            className="rounded-lg border border-yellow-300 bg-yellow-300 px-3 py-2 font-semibold text-black hover:brightness-105 disabled:opacity-50"
+            onClick={exportOrchestrate}
+            disabled={zipBusy}
+          >
+            {zipBusy ? "..." : "Export (orchestrate)"}
+          </button>
+          <button
+            className="rounded-lg border border-gray-700 bg-gray-800 px-3 py-2 font-semibold text-white hover:bg-gray-700 disabled:opacity-50"
+            onClick={doGenerate}
+            disabled={busy}
+          >
+            {busy ? "جارٍ…" : "Generate"}
+          </button>
         </div>
-        {msg && <div className="note">{msg}</div>}
+        {msg && <div className="mt-2 text-sm text-gray-400">{msg}</div>}
       </div>
 
-      <div className="card">
-        <label>Output</label>
-        <textarea className="output" value={out} readOnly />
+      <div className="rounded-lg border border-gray-700 bg-gray-800 p-4 shadow">
+        <label className="mb-1 block text-xs text-gray-400">Output</label>
+        <textarea
+          className="min-h-[160px] w-full rounded-md border border-gray-700 bg-gray-900 p-2 text-gray-100 outline-none"
+          value={out}
+          readOnly
+        />
       </div>
     </>
   );
