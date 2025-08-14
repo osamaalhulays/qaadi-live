@@ -41,7 +41,11 @@ export default function Editor() {
   const [msg, setMsg] = useState<string>("");
   const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
   const [files, setFiles] = useState<string[]>([]);
-
+  const snapshotPath = useMemo(() => {
+    if (!files.length || !slug || !v) return null;
+    const latest = files.find(f => f.startsWith(`${v}/`)) || files[0];
+    return `/snapshots/${slug}/${latest}`;
+  }, [files, slug, v]);
   useEffect(() => {
     try {
       setOpenaiKey(localStorage.getItem("OPENAI_KEY") || "");
@@ -104,7 +108,7 @@ export default function Editor() {
   async function exportOrchestrate() {
     setZipBusy(true); setMsg("");
     try {
-      if (!slugVal || !vVal) throw new Error("missing_params");
+      if (!target || !lang || !slugVal || !vVal) throw new Error("missing_params");
       const res = await fetch("/api/export", {
         method: "POST",
         headers,
@@ -129,7 +133,7 @@ export default function Editor() {
       setMsg("ZIP جاهز (orchestrate).");
       await refreshFiles();
     } catch (e:any) {
-      setMsg(e?.message === "missing_params" ? "Please set slug and version" : `EXPORT ERROR: ${e?.message || e}`);
+      setMsg(e?.message === "missing_params" ? "Please set slug, version, target and language" : `EXPORT ERROR: ${e?.message || e}`);
     } finally { setZipBusy(false); }
   }
 
@@ -262,10 +266,13 @@ export default function Editor() {
       <div className="card" style={{marginBottom:12}}>
         <div className="actions">
           <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang || !slugVal || !vVal}>{zipBusy ? "..." : "Export (compose demo)"}</button>
-          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy || !slugVal || !vVal}>{zipBusy ? "..." : "Export ZIP"}</button>
+          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy || !target || !lang || !slugVal || !vVal}>{zipBusy ? "..." : "Export ZIP"}</button>
           <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang || !slugVal || !vVal}>{busy ? "جارٍ…" : "Generate"}</button>
-          <a className="btn" href="/snapshots/" target="_blank" rel="noopener noreferrer">Open Snapshot</a>
+          {snapshotPath && (
+            <a className="btn" href={snapshotPath} target="_blank" rel="noopener noreferrer">Open Snapshot</a>
+          )}
         </div>
+        {!snapshotPath && <div className="note">No snapshot yet</div>}
         {msg && <div className="note">{msg}</div>}
         {verify && (
           <div className="verify-bar">

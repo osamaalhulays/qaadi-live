@@ -4,10 +4,11 @@ import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import Editor from '../src/components/Editor';
 
-test('generate and compose export buttons require slug/version, target and lang', () => {
+test('generate and export buttons require slug, version, target and lang', () => {
   // initial render without slug/v/target/lang -> buttons disabled
   const initial = renderToStaticMarkup(React.createElement(Editor));
   assert.match(initial, /<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
+  assert.match(initial, /<button class="btn btn-primary"[^>]*disabled[^>]*>Export ZIP<\/button>/);
   assert.match(initial, /<button class="btn"[^>]*disabled[^>]*>Generate<\/button>/);
 
   // render with slug, v, target and lang preset -> buttons enabled
@@ -25,5 +26,6 @@ test('generate and compose export buttons require slug/version, target and lang'
   (React as any).useState = origUseState;
 
   assert.doesNotMatch(withValues, /<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
+  assert.doesNotMatch(withValues, /<button class="btn btn-primary"[^>]*disabled[^>]*>Export ZIP<\/button>/);
   assert.doesNotMatch(withValues, /<button class="btn"[^>]*disabled[^>]*>Generate<\/button>/);
 });
