@@ -49,6 +49,7 @@ export const OutputSchema = z.object({
     glossary_entries: z.number().int().nonnegative(),
     rtl_ltr: z.enum(["rtl", "ltr", "mixed"]),
     idempotency: z.boolean()
-  })
+  }),
+  files: z.array(z.string()).optional()
 });
 export type Output = z.infer<typeof OutputSchema>;

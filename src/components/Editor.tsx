@@ -82,7 +82,8 @@ export default function Editor() {
       setOut(j?.text || "");
       setVerify(j?.checks || null);
       setMsg(`OK • model=${j?.model_used} • in=${j?.tokens_in} • out=${j?.tokens_out} • ${j?.latency_ms}ms`);
-      await refreshFiles();
+      if (Array.isArray(j?.files)) setFiles(j.files);
+      else await refreshFiles();
     } catch (e:any) {
       setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `ERROR: ${e?.message || e}`);
       setVerify(null);
