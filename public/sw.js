@@ -6,12 +6,17 @@ self.addEventListener("install", (e) => {
     (async () => {
       const cache = await caches.open(CACHE_NAME);
       const assets = [...CORE_ASSETS];
-      for (const asset of OPTIONAL_CORE_ASSETS) {
-        try {
-          const res = await fetch(asset, { method: "HEAD" });
-          if (res.ok) assets.push(asset);
-        } catch {}
-      }
+      const optionalAssets = await Promise.all(
+        OPTIONAL_CORE_ASSETS.map(async (asset) => {
+          try {
+            const res = await fetch(asset, { method: "HEAD" });
+            return res.ok ? asset : null;
+          } catch {
+            return null;
+          }
+        })
+      );
+      assets.push(...optionalAssets.filter(Boolean));
       await Promise.all(
         assets.map((asset) => cache.add(asset).catch(() => {}))
       );
