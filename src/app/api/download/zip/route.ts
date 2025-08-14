@@ -59,7 +59,7 @@ export async function GET(req: NextRequest) {
     const manifest = JSON.stringify({ kind: "qaadi-ga", slug, version: v, built_at: builtAt }, null, 2);
     let matrix: number[][] = [];
     try {
-      const snapPath = path.join(root, "snapshots", "manifest.json");
+      const snapPath = path.join(root, "public", "snapshots", "manifest.json");
       const snapRaw = await readFile(snapPath, "utf-8");
       const snapEntries = JSON.parse(snapRaw) as Array<{ timestamp: string; path: string; sha256: string }>;
       const groups: Record<string, Record<string, string>> = {};
@@ -104,7 +104,7 @@ export async function GET(req: NextRequest) {
     ];
     const zip = makeZip(files);
     const shaHex = crypto.createHash("sha256").update(zip).digest("hex");
-    const name = `qaadi_v5_${slug}_${v}_${tsNow()}.zip`;
+    const name = `qaadi_v6_${slug}_${v}_${tsNow()}.zip`;
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
   } catch {
     return new Response(JSON.stringify({ error: "not_found" }), { status: 404, headers: headersJSON() });
