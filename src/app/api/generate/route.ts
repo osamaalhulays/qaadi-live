@@ -6,6 +6,7 @@ import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
+import type { SnapshotEntry } from "../../../lib/utils/snapshot";
 
 export const runtime = "nodejs";
 
@@ -56,6 +57,12 @@ export async function POST(req: NextRequest) {
   try {
     prompt = buildPrompt(input.target, input.lang, frozen.text, glossary);
   } catch (e: any) {
+    if (e?.message === "unsupported_inquiry_lang") {
+      return new Response(
+        JSON.stringify({ error: "unsupported_inquiry_lang", detail: input.lang }),
+        { status: 400 }
+      );
+    }
     return new Response(
       JSON.stringify({ error: e?.message || "unsupported_target_lang" }),
       { status: 400 }
@@ -98,8 +105,11 @@ export async function POST(req: NextRequest) {
       files.push({ path: "paper/figs/.gitkeep", content: "" });
     }
     let saved: string[] = [];
+    let covers: string[] = [];
     try {
-      saved = await saveSnapshot(files, input.target, input.lang);
+      const res = await saveSnapshot(files, input.target, input.lang);
+      saved = res.files;
+      covers = res.covers;
     } catch (e: any) {
       return new Response(
         JSON.stringify({ error: "snapshot_failed", detail: e?.message || String(e) }),
@@ -107,7 +117,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    return new Response(JSON.stringify({ ...final, files: saved }), {
+    return new Response(JSON.stringify({ ...final, files: saved, covers }), {
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
@@ -138,17 +148,17 @@ export async function saveSnapshot(
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
-  const entries: any[] = [];
+  const entries: SnapshotEntry[] = [];
+  const covers: string[] = [];
 
   if (target === "inquiry") {
-    const covers: Record<string, string> = {};
     try {
       const planData = await readFile(path.join(process.cwd(), "paper", "plan.md"));
-      covers.plan = sha256Hex(planData);
+      covers.push(sha256Hex(planData));
     } catch {}
     try {
       const judgeData = await readFile(path.join(process.cwd(), "paper", "judge.json"));
-      covers.judge = sha256Hex(judgeData);
+      covers.push(sha256Hex(judgeData));
     } catch {}
     files.push({
       path: "paper/inquiry.json",
@@ -199,7 +209,7 @@ export async function saveSnapshot(
   }
 
   const manifestPath = path.join(process.cwd(), "public", "snapshots", "manifest.json");
-  let manifest: any[] = [];
+  let manifest: SnapshotEntry[] = [];
   try {
     const existing = await readFile(manifestPath, "utf-8");
     manifest = JSON.parse(existing);
@@ -207,7 +217,7 @@ export async function saveSnapshot(
   manifest.push(...entries);
   await mkdir(path.dirname(manifestPath), { recursive: true });
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
-  return entries.map((e) => e.path);
+  return { files: entries.map((e) => e.path), covers };
 }
 
 type Lang =
@@ -302,10 +312,12 @@ function buildPrompt(
           .map(([k, v]) => `${k} = ${v}`)
           .join("\n")
       : "";
-  const direct = TARGET_LANG_PROMPTS[target]?.[lang];
-  if (direct) return direct(userText, gloss);
-  if (target === "inquiry" || target === "wide")
+  if (target === "wide" || target === "inquiry") {
+    const direct = TARGET_LANG_PROMPTS[target][lang];
+    if (direct) return direct(userText, gloss);
+    if (target === "inquiry") throw new Error("unsupported_inquiry_lang");
     throw new Error(`unsupported_target_lang:${target}:${lang}`);
+  }
   const templateTargets = new Set(["revtex", "iop", "sn-jnl", "elsevier", "ieee", "arxiv"]);
   if (templateTargets.has(target)) {
     if (lang === "other") throw new Error(`unsupported_template_lang:${target}:${lang}`);
