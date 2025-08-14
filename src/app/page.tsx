@@ -1,5 +1,8 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import Header from "../components/Header";
+import Footer from "../components/Footer";
+import Editor from "../components/Editor";
 
 type Template = "WideAR" | "ReVTeX" | "InquiryTR";
 type ModelSel = "openai" | "deepseek" | "auto";
@@ -114,7 +117,7 @@ export default function Page() {
 
   return (
     <>
-      <h1 className="h1"><span className="badge">⚖️</span> Qaadi Live</h1>
+      <Header />
 
       <div className="card grid grid-2" style={{marginBottom:12}}>
         <div>
@@ -150,10 +153,7 @@ export default function Page() {
         </div>
       </div>
 
-      <div className="card" style={{marginBottom:12}}>
-        <label>النص</label>
-        <textarea rows={12} placeholder="ألصق هنا النص المبعثر…" value={text} onChange={e=>setText(e.target.value)} />
-      </div>
+      <Editor text={text} onTextChange={setText} />
 
       <div className="card" style={{marginBottom:12}}>
         <div className="actions">
@@ -168,6 +168,7 @@ export default function Page() {
         <label>Output</label>
         <textarea className="output" value={out} readOnly />
       </div>
+      <Footer />
     </>
   );
 }
