@@ -4,6 +4,7 @@ import { runWithFallback } from "../../../lib/providers/router";
 import { freezeText, restoreText, countEquations } from "../../../lib/utils/freeze";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { saveSnapshot } from "../../../lib/utils/snapshot";
+export { saveSnapshot };
 
 export const runtime = "nodejs";
 
