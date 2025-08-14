@@ -12,11 +12,22 @@ export default function Editor() {
   const [model, setModel] = useState<ModelSel>("auto");
   const [maxTokens, setMaxTokens] = useState(2048);
   const [text, setText] = useState("");
+  const [target, setTarget] = useState("");
+  const [language, setLanguage] = useState("");
 
   const [out, setOut] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [zipBusy, setZipBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
+  const [zipUrl, setZipUrl] = useState("");
+  const [snapshotUrl, setSnapshotUrl] = useState("");
+  const [paths, setPaths] = useState<string[]>([]);
+  const [checks, setChecks] = useState({
+    equations_count: 0,
+    glossary_applied: false,
+    rtl_ltr: "",
+    idempotency: false
+  });
 
   useEffect(() => {
     try {
@@ -34,75 +45,57 @@ export default function Editor() {
   }), [openaiKey, deepseekKey]);
 
   async function doGenerate() {
-    setBusy(true); setMsg("");
+    setBusy(true); setMsg(""); setZipUrl(""); setSnapshotUrl(""); setPaths([]);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers,
-        body: JSON.stringify({ template, model, max_tokens: maxTokens, text })
+        body: JSON.stringify({ template, model, max_tokens: maxTokens, text, target, language })
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "generate_failed");
       setOut(j?.text || "");
+      setChecks({
+        equations_count: j?.equations_count ?? 0,
+        glossary_applied: j?.glossary_applied ?? false,
+        rtl_ltr: j?.rtl_ltr ?? "",
+        idempotency: j?.idempotency ?? false
+      });
+      const p = j?.paths || {};
+      const zu = p.zip || p.zip_path || p.zipPath || "";
+      const su = p.snapshot || p.snapshot_path || p.snapshotPath || "";
+      setZipUrl(zu);
+      setSnapshotUrl(su);
+      const list: string[] = [];
+      if (zu) list.push(zu);
+      if (su) list.push(su);
+      setPaths(list);
       setMsg(`OK • model=${j?.model_used} • in=${j?.tokens_in} • out=${j?.tokens_out} • ${j?.latency_ms}ms`);
     } catch (e:any) {
       setMsg(`ERROR: ${e?.message || e}`);
     } finally { setBusy(false); }
   }
 
-  async function exportOrchestrate() {
+  async function exportZip() {
+    if (!zipUrl) return;
     setZipBusy(true); setMsg("");
     try {
-      const res = await fetch("/api/export", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          mode: "orchestrate",
-          model,
-          max_tokens: maxTokens,
-          name: "qaadi_export.zip",
-          input: { text }
-        })
-      });
+      const res = await fetch(zipUrl, { headers });
       if (!res.ok) {
         const j = await res.json().catch(() => ({}));
         throw new Error(j?.error || `status_${res.status}`);
       }
       const blob = await res.blob();
-      downloadBlob(blob, "qaadi_export.zip");
-      setMsg("ZIP جاهز (orchestrate).");
+      const name = zipUrl.split("/").pop() || "qaadi_export.zip";
+      downloadBlob(blob, name);
+      setMsg("ZIP جاهز.");
     } catch (e:any) {
       setMsg(`EXPORT ERROR: ${e?.message || e}`);
     } finally { setZipBusy(false); }
   }
 
-  async function exportCompose() {
-    setZipBusy(true); setMsg("");
-    try {
-      const res = await fetch("/api/export", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          mode: "compose",
-          name: "qaadi_export.zip",
-          input: { text },
-          secretary: { audit: { ready_percent: 50, issues: [{ type: "demo", note: "example only" }] } },
-          judge: { report: { score_total: 110, criteria: [], notes: "demo" } },
-          consultant: { plan: out || "plan(demo)" },
-          journalist: { summary: (out && out.slice(0, 400)) || "summary(demo)" },
-          meta: { template, model, max_tokens: maxTokens }
-        })
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || `status_${res.status}`);
-      }
-      const blob = await res.blob();
-      downloadBlob(blob, "qaadi_export.zip");
-      setMsg("ZIP جاهز (compose).");
-    } catch (e:any) {
-      setMsg(`EXPORT ERROR: ${e?.message || e}`);
-    } finally { setZipBusy(false); }
+  function openSnapshot() {
+    if (snapshotUrl) window.open(snapshotUrl, "_blank");
   }
 
   function downloadBlob(blob: Blob, name: string) {
@@ -148,6 +141,26 @@ export default function Editor() {
         </div>
       </div>
 
+      <div className="card grid grid-2" style={{marginBottom:12}}>
+        <div>
+          <label>Target</label>
+          <select value={target} onChange={e=>setTarget(e.target.value)}>
+            <option value="">اختر الهدف…</option>
+            <option value="paper">paper</option>
+            <option value="article">article</option>
+          </select>
+        </div>
+        <div>
+          <label>Language</label>
+          <select value={language} onChange={e=>setLanguage(e.target.value)}>
+            <option value="">اختر اللغة…</option>
+            <option value="ar">Arabic</option>
+            <option value="en">English</option>
+            <option value="tr">Turkish</option>
+          </select>
+        </div>
+      </div>
+
       <div className="card" style={{marginBottom:12}}>
         <label>النص</label>
         <textarea rows={12} placeholder="ألصق هنا النص المبعثر…" value={text} onChange={e=>setText(e.target.value)} />
@@ -155,12 +168,42 @@ export default function Editor() {
 
       <div className="card" style={{marginBottom:12}}>
         <div className="actions">
-          <button className="btn" onClick={exportCompose} disabled={zipBusy}>{zipBusy ? "..." : "Export (compose demo)"}</button>
-          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy}>{zipBusy ? "..." : "Export (orchestrate)"}</button>
-          <button className="btn" onClick={doGenerate} disabled={busy}>{busy ? "جارٍ…" : "Generate"}</button>
+          <button className="btn" onClick={exportZip} disabled={zipBusy || !zipUrl}>{zipBusy ? "..." : "Export ZIP"}</button>
+          <button className="btn" onClick={openSnapshot} disabled={!snapshotUrl}>Open Snapshot</button>
+          <button className="btn btn-primary" onClick={doGenerate} disabled={busy || !target || !language}>{busy ? "جارٍ…" : "Generate"}</button>
         </div>
         {msg && <div className="note">{msg}</div>}
       </div>
+
+      <div className="card grid grid-4" style={{marginBottom:12}}>
+        <div>
+          <label>equations_count</label>
+          <div>{checks.equations_count}</div>
+        </div>
+        <div>
+          <label>glossary_applied</label>
+          <div>{checks.glossary_applied ? "yes" : "no"}</div>
+        </div>
+        <div>
+          <label>rtl_ltr</label>
+          <div>{checks.rtl_ltr || "-"}</div>
+        </div>
+        <div>
+          <label>idempotency</label>
+          <div>{checks.idempotency ? "yes" : "no"}</div>
+        </div>
+      </div>
+
+      {paths.length > 0 && (
+        <div className="card" style={{marginBottom:12}}>
+          <label>Paths</label>
+          <ul>
+            {paths.map(p => (
+              <li key={p}><code>{p}</code></li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       <div className="card">
         <label>Output</label>
