@@ -3,7 +3,7 @@ import { makeZip, type ZipFile } from "../../../lib/utils/zip";
 import { runWithFallback } from "../../../lib/providers/router";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
-import crypto from "crypto";
+import { sha256Hex } from "../../../lib/utils/crypto";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
 
 export const runtime = "nodejs";
@@ -40,11 +40,6 @@ export async function OPTIONS() {
 }
 
 /* ---------- Helpers ---------- */
-function sha256Hex(data: Uint8Array | string) {
-  const buf = typeof data === "string" ? Buffer.from(data) : Buffer.from(data);
-  return crypto.createHash("sha256").update(buf).digest("hex");
-}
-
 function isoNow() { return new Date().toISOString(); }
 
 function tsFolder(d = new Date()) {
