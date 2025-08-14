@@ -19,6 +19,14 @@ export async function OPTIONS() {
   });
 }
 
+function detectDir(s: string): "rtl" | "ltr" | "mixed" {
+  const hasRTL = /[\u0600-\u06FF]/.test(s);
+  const hasLTR = /[A-Za-z]/.test(s);
+  if (hasRTL && hasLTR) return "mixed";
+  if (hasRTL) return "rtl";
+  return "ltr";
+}
+
 export async function POST(req: NextRequest) {
   let input;
   try { input = InputSchema.parse(await req.json()); }
@@ -48,6 +56,8 @@ export async function POST(req: NextRequest) {
     );
     let text = restoreText(out.text, frozen.equations, frozen.dois);
     const eqAfter = countEquations(text);
+    const frozenOut = freezeText(text);
+    const restored = restoreText(frozenOut.text, frozenOut.equations, frozenOut.dois);
     const final = OutputSchema.parse({
       ...out,
       text,
@@ -55,7 +65,9 @@ export async function POST(req: NextRequest) {
         eq_before: eqBefore,
         eq_after: eqAfter,
         eq_match: eqBefore === eqAfter,
-        glossary_entries: glossary ? Object.keys(glossary).length : 0
+        glossary_entries: glossary ? Object.keys(glossary).length : 0,
+        rtl_ltr: detectDir(text),
+        idempotency: restored === text
       }
     });
     return new Response(JSON.stringify(final), {
