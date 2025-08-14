@@ -5,7 +5,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
-import type { SnapshotEntry } from "../../../lib/utils/snapshot";
+import { sanitizeSlug, type SnapshotEntry } from "../../../lib/utils/snapshot";
 
 export const runtime = "nodejs";
 
@@ -54,6 +54,7 @@ function tsFolder(d = new Date()) {
 }
 
 async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug: string) {
+  const safeSlug = sanitizeSlug(slug);
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
@@ -61,7 +62,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
 
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
-    const rel = path.join("snapshots", slug, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
+    const rel = path.join("snapshots", safeSlug, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
     const full = path.join(process.cwd(), "public", rel);
     await mkdir(path.dirname(full), { recursive: true });
     await writeFile(full, data);
@@ -70,7 +71,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
       sha256: sha256Hex(data),
       target,
       lang,
-      slug,
+      slug: safeSlug,
       timestamp
     });
   }
