@@ -61,7 +61,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string) {
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
     const rel = path.join("snapshots", tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
-    const full = path.join(process.cwd(), rel);
+    const full = path.join(process.cwd(), "public", rel);
     await mkdir(path.dirname(full), { recursive: true });
     await writeFile(full, data);
     entries.push({
@@ -73,7 +73,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string) {
     });
   }
 
-  const manifestPath = path.join(process.cwd(), "snapshots", "manifest.json");
+  const manifestPath = path.join(process.cwd(), "public", "snapshots", "manifest.json");
   let manifest: any[] = [];
   try {
     const existing = await readFile(manifestPath, "utf-8");
