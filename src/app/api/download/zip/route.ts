@@ -51,12 +51,49 @@ export async function GET(req: NextRequest) {
     const root = process.cwd();
     const regPath = path.join(root, "QaadiDB", "registry.json");
     const registry = await readFile(regPath, "utf-8");
+    const registrySha = crypto.createHash("sha256").update(registry).digest("hex");
     const canonicalPath = path.join(root, "QaadiDB", `theory-${slug}`, "canonical", v, "canonical.json");
     const canonical = await readFile(canonicalPath, "utf-8");
+    const canonicalSha = crypto.createHash("sha256").update(canonical).digest("hex");
     const builtAt = new Date().toISOString();
     const manifest = JSON.stringify({ kind: "qaadi-ga", slug, version: v, built_at: builtAt }, null, 2);
-    const determinism = JSON.stringify({ version: 1, matrix: [] }, null, 2);
-    const provenance = JSON.stringify({ sources: [], built_at: builtAt }, null, 2);
+    let matrix: number[][] = [];
+    try {
+      const snapPath = path.join(root, "snapshots", "manifest.json");
+      const snapRaw = await readFile(snapPath, "utf-8");
+      const snapEntries = JSON.parse(snapRaw) as Array<{ timestamp: string; path: string; sha256: string }>;
+      const groups: Record<string, Record<string, string>> = {};
+      for (const e of snapEntries) {
+        if (!groups[e.timestamp]) groups[e.timestamp] = {};
+        groups[e.timestamp][e.path] = e.sha256;
+      }
+      const stamps = Object.keys(groups).sort();
+      matrix = stamps.map((a) =>
+        stamps.map((b) => {
+          const A = groups[a];
+          const B = groups[b];
+          const keys = new Set([...Object.keys(A), ...Object.keys(B)]);
+          for (const k of keys) {
+            if (A[k] !== B[k]) return 0;
+          }
+          return 1;
+        })
+      );
+    } catch {
+      matrix = [[1]];
+    }
+    const determinism = JSON.stringify({ version: 1, matrix }, null, 2);
+    const provenance = JSON.stringify(
+      {
+        built_at: builtAt,
+        sources: [
+          { path: "registry.json", sha256: registrySha },
+          { path: `QaadiDB/theory-${slug}/canonical/${v}/canonical.json`, sha256: canonicalSha }
+        ]
+      },
+      null,
+      2
+    );
 
     const files: ZipFile[] = [
       { path: "registry.json", content: registry },
