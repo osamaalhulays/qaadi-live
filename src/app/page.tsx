@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { useLangDir } from "../lib/lang";
 
 type Template = "WideAR" | "ReVTeX" | "InquiryTR";
 type ModelSel = "openai" | "deepseek" | "auto";
@@ -12,6 +13,19 @@ export default function Page() {
   const [model, setModel] = useState<ModelSel>("auto");
   const [maxTokens, setMaxTokens] = useState(2048);
   const [text, setText] = useState("");
+
+  const { lang, dir, setLang, setDir } = useLangDir();
+  const languages = [
+    { code: "ar", name: "العربية", dir: "rtl" },
+    { code: "en", name: "English", dir: "ltr" },
+    { code: "tr", name: "Türkçe", dir: "ltr" }
+  ];
+
+  useEffect(() => {
+    if (template === "ReVTeX") { setLang("en"); setDir("ltr"); }
+    else if (template === "WideAR") { setLang("ar"); setDir("rtl"); }
+    else if (template === "InquiryTR") { setLang("tr"); setDir("ltr"); }
+  }, [template, setLang, setDir]);
 
   const [out, setOut] = useState<string>("");
   const [busy, setBusy] = useState(false);
@@ -140,15 +154,42 @@ export default function Page() {
             <option value="deepseek">deepseek</option>
           </select>
         </div>
-        <div>
-          <label>Template</label>
-          <select value={template} onChange={e=>setTemplate(e.target.value as Template)}>
-            <option value="ReVTeX">ReVTeX (EN)</option>
-            <option value="WideAR">Wide/AR (AR)</option>
-            <option value="InquiryTR">Inquiry (TR)</option>
-          </select>
-        </div>
+      <div>
+        <label>Template</label>
+        <select value={template} onChange={e=>setTemplate(e.target.value as Template)}>
+          <option value="ReVTeX">ReVTeX (EN)</option>
+          <option value="WideAR">Wide/AR (AR)</option>
+          <option value="InquiryTR">Inquiry (TR)</option>
+        </select>
       </div>
+    </div>
+
+    <div className="card grid grid-2" style={{marginBottom:12}}>
+      <div>
+        <label>Language</label>
+        <select
+          value={lang}
+          onChange={e => {
+            const l = languages.find(x => x.code === e.target.value)!;
+            setLang(l.code);
+            setDir(l.dir as "ltr" | "rtl");
+          }}
+        >
+          {languages.map(l => (
+            <option key={l.code} value={l.code}>
+              {l.name}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div>
+        <label>Direction</label>
+        <select value={dir} onChange={e => setDir(e.target.value as "ltr" | "rtl")}>
+          <option value="ltr">ltr</option>
+          <option value="rtl">rtl</option>
+        </select>
+      </div>
+    </div>
 
       <div className="card" style={{marginBottom:12}}>
         <label>النص</label>

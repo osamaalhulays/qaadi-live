@@ -11,9 +11,9 @@
   --gap:12px;
 }
 *{box-sizing:border-box}
-html{direction:rtl}
 body{
-  margin:0; font-family: system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  margin:0;
+  font-family: "STIX Two Math", "Noto Sans", "Arial Unicode MS", system-ui, -apple-system, Segoe UI, Arial, sans-serif;
   background: radial-gradient(1200px 600px at 70% -10%, #1b2030 0%, var(--bg) 55%);
   color:var(--text);
 }
