@@ -5,6 +5,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
+import type { SnapshotEntry } from "../../../lib/utils/snapshot";
 
 export const runtime = "nodejs";
 
@@ -56,7 +57,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
-  const entries: any[] = [];
+  const entries: SnapshotEntry[] = [];
 
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
@@ -75,7 +76,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
   }
 
   const manifestPath = path.join(process.cwd(), "public", "snapshots", "manifest.json");
-  let manifest: any[] = [];
+  let manifest: SnapshotEntry[] = [];
   try {
     const existing = await readFile(manifestPath, "utf-8");
     manifest = JSON.parse(existing);
