@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { useLanguage } from "../lib/LanguageContext";
 
 type Template = "WideAR" | "ReVTeX" | "InquiryTR";
 type ModelSel = "openai" | "deepseek" | "auto";
@@ -17,6 +18,14 @@ export default function Page() {
   const [busy, setBusy] = useState(false);
   const [zipBusy, setZipBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
+
+  const { setLang, setDir } = useLanguage();
+  const [language, setLanguage] = useState("ar");
+
+  useEffect(() => {
+    setLang(language);
+    setDir(language === "ar" ? "rtl" : "ltr");
+  }, [language, setLang, setDir]);
 
   useEffect(() => {
     try {
@@ -115,6 +124,14 @@ export default function Page() {
   return (
     <>
       <h1 className="h1"><span className="badge">⚖️</span> Qaadi Live</h1>
+
+      <div className="card" style={{marginBottom:12}}>
+        <label>اللغة</label>
+        <select value={language} onChange={e=>setLanguage(e.target.value)}>
+          <option value="ar">العربية</option>
+          <option value="en">English</option>
+        </select>
+      </div>
 
       <div className="card grid grid-2" style={{marginBottom:12}}>
         <div>
