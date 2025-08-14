@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { InputSchema, OutputSchema } from "../../../lib/schema/io";
 import { runWithFallback } from "../../../lib/providers/router";
 import { freezeText, restoreText, countEquations } from "../../../lib/utils/freeze";
+import { checkIdempotency } from "../../../lib/utils/idempotency";
 
 export const runtime = "edge";
 
@@ -31,6 +32,11 @@ export async function POST(req: NextRequest) {
   let input;
   try { input = InputSchema.parse(await req.json()); }
   catch { return new Response(JSON.stringify({ error: "bad_input" }), { status: 400 }); }
+
+  const idemKey = req.headers.get("Idempotency-Key");
+  if (idemKey && !checkIdempotency(`generate:${idemKey}`, input)) {
+    return new Response(JSON.stringify({ error: "idempotency_conflict" }), { status: 409 });
+  }
 
   const openaiKey = req.headers.get("x-openai-key") ?? "";
   const deepseekKey = req.headers.get("x-deepseek-key") ?? "";
