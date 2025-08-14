@@ -47,15 +47,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta name="theme-color" content="#0f1115" />
         <link rel="icon" href="/favicon.png" />
         <link rel="manifest" href="/manifest.webmanifest" />
-        <Script id="sw-register" strategy="afterInteractive">
-          {`
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').catch(() => {});
-      });
-    }
-  `}
-        </Script>
+        <Script
+          id="sw-register"
+          strategy="afterInteractive"
+          onLoad={() => {
+            if ("serviceWorker" in navigator) {
+              navigator.serviceWorker.register("/sw.js").catch(() => {});
+            }
+          }}
+        />
       </head>
       <body>
         <div className="wrapper">{children}</div>
