@@ -68,14 +68,23 @@ export default function Editor() {
     "X-DeepSeek-Key": deepseekKey || ""
   }), [openaiKey, deepseekKey]);
 
+  function getSlug() {
+    return typeof window !== "undefined"
+      ? window.location.pathname.split("/").filter(Boolean)[0] ||
+          new URLSearchParams(window.location.search).get("slug") ||
+          "default"
+      : "default";
+  }
+
   async function doGenerate() {
     setBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
+      const slug = getSlug();
       const res = await fetch("/api/generate", {
         method: "POST",
         headers,
-        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text })
+        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text, slug })
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "generate_failed");
@@ -93,6 +102,7 @@ export default function Editor() {
   async function exportOrchestrate() {
     setZipBusy(true); setMsg("");
     try {
+      const slug = getSlug();
       const res = await fetch("/api/export", {
         method: "POST",
         headers,
@@ -101,7 +111,8 @@ export default function Editor() {
           model,
           max_tokens: maxTokens,
           name: "qaadi_export.zip",
-          input: { text }
+          input: { text },
+          slug
         })
       });
       if (!res.ok) {
@@ -121,6 +132,7 @@ export default function Editor() {
     setZipBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
+      const slug = getSlug();
       const res = await fetch("/api/export", {
         method: "POST",
         headers,
@@ -132,7 +144,8 @@ export default function Editor() {
           judge: { report: { score_total: 110, criteria: [], notes: "demo" } },
           consultant: { plan: out || "plan(demo)" },
           journalist: { summary: (out && out.slice(0, 400)) || "summary(demo)" },
-          meta: { target, lang, model, max_tokens: maxTokens }
+          meta: { target, lang, model, max_tokens: maxTokens },
+          slug
         })
       });
       if (!res.ok) {
@@ -157,12 +170,7 @@ export default function Editor() {
 
   async function refreshFiles() {
     try {
-      const slug =
-        typeof window !== "undefined"
-          ? window.location.pathname.split("/").filter(Boolean)[0] ||
-            new URLSearchParams(window.location.search).get("slug") ||
-            "default"
-          : "default";
+      const slug = getSlug();
       const res = await fetch("/snapshots/manifest.json");
       if (!res.ok) { setFiles([]); return; }
       const list = await res.json();
