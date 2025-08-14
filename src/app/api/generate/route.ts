@@ -30,9 +30,20 @@ function detectDir(s: string): "rtl" | "ltr" | "mixed" {
 }
 
 export async function POST(req: NextRequest) {
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return new Response(JSON.stringify({ error: "bad_input" }), { status: 400 });
+  }
+  if (typeof body?.slug === "string") body.slug = body.slug.trim();
+  if (typeof body?.v === "string") body.v = body.v.trim();
   let input;
-  try { input = InputSchema.parse(await req.json()); }
-  catch { return new Response(JSON.stringify({ error: "bad_input" }), { status: 400 }); }
+  try {
+    input = InputSchema.parse(body);
+  } catch {
+    return new Response(JSON.stringify({ error: "bad_input" }), { status: 400 });
+  }
   const { slug, v } = input;
 
   const idemKey = req.headers.get("Idempotency-Key");

@@ -33,8 +33,8 @@ export const InputSchema = z.object({
     .max(8192)
     .default(2048),
   text: z.string().min(1),
-  slug: z.string().trim().min(1),
-  v: z.string().trim().min(1)
+  slug: z.string().min(1),
+  v: z.string().min(1)
 });
 export type Input = z.infer<typeof InputSchema>;
 
