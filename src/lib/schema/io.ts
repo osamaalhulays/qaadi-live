@@ -32,7 +32,9 @@ export const InputSchema = z.object({
     .min(256)
     .max(8192)
     .default(2048),
-  text: z.string().min(1)
+  text: z.string().min(1),
+  slug: z.string().default("default"),
+  v: z.string().default("default")
 });
 export type Input = z.infer<typeof InputSchema>;
 

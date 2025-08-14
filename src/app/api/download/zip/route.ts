@@ -65,8 +65,8 @@ export async function GET(req: NextRequest) {
         timestamp: string;
         path: string;
         sha256: string;
-        slug?: string;
-        v?: string;
+        slug: string;
+        v: string;
       }>).filter((e) => e.slug === slug && e.v === v);
       if (snapEntries.length === 0) {
         matrix = [[1]];
