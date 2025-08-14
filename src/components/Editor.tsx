@@ -42,11 +42,11 @@ export default function Editor() {
 
   const slug = useMemo(() => {
     if (typeof window === "undefined") return "default";
-    return (
+    const raw =
       window.location.pathname.split("/").filter(Boolean)[0] ||
       new URLSearchParams(window.location.search).get("slug") ||
-      "default"
-    );
+      "default";
+    return raw.replace(/[^\w-]/g, "_");
   }, []);
 
   useEffect(() => {

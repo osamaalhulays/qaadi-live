@@ -136,6 +136,7 @@ async function saveSnapshot(
   lang: string,
   slug: string
 ) {
+  const safeSlug = slug.replace(/[^\w-]/g, "_");
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
@@ -145,7 +146,7 @@ async function saveSnapshot(
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
     const rel = path.join(
       "snapshots",
-      slug,
+      safeSlug,
       tsDir,
       "paper",
       target,
@@ -160,7 +161,7 @@ async function saveSnapshot(
       sha256: sha256Hex(data),
       target,
       lang,
-      slug,
+      slug: safeSlug,
       timestamp
     });
   }
