@@ -10,7 +10,8 @@ function tsFolder(d = new Date()) {
 export async function saveSnapshot(
   files: { path: string; content: string | Uint8Array }[],
   target: string,
-  lang: string
+  lang: string,
+  slug = "default"
 ) {
   const now = new Date();
   const tsDir = tsFolder(now);
@@ -35,7 +36,7 @@ export async function saveSnapshot(
 
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
-    const rel = path.join("snapshots", tsDir, "paper", target, lang, f.path.replace(/^paper\\//, ""));
+    const rel = path.join("snapshots", slug, tsDir, "paper", target, lang, f.path.replace(/^paper\\//, ""));
     const full = path.join(process.cwd(), "public", rel);
     await mkdir(path.dirname(full), { recursive: true });
     await writeFile(full, data);
@@ -44,12 +45,13 @@ export async function saveSnapshot(
       sha256: sha256Hex(data),
       target,
       lang,
+      slug,
       timestamp
     });
   }
 
   if (target !== "wide" && target !== "inquiry") {
-    const base = path.join("snapshots", tsDir, "paper", target, lang);
+    const base = path.join("snapshots", slug, tsDir, "paper", target, lang);
 
     const relBib = path.join(base, "biblio.bib");
     const fullBib = path.join(process.cwd(), "public", relBib);
@@ -60,6 +62,7 @@ export async function saveSnapshot(
       sha256: sha256Hex(""),
       target,
       lang,
+      slug,
       timestamp
     });
 
@@ -71,6 +74,7 @@ export async function saveSnapshot(
       sha256: sha256Hex(""),
       target,
       lang,
+      slug,
       timestamp
     });
   }
