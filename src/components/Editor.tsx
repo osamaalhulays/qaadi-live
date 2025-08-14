@@ -25,10 +25,23 @@ export default function Editor() {
     try {
       setOpenaiKey(localStorage.getItem("OPENAI_KEY") || "");
       setDeepseekKey(localStorage.getItem("DEEPSEEK_KEY") || "");
+      const storedLang = localStorage.getItem("lang");
+      if (storedLang) setLang(storedLang as Lang);
     } catch {}
   }, []);
   useEffect(() => { try { localStorage.setItem("OPENAI_KEY", openaiKey); } catch {} }, [openaiKey]);
   useEffect(() => { try { localStorage.setItem("DEEPSEEK_KEY", deepseekKey); } catch {} }, [deepseekKey]);
+  useEffect(() => {
+    try {
+      if (lang) {
+        localStorage.setItem("lang", lang);
+        const d = lang === "ar" || lang === "tr" ? "rtl" : "ltr";
+        localStorage.setItem("dir", d);
+        document.documentElement.lang = lang;
+        document.documentElement.dir = d;
+      }
+    } catch {}
+  }, [lang]);
 
   const headers = useMemo(() => ({
     "Content-Type": "application/json",

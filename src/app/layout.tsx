@@ -1,20 +1,35 @@
+"use client";
+
 import "./globals.css";
 import type { Metadata } from "next";
 import Script from "next/script";
+import { useEffect, useState } from "react";
 
 export const metadata: Metadata = {
   title: "Qaadi Live",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  const [lang, setLang] = useState("ar");
+  const [dir, setDir] = useState<"ltr" | "rtl">("rtl");
+
+  useEffect(() => {
+    try {
+      const l = localStorage.getItem("lang");
+      const d = localStorage.getItem("dir");
+      if (l) setLang(l);
+      if (d === "rtl" || d === "ltr") setDir(d as "rtl" | "ltr");
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    document.documentElement.lang = lang;
+    document.documentElement.dir = dir;
+  }, [lang, dir]);
+
   return (
-    <html lang="ar" dir="rtl">
+    <html lang={lang} dir={dir}>
       <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `try{var l=localStorage.getItem('lang');if(l)document.documentElement.lang=l;var d=localStorage.getItem('dir');if(d)document.documentElement.dir=d;}catch(e){}`
-          }}
-        />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#111111" />
         <link rel="icon" href="/favicon.png" />
