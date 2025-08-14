@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
+import { latestFilesFor } from "../lib/utils/manifest";
 
 type Target =
   | "wide"
@@ -163,16 +164,18 @@ export default function Editor() {
             new URLSearchParams(window.location.search).get("slug") ||
             "default"
           : "default";
+      const v =
+        typeof window !== "undefined"
+          ? window.location.pathname.split("/").filter(Boolean)[1] ||
+            new URLSearchParams(window.location.search).get("v") ||
+            "default"
+          : "default";
       const res = await fetch("/snapshots/manifest.json");
       if (!res.ok) { setFiles([]); return; }
       const list = await res.json();
       if (Array.isArray(list) && list.length) {
-        const scoped = list.filter((f:any) => f.slug === slug);
-        if (scoped.length) {
-          const latest = scoped.reduce((m:any, c:any) => c.timestamp > m ? c.timestamp : m, "");
-          const fl = scoped.filter((f:any) => f.timestamp === latest).map((f:any) => f.path);
-          setFiles(fl);
-        } else setFiles([]);
+        const fl = latestFilesFor(list, slug, v);
+        setFiles(fl);
       } else setFiles([]);
     } catch { setFiles([]); }
   }
