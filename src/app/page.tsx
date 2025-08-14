@@ -17,6 +17,7 @@ export default function Page() {
   const [busy, setBusy] = useState(false);
   const [zipBusy, setZipBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
+  const [verify, setVerify] = useState<any | null>(null);
 
   useEffect(() => {
     try {
@@ -105,6 +106,28 @@ export default function Page() {
     } finally { setZipBusy(false); }
   }
 
+  async function exportZip() {
+    setZipBusy(true); setMsg(""); setVerify(null);
+    try {
+      const res = await fetch("/api/snapshot/export", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ text })
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j?.error || "snapshot_failed");
+      setVerify(j?.verification || null);
+
+      const res2 = await fetch("/api/download/zip");
+      if (!res2.ok) throw new Error(`status_${res2.status}`);
+      const blob = await res2.blob();
+      downloadBlob(blob, "qaadi_export.zip");
+      setMsg("ZIP جاهز.");
+    } catch (e:any) {
+      setMsg(`EXPORT ERROR: ${e?.message || e}`);
+    } finally { setZipBusy(false); }
+  }
+
   function downloadBlob(blob: Blob, name: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -157,12 +180,20 @@ export default function Page() {
 
       <div className="card" style={{marginBottom:12}}>
         <div className="actions">
+          <button className="btn" onClick={exportZip} disabled={zipBusy}>{zipBusy ? "..." : "Export ZIP"}</button>
           <button className="btn" onClick={exportCompose} disabled={zipBusy}>{zipBusy ? "..." : "Export (compose demo)"}</button>
           <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy}>{zipBusy ? "..." : "Export (orchestrate)"}</button>
           <button className="btn" onClick={doGenerate} disabled={busy}>{busy ? "جارٍ…" : "Generate"}</button>
         </div>
         {msg && <div className="note">{msg}</div>}
       </div>
+
+      {verify && (
+        <div className="card" style={{marginBottom:12}}>
+          <label>Verification</label>
+          <pre>{JSON.stringify(verify, null, 2)}</pre>
+        </div>
+      )}
 
       <div className="card">
         <label>Output</label>
