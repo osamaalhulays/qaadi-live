@@ -15,11 +15,10 @@ type Lang =
   | "en"
   | "tr"
   | "fr"
-  | "de"
   | "es"
+  | "de"
   | "ru"
-  | "fa"
-  | "zh"
+  | "zh-Hans"
   | "ja"
   | "other";
 type ModelSel = "openai" | "deepseek" | "auto";
@@ -216,11 +215,10 @@ export default function Editor() {
             <option value="ar">AR</option>
             <option value="tr">TR</option>
             <option value="fr">FR</option>
-            <option value="de">DE</option>
             <option value="es">ES</option>
+            <option value="de">DE</option>
             <option value="ru">RU</option>
-            <option value="fa">FA</option>
-            <option value="zh">ZH</option>
+            <option value="zh-Hans">ZH-Hans</option>
             <option value="ja">JA</option>
             <option value="other">Other</option>
           </select>

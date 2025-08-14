@@ -16,11 +16,10 @@ export const InputSchema = z.object({
     "en",
     "tr",
     "fr",
-    "de",
     "es",
+    "de",
     "ru",
-    "fa",
-    "zh",
+    "zh-Hans",
     "ja",
     "other"
   ]),

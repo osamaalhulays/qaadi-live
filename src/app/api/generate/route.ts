@@ -110,11 +110,10 @@ function buildPrompt(
     | "en"
     | "tr"
     | "fr"
-    | "de"
     | "es"
+    | "de"
     | "ru"
-    | "fa"
-    | "zh"
+    | "zh-Hans"
     | "ja"
     | "other",
   userText: string,
@@ -143,10 +142,8 @@ function buildPrompt(
       return `WIDE/ES: Eres el motor Qaadi. Edita texto español amplio dirigido al artículo (bundle.md). Entrada:\n${userText}${gloss}`;
     if (lang === "ru")
       return `WIDE/RU: Ты движок Qaadi. Редактируй широкий русский текст для статьи (bundle.md). Ввод:\n${userText}${gloss}`;
-    if (lang === "fa")
-      return `WIDE/FA: شما موتور Qaadi هستید. متن فارسی گسترده برای مقاله (bundle.md) را ویرایش کنید. ورودی:\n${userText}${gloss}`;
-    if (lang === "zh")
-      return `WIDE/ZH: 你是 Qaadi 引擎。编辑面向论文的中文长文 (bundle.md)。输入:\n${userText}${gloss}`;
+    if (lang === "zh-Hans")
+      return `WIDE/ZH-HANS: 你是 Qaadi 引擎。编辑面向论文的中文长文 (bundle.md)。输入:\n${userText}${gloss}`;
     if (lang === "ja")
       return `WIDE/JA: あなたは Qaadi エンジンです。論文用の日本語の長文を編集してください (bundle.md)。入力:\n${userText}${gloss}`;
     if (lang === "other")
@@ -162,11 +159,10 @@ function buildPrompt(
       en: "English",
       tr: "Turkish",
       fr: "French",
-      de: "German",
       es: "Spanish",
+      de: "German",
       ru: "Russian",
-      fa: "Persian",
-      zh: "Chinese",
+      "zh-Hans": "Chinese (Simplified)",
       ja: "Japanese"
     };
     const targetNames: Record<string, string> = {
