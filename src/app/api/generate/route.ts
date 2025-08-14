@@ -3,8 +3,11 @@ import { InputSchema, OutputSchema } from "../../../lib/schema/io";
 import { runWithFallback } from "../../../lib/providers/router";
 import { freezeText, restoreText, countEquations } from "../../../lib/utils/freeze";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
+import { mkdir, readFile, writeFile } from "fs/promises";
+import path from "path";
+import crypto from "crypto";
 
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 export async function OPTIONS() {
   return new Response(null, {
@@ -82,7 +85,28 @@ export async function POST(req: NextRequest) {
         idempotency: restored === text
       }
     });
-    return new Response(JSON.stringify(final), {
+
+    const fileName =
+      input.target === "wide"
+        ? "bundle.md"
+        : input.target === "inquiry"
+        ? "inquiry.md"
+        : "draft.tex";
+    let saved: string[] = [];
+    try {
+      saved = await saveSnapshot(
+        [{ path: `paper/${fileName}`, content: final.text }],
+        input.target,
+        input.lang
+      );
+    } catch (e: any) {
+      return new Response(
+        JSON.stringify({ error: "snapshot_failed", detail: e?.message || String(e) }),
+        { status: 500 }
+      );
+    }
+
+    return new Response(JSON.stringify({ ...final, files: saved }), {
       headers: {
         "Content-Type": "application/json",
         "Cache-Control": "no-store",
@@ -93,6 +117,49 @@ export async function POST(req: NextRequest) {
   } catch (e:any) {
     return new Response(JSON.stringify({ error: "provider_error", detail: e?.message || String(e) }), { status: 502 });
   }
+}
+
+function sha256Hex(data: Uint8Array | string) {
+  const buf = typeof data === "string" ? Buffer.from(data) : Buffer.from(data);
+  return crypto.createHash("sha256").update(buf).digest("hex");
+}
+
+function tsFolder(d = new Date()) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+
+async function saveSnapshot(files: { path: string; content: string | Uint8Array }[], target: string, lang: string) {
+  const now = new Date();
+  const tsDir = tsFolder(now);
+  const timestamp = now.toISOString();
+  const entries: any[] = [];
+
+  for (const f of files) {
+    const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
+    const rel = path.join("snapshots", tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
+    const full = path.join(process.cwd(), "public", rel);
+    await mkdir(path.dirname(full), { recursive: true });
+    await writeFile(full, data);
+    entries.push({
+      path: rel.replace(/\\/g, "/"),
+      sha256: sha256Hex(data),
+      target,
+      lang,
+      timestamp
+    });
+  }
+
+  const manifestPath = path.join(process.cwd(), "public", "snapshots", "manifest.json");
+  let manifest: any[] = [];
+  try {
+    const existing = await readFile(manifestPath, "utf-8");
+    manifest = JSON.parse(existing);
+  } catch {}
+  manifest.push(...entries);
+  await mkdir(path.dirname(manifestPath), { recursive: true });
+  await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+  return entries.map((e) => e.path);
 }
 
 function buildPrompt(
