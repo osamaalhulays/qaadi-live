@@ -69,7 +69,15 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
-        <div className="wrapper">{children}</div>
+        <div className="wrapper">
+          <header style={{ marginBottom: 16 }}>
+            <nav style={{ display: "flex", gap: 12 }}>
+              <a href="/">الرئيسية</a>
+              <a href="/quickstart">Quickstart</a>
+            </nav>
+          </header>
+          {children}
+        </div>
       </body>
     </html>
   );
