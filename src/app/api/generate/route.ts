@@ -210,6 +210,53 @@ export async function saveSnapshot(
   return entries.map((e) => e.path);
 }
 
+const TARGET_LANG_PROMPTS: Record<string, Record<string, (u: string, g: string) => string>> = {
+  wide: {
+    ar: (u, g) =>
+      `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${u}${g}`,
+    en: (u, g) =>
+      `WIDE/EN: You are the Qaadi engine. Edit a wide English text intended for the paper (bundle.md). Input:\n${u}${g}`,
+    tr: (u, g) =>
+      `WIDE/TR: Qaadi motorusun. Makale için geniş Türkçe metni düzenle (bundle.md). Girdi:\n${u}${g}`,
+    fr: (u, g) =>
+      `WIDE/FR: Tu es le moteur Qaadi. Édite un texte français étendu destiné au papier (bundle.md). Entrée :\n${u}${g}`,
+    de: (u, g) =>
+      `WIDE/DE: Du bist der Qaadi-Motor. Bearbeite einen ausführlichen deutschen Text für das Papier (bundle.md). Eingabe:\n${u}${g}`,
+    es: (u, g) =>
+      `WIDE/ES: Eres el motor Qaadi. Edita texto español amplio dirigido al artículo (bundle.md). Entrada:\n${u}${g}`,
+    ru: (u, g) =>
+      `WIDE/RU: Ты движок Qaadi. Редактируй широкий русский текст для статьи (bundle.md). Ввод:\n${u}${g}`,
+    "zh-Hans": (u, g) =>
+      `WIDE/ZH-HANS: 你是 Qaadi 引擎。编辑面向论文的中文长文 (bundle.md)。输入:\n${u}${g}`,
+    ja: (u, g) =>
+      `WIDE/JA: あなたは Qaadi エンジンです。論文用の日本語の長文を編集してください (bundle.md)。入力:\n${u}${g}`,
+    other: (u, g) =>
+      `WIDE/OTHER: You are the Qaadi engine. Edit a long text in its original language intended for the paper (bundle.md). Input:\n${u}${g}`
+  },
+  inquiry: {
+    ar: (u, g) =>
+      `INQUIRY/AR: أنت محرّك Qaadi Inquiry. أنشئ مجموعة أسئلة. المدخل:\n${u}${g}`,
+    en: (u, g) =>
+      `INQUIRY/EN: You are the Qaadi Inquiry engine. Generate a question set. Input:\n${u}${g}`,
+    tr: (u, g) =>
+      `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${u}${g}`,
+    fr: (u, g) =>
+      `INQUIRY/FR: Tu es le moteur Qaadi Inquiry. Génère un ensemble de questions. Entrée :\n${u}${g}`,
+    de: (u, g) =>
+      `INQUIRY/DE: Du bist der Qaadi-Inquiry-Motor. Erzeuge einen Fragenkatalog. Eingabe:\n${u}${g}`,
+    es: (u, g) =>
+      `INQUIRY/ES: Eres el motor Qaadi Inquiry. Genera un conjunto de preguntas. Entrada:\n${u}${g}`,
+    ru: (u, g) =>
+      `INQUIRY/RU: Ты движок Qaadi Inquiry. Сгенерируй набор вопросов. Ввод:\n${u}${g}`,
+    "zh-Hans": (u, g) =>
+      `INQUIRY/ZH-HANS: 你是 Qaadi Inquiry 引擎。生成一个问题集合。输入:\n${u}${g}`,
+    ja: (u, g) =>
+      `INQUIRY/JA: あなたは Qaadi Inquiry エンジンです。質問セットを生成してください。入力:\n${u}${g}`,
+    other: (u, g) =>
+      `INQUIRY/OTHER: You are the Qaadi Inquiry engine. Generate a question set in the original language. Input:\n${u}${g}`
+  }
+};
+
 function buildPrompt(
   target:
     | "wide"
@@ -241,52 +288,10 @@ function buildPrompt(
           .map(([k, v]) => `${k} = ${v}`)
           .join("\n")
       : "";
-
-  if (target === "wide") {
-    if (lang === "ar")
-      return `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${userText}${gloss}`;
-    if (lang === "en")
-      return `WIDE/EN: You are the Qaadi engine. Edit a wide English text intended for the paper (bundle.md). Input:\n${userText}${gloss}`;
-    if (lang === "tr")
-      return `WIDE/TR: Qaadi motorusun. Makale için geniş Türkçe metni düzenle (bundle.md). Girdi:\n${userText}${gloss}`;
-    if (lang === "fr")
-      return `WIDE/FR: Tu es le moteur Qaadi. Édite un texte français étendu destiné au papier (bundle.md). Entrée :\n${userText}${gloss}`;
-    if (lang === "de")
-      return `WIDE/DE: Du bist der Qaadi-Motor. Bearbeite einen ausführlichen deutschen Text für das Papier (bundle.md). Eingabe:\n${userText}${gloss}`;
-    if (lang === "es")
-      return `WIDE/ES: Eres el motor Qaadi. Edita texto español amplio dirigido al artículo (bundle.md). Entrada:\n${userText}${gloss}`;
-    if (lang === "ru")
-      return `WIDE/RU: Ты движок Qaadi. Редактируй широкий русский текст для статьи (bundle.md). Ввод:\n${userText}${gloss}`;
-    if (lang === "zh-Hans")
-      return `WIDE/ZH-HANS: 你是 Qaadi 引擎。编辑面向论文的中文长文 (bundle.md)。输入:\n${userText}${gloss}`;
-    if (lang === "ja")
-      return `WIDE/JA: あなたは Qaadi エンジンです。論文用の日本語の長文を編集してください (bundle.md)。入力:\n${userText}${gloss}`;
-    if (lang === "other")
-      return `WIDE/OTHER: You are the Qaadi engine. Edit a long text in its original language intended for the paper (bundle.md). Input:\n${userText}${gloss}`;
-  }
-  if (target === "inquiry") {
-    if (lang === "ar")
-      return `INQUIRY/AR: أنت محرّك Qaadi Inquiry. أنشئ مجموعة أسئلة. المدخل:\n${userText}${gloss}`;
-    if (lang === "en")
-      return `INQUIRY/EN: You are the Qaadi Inquiry engine. Generate a question set. Input:\n${userText}${gloss}`;
-    if (lang === "tr")
-      return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}${gloss}`;
-    if (lang === "fr")
-      return `INQUIRY/FR: Tu es le moteur Qaadi Inquiry. Génère un ensemble de questions. Entrée :\n${userText}${gloss}`;
-    if (lang === "de")
-      return `INQUIRY/DE: Du bist der Qaadi-Inquiry-Motor. Erzeuge einen Fragenkatalog. Eingabe:\n${userText}${gloss}`;
-    if (lang === "es")
-      return `INQUIRY/ES: Eres el motor Qaadi Inquiry. Genera un conjunto de preguntas. Entrada:\n${userText}${gloss}`;
-    if (lang === "ru")
-      return `INQUIRY/RU: Ты движок Qaadi Inquiry. Сгенерируй набор вопросов. Ввод:\n${userText}${gloss}`;
-    if (lang === "zh-Hans")
-      return `INQUIRY/ZH-HANS: 你是 Qaadi Inquiry 引擎。生成一个问题集合。输入:\n${userText}${gloss}`;
-    if (lang === "ja")
-      return `INQUIRY/JA: あなたは Qaadi Inquiry エンジンです。質問セットを生成してください。入力:\n${userText}${gloss}`;
-    if (lang === "other")
-      return `INQUIRY/OTHER: You are the Qaadi Inquiry engine. Generate a question set in the original language. Input:\n${userText}${gloss}`;
+  const direct = TARGET_LANG_PROMPTS[target]?.[lang];
+  if (direct) return direct(userText, gloss);
+  if (target === "inquiry" || target === "wide")
     throw new Error(`unsupported_target_lang:${target}:${lang}`);
-  }
   const templateTargets = new Set(["revtex", "iop", "sn-jnl", "elsevier", "ieee", "arxiv"]);
   if (templateTargets.has(target)) {
     if (lang === "other") throw new Error(`unsupported_template_lang:${target}:${lang}`);
