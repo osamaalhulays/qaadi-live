@@ -72,10 +72,17 @@ export default function Editor() {
     setBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
+      const params = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : new URLSearchParams();
+      const slug = typeof window !== "undefined"
+        ? window.location.pathname.split("/").filter(Boolean)[0] ||
+          params.get("slug") ||
+          "default"
+        : "default";
+      const v = typeof window !== "undefined" ? params.get("v") || "latest" : "latest";
       const res = await fetch("/api/generate", {
         method: "POST",
         headers,
-        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text })
+        body: JSON.stringify({ slug, v, target, lang, model, max_tokens: maxTokens, text })
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "generate_failed");

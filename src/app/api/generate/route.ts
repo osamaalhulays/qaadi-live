@@ -97,7 +97,9 @@ export async function POST(req: NextRequest) {
       saved = await saveSnapshot(
         [{ path: `paper/${fileName}`, content: final.text }],
         input.target,
-        input.lang
+        input.lang,
+        input.slug,
+        input.v
       );
     } catch (e: any) {
       return new Response(
@@ -129,7 +131,13 @@ function tsFolder(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
-async function saveSnapshot(files: { path: string; content: string | Uint8Array }[], target: string, lang: string) {
+async function saveSnapshot(
+  files: { path: string; content: string | Uint8Array }[],
+  target: string,
+  lang: string,
+  slug: string,
+  v: string
+) {
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
@@ -137,7 +145,15 @@ async function saveSnapshot(files: { path: string; content: string | Uint8Array 
 
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
-    const rel = path.join("snapshots", tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
+    const rel = path.join(
+      "snapshots",
+      slug,
+      tsDir,
+      "paper",
+      target,
+      lang,
+      f.path.replace(/^paper\//, "")
+    );
     const full = path.join(process.cwd(), "public", rel);
     await mkdir(path.dirname(full), { recursive: true });
     await writeFile(full, data);
@@ -146,6 +162,8 @@ async function saveSnapshot(files: { path: string; content: string | Uint8Array 
       sha256: sha256Hex(data),
       target,
       lang,
+      slug,
+      v,
       timestamp
     });
   }

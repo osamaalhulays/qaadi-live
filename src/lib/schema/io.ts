@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 export const InputSchema = z.object({
+  slug: z.string().min(1),
+  v: z.string().min(1),
   target: z.enum([
     "wide",
     "revtex",
