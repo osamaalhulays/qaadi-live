@@ -2,7 +2,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import { sha256Hex } from "./crypto";
 
-interface SnapshotEntry {
+export interface SnapshotEntry {
   path: string;
   sha256: string;
   target: string;
