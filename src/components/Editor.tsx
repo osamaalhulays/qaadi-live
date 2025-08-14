@@ -17,6 +17,7 @@ export default function Editor() {
   const [busy, setBusy] = useState(false);
   const [zipBusy, setZipBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
+  const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number }>(null);
 
   useEffect(() => {
     try {
@@ -44,9 +45,11 @@ export default function Editor() {
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "generate_failed");
       setOut(j?.text || "");
+      setVerify(j?.checks || null);
       setMsg(`OK • model=${j?.model_used} • in=${j?.tokens_in} • out=${j?.tokens_out} • ${j?.latency_ms}ms`);
     } catch (e:any) {
       setMsg(`ERROR: ${e?.message || e}`);
+      setVerify(null);
     } finally { setBusy(false); }
   }
 
@@ -160,6 +163,17 @@ export default function Editor() {
           <button className="btn" onClick={doGenerate} disabled={busy}>{busy ? "جارٍ…" : "Generate"}</button>
         </div>
         {msg && <div className="note">{msg}</div>}
+        {verify && (
+          <div className="verify-bar">
+            <span>
+              المعادلات: {verify.eq_before} → {verify.eq_after}
+              {verify.eq_match ? <span className="verify-ok"> ✓</span> : <span className="verify-warn"> ⚠️</span>}
+            </span>
+            {verify.glossary_entries > 0 && (
+              <span>Glossary: {verify.glossary_entries}</span>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="card">

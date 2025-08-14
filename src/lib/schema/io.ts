@@ -13,6 +13,12 @@ export const OutputSchema = z.object({
   tokens_in: z.number().int().nonnegative(),
   tokens_out: z.number().int().nonnegative(),
   latency_ms: z.number().int().nonnegative(),
-  model_used: z.string()
+  model_used: z.string(),
+  checks: z.object({
+    eq_before: z.number().int().nonnegative(),
+    eq_after: z.number().int().nonnegative(),
+    eq_match: z.boolean(),
+    glossary_entries: z.number().int().nonnegative()
+  })
 });
 export type Output = z.infer<typeof OutputSchema>;

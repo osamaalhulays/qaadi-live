@@ -48,3 +48,6 @@ textarea{resize:vertical}
 .btn-primary:hover{filter:brightness(1.04)}
 .note{margin-top:8px;color:var(--muted);font-size:13px}
 .output{min-height:160px}
+.verify-bar{margin-top:8px;padding:6px 10px;background:#0f131a;border:1px solid #2a3142;border-radius:8px;font-size:13px;display:flex;gap:12px;flex-wrap:wrap}
+.verify-ok{color:var(--ok)}
+.verify-warn{color:var(--warn)}
