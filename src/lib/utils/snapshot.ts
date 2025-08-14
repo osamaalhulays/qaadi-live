@@ -30,7 +30,14 @@ export async function saveSnapshot(
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
-  const entries: any[] = [];
+  interface ManifestEntry {
+    path: string;
+    sha256: string;
+    target: string;
+    lang: string;
+    timestamp: string;
+  }
+  const entries: ManifestEntry[] = [];
 
   if (target === "inquiry") {
     const covers: Record<string, string> = {};
@@ -91,7 +98,7 @@ export async function saveSnapshot(
   }
 
   const manifestPath = path.join(process.cwd(), "public", "snapshots", "manifest.json");
-  let manifest: any[] = [];
+  let manifest: ManifestEntry[] = [];
   try {
     const existing = await readFile(manifestPath, "utf-8");
     manifest = JSON.parse(existing);
