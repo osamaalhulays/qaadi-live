@@ -5,8 +5,6 @@ import { freezeText, restoreText, countEquations } from "../../../lib/utils/free
 import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { saveSnapshot } from "../../../lib/utils/snapshot";
 
-export { saveSnapshot };
-
 export const runtime = "nodejs";
 
 export async function OPTIONS() {
