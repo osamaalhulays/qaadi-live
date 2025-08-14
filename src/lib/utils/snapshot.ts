@@ -26,7 +26,7 @@ export async function saveSnapshot(
   files: { path: string; content: string | Uint8Array }[],
   target: string,
   lang: string
-) {
+): Promise<string[]> {
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
