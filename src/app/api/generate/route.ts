@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { InputSchema, OutputSchema } from "../../../lib/schema/io";
 import { runWithFallback } from "../../../lib/providers/router";
+import { freezeText, restoreText, countEquations } from "../../../lib/utils/freeze";
 
 export const runtime = "edge";
 
@@ -29,7 +30,12 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: "no_keys_provided" }), { status: 400 });
   }
 
-  const prompt = buildPrompt(input.template, input.text);
+  const frozen = freezeText(input.text);
+  const eqBefore = frozen.equations.length;
+
+  const glossary = await loadGlossary(req);
+
+  const prompt = buildPrompt(input.template, frozen.text, glossary);
   try {
     const out = await runWithFallback(
       input.model === "auto" ? "auto" : (input.model as any),
@@ -37,7 +43,18 @@ export async function POST(req: NextRequest) {
       prompt,
       input.max_tokens
     );
-    const final = OutputSchema.parse(out);
+    let text = restoreText(out.text, frozen.equations, frozen.dois);
+    const eqAfter = countEquations(text);
+    const final = OutputSchema.parse({
+      ...out,
+      text,
+      checks: {
+        eq_before: eqBefore,
+        eq_after: eqAfter,
+        eq_match: eqBefore === eqAfter,
+        glossary_entries: glossary ? Object.keys(glossary).length : 0
+      }
+    });
     return new Response(JSON.stringify(final), {
       headers: {
         "Content-Type": "application/json",
@@ -51,8 +68,26 @@ export async function POST(req: NextRequest) {
   }
 }
 
-function buildPrompt(template: "WideAR" | "ReVTeX" | "InquiryTR", userText: string) {
-  if (template === "WideAR")   return `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${userText}`;
-  if (template === "InquiryTR") return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}`;
-  return `REVTEX/EN: Produce TeX draft body (no \\documentclass). Input:\n${userText}`;
+function buildPrompt(
+  template: "WideAR" | "ReVTeX" | "InquiryTR",
+  userText: string,
+  glossary: Record<string, string> | null
+) {
+  const gloss = glossary && Object.keys(glossary).length
+    ? "\nGlossary:\n" + Object.entries(glossary).map(([k,v])=>`${k} = ${v}`).join("\n")
+    : "";
+  if (template === "WideAR")   return `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${userText}${gloss}`;
+  if (template === "InquiryTR") return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}${gloss}`;
+  return `REVTEX/EN: Produce TeX draft body (no \\documentclass). Input:\n${userText}${gloss}`;
+}
+
+async function loadGlossary(req: NextRequest): Promise<Record<string, string> | null> {
+  try {
+    const url = new URL("/glossary.json", req.url);
+    const r = await fetch(url.toString());
+    if (!r.ok) return null;
+    const j = await r.json().catch(() => null);
+    if (j && typeof j === "object") return j as Record<string, string>;
+  } catch {}
+  return null;
 }
