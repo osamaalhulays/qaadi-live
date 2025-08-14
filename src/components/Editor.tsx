@@ -234,9 +234,9 @@ export default function Editor() {
 
       <div className="card" style={{marginBottom:12}}>
         <div className="actions">
-          <button className="btn" onClick={exportCompose} disabled={zipBusy}>{zipBusy ? "..." : "Export (compose demo)"}</button>
+          <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export (compose demo)"}</button>
           <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy}>{zipBusy ? "..." : "Export (orchestrate)"}</button>
-          <button className="btn" onClick={doGenerate} disabled={busy}>{busy ? "جارٍ…" : "Generate"}</button>
+          <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang}>{busy ? "جارٍ…" : "Generate"}</button>
           <a className="btn" href="/api/export">Export ZIP</a>
           <a className="btn" href="/snapshots/" target="_blank" rel="noopener noreferrer">Open Snapshot</a>
         </div>
