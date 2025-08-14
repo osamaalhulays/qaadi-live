@@ -243,5 +243,3 @@ async function loadGlossary(req: NextRequest): Promise<Record<string, string> | 
   } catch {}
   return null;
 }
-
-export { saveSnapshot };
