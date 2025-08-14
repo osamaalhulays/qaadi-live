@@ -4,15 +4,23 @@ export async function GET() {
   const kv = process.env.NEXT_PUBLIC_KV ?? "kv unavailable";
   const capsuleLatest =
     process.env.NEXT_PUBLIC_CAPSULE_LATEST ?? "capsule information unavailable";
+  const capsuleSha256 =
+    process.env.NEXT_PUBLIC_CAPSULE_SHA256 ?? "capsule information unavailable";
+  const capsuleTs =
+    process.env.NEXT_PUBLIC_CAPSULE_TS ?? "capsule information unavailable";
 
   return new Response(
     JSON.stringify({
       env: "OK",
-      policies: { byok: true },
+      policies: {
+        byok: true,
+        storage_public_read_capsules: true,
+        storage_public_read_theory_zips: true
+      },
       build: { tag: process.env.NEXT_PUBLIC_BUILD_TAG ?? "qaadi-fast-track" },
       storage,
       kv,
-      capsule: { latest: capsuleLatest }
+      capsule: { latest: capsuleLatest, sha256: capsuleSha256, ts: capsuleTs }
     }),
     {
       headers: {
