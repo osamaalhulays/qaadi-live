@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "test": "node --loader ts-node/esm --test test/**/*.ts"
   },
   "dependencies": {
     "next": "14.2.5",
@@ -17,6 +18,7 @@
   "devDependencies": {
     "typescript": "5.4.5",
     "@types/react": "18.2.66",
-    "@types/node": "20.11.30"
+    "@types/node": "20.11.30",
+    "ts-node": "10.9.2"
   }
 }
