@@ -6,6 +6,7 @@ import path from "path";
 import crypto from "crypto";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { sanitizeSlug, type SnapshotEntry } from "../../../lib/utils/snapshot";
+import { InputSchema, type Target, type Lang } from "../../../lib/schema/io";
 
 export const runtime = "nodejs";
 
@@ -53,7 +54,7 @@ function tsFolder(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
-async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug: string) {
+async function saveSnapshot(files: ZipFile[], target: Target, lang: Lang, slug: string) {
   const safeSlug = sanitizeSlug(slug);
   const now = new Date();
   const tsDir = tsFolder(now);
@@ -177,8 +178,14 @@ export async function POST(req: NextRequest) {
   }
 
   const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
-  const target = typeof body?.target === "string" ? body.target : "default";
-  const lang = typeof body?.lang === "string" ? body.lang : "en";
+  const target: Target =
+    InputSchema.shape.target.safeParse(body?.target).success
+      ? (body.target as Target)
+      : "wide";
+  const lang: Lang =
+    InputSchema.shape.lang.safeParse(body?.lang).success
+      ? (body.lang as Lang)
+      : "en";
   const slug = typeof body?.slug === "string" ? body.slug : "default";
 
   // Mode A: raw → same as old behavior (accept ready files[])

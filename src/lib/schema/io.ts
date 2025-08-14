@@ -35,6 +35,8 @@ export const InputSchema = z.object({
   text: z.string().min(1)
 });
 export type Input = z.infer<typeof InputSchema>;
+export type Target = Input["target"];
+export type Lang = Input["lang"];
 
 export const OutputSchema = z.object({
   text: z.string(),

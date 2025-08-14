@@ -1,8 +1,10 @@
+import type { Target, Lang } from "../schema/io";
+
 export interface SnapshotEntry {
   path: string;
   sha256: string;
-  target: string;
-  lang: string;
+  target: Target;
+  lang: Lang;
   timestamp: string;
   slug?: string;
 }

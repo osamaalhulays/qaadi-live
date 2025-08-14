@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { InputSchema, OutputSchema } from "../../../lib/schema/io";
+import { InputSchema, OutputSchema, type Input, type Target, type Lang } from "../../../lib/schema/io";
 import { runWithFallback } from "../../../lib/providers/router";
 import { freezeText, restoreText, countEquations } from "../../../lib/utils/freeze";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
@@ -33,7 +33,7 @@ function detectDir(s: string): "rtl" | "ltr" | "mixed" {
 }
 
 export async function POST(req: NextRequest) {
-  let input;
+  let input: Input;
   try { input = InputSchema.parse(await req.json()); }
   catch { return new Response(JSON.stringify({ error: "bad_input" }), { status: 400 }); }
 
@@ -145,8 +145,8 @@ function tsFolder(d = new Date()) {
 
 export async function saveSnapshot(
   files: { path: string; content: string | Uint8Array }[],
-  target: string,
-  lang: string,
+  target: Target,
+  lang: Lang,
   slug: string = "default"
 ) {
   const now = new Date();
@@ -228,26 +228,8 @@ export async function saveSnapshot(
 }
 
 function buildPrompt(
-  target:
-    | "wide"
-    | "revtex"
-    | "inquiry"
-    | "iop"
-    | "sn-jnl"
-    | "elsevier"
-    | "ieee"
-    | "arxiv",
-  lang:
-    | "ar"
-    | "en"
-    | "tr"
-    | "fr"
-    | "es"
-    | "de"
-    | "ru"
-    | "zh-Hans"
-    | "ja"
-    | "other",
+  target: Target,
+  lang: Lang,
   userText: string,
   glossary: Record<string, string> | null
 ) {
