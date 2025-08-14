@@ -52,7 +52,7 @@ function tsFolder(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
-async function saveSnapshot(files: ZipFile[], target: string, lang: string) {
+async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug: string) {
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
@@ -60,7 +60,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string) {
 
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
-    const rel = path.join("snapshots", tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
+    const rel = path.join("snapshots", slug, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
     const full = path.join(process.cwd(), "public", rel);
     await mkdir(path.dirname(full), { recursive: true });
     await writeFile(full, data);
@@ -69,6 +69,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string) {
       sha256: sha256Hex(data),
       target,
       lang,
+      slug,
       timestamp
     });
   }
@@ -176,6 +177,7 @@ export async function POST(req: NextRequest) {
   const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
   const target = typeof body?.target === "string" ? body.target : "default";
   const lang = typeof body?.lang === "string" ? body.lang : "en";
+  const slug = typeof body?.slug === "string" ? body.slug : "default";
 
   // Mode A: raw → same as old behavior (accept ready files[])
   if (mode === "raw") {
@@ -184,7 +186,7 @@ export async function POST(req: NextRequest) {
     if (!files || !files.length) {
       return new Response(JSON.stringify({ error: "no_files" }), { status: 400, headers: headersJSON() });
     }
-    await saveSnapshot(files, target, lang);
+    await saveSnapshot(files, target, lang, slug);
     const zip = makeZip(files);
     const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
@@ -196,7 +198,7 @@ export async function POST(req: NextRequest) {
     if (!files.length) {
       return new Response(JSON.stringify({ error: "compose_empty" }), { status: 400, headers: headersJSON() });
     }
-    await saveSnapshot(files, target, lang);
+    await saveSnapshot(files, target, lang, slug);
     const zip = makeZip(files);
     const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
@@ -249,7 +251,7 @@ export async function POST(req: NextRequest) {
     };
 
     const { name, files } = buildTreeFromCompose(composePayload);
-    await saveSnapshot(files, target, lang);
+    await saveSnapshot(files, target, lang, slug);
     const zip = makeZip(files);
     const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
