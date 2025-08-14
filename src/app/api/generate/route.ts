@@ -35,7 +35,10 @@ export async function POST(req: NextRequest) {
 
   const glossary = await loadGlossary(req);
 
-  const prompt = buildPrompt(input.template, frozen.text, glossary);
+  let prompt;
+  try { prompt = buildPrompt(input.target, input.lang, frozen.text, glossary); }
+  catch { return new Response(JSON.stringify({ error: "unsupported_target_lang" }), { status: 400 }); }
+
   try {
     const out = await runWithFallback(
       input.model === "auto" ? "auto" : (input.model as any),
@@ -69,16 +72,21 @@ export async function POST(req: NextRequest) {
 }
 
 function buildPrompt(
-  template: "WideAR" | "ReVTeX" | "InquiryTR",
+  target: "wide" | "revtex" | "inquiry",
+  lang: "ar" | "en" | "tr",
   userText: string,
   glossary: Record<string, string> | null
 ) {
   const gloss = glossary && Object.keys(glossary).length
     ? "\nGlossary:\n" + Object.entries(glossary).map(([k,v])=>`${k} = ${v}`).join("\n")
     : "";
-  if (template === "WideAR")   return `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${userText}${gloss}`;
-  if (template === "InquiryTR") return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}${gloss}`;
-  return `REVTEX/EN: Produce TeX draft body (no \\documentclass). Input:\n${userText}${gloss}`;
+  if (target === "wide" && lang === "ar")
+    return `WIDE/AR: أنت محرّك Qaadi. حرّر نصًا عربيًا واسعًا موجّهًا للورقة (bundle.md). المدخل:\n${userText}${gloss}`;
+  if (target === "inquiry" && lang === "tr")
+    return `INQUIRY/TR: Qaadi Inquiry için soru seti üret. Girdi:\n${userText}${gloss}`;
+  if (target === "revtex" && lang === "en")
+    return `REVTEX/EN: Produce TeX draft body (no \\documentclass). Input:\n${userText}${gloss}`;
+  throw new Error("unsupported_target_lang");
 }
 
 async function loadGlossary(req: NextRequest): Promise<Record<string, string> | null> {

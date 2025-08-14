@@ -1,7 +1,8 @@
 import { z } from "zod";
 
 export const InputSchema = z.object({
-  template: z.enum(["WideAR", "ReVTeX", "InquiryTR"]).default("ReVTeX"),
+  target: z.enum(["wide", "revtex", "inquiry"]),
+  lang: z.enum(["ar", "en", "tr"]),
   model: z.enum(["openai", "deepseek", "auto"]).default("auto"),
   max_tokens: z.number().int().min(256).max(8192).default(2048),
   text: z.string().min(1)
