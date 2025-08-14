@@ -1,9 +1,10 @@
 import { NextRequest } from "next/server";
 import { makeZip, type ZipFile } from "../../../lib/utils/zip";
 import { runWithFallback } from "../../../lib/providers/router";
+import { createSnapshot } from "../../../lib/snapshot.js";
 
-// Edge-only
-export const runtime = "edge";
+// Use Node.js runtime for filesystem access
+export const runtime = "nodejs";
 
 /* ---------- Common headers ---------- */
 function headersZip(name: string, size: number, shaHex: string) {
@@ -128,7 +129,17 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: "bad_input" }), { status: 400, headers: headersJSON() });
   }
 
-  const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
+  const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate" | "snapshot";
+
+  // Mode S: snapshot → write files to snapshots/<ts>/...
+  if (mode === "snapshot") {
+    const files = Array.isArray(body?.files) ? body.files : null;
+    if (!files || !files.length) {
+      return new Response(JSON.stringify({ error: "no_files" }), { status: 400, headers: headersJSON() });
+    }
+    const result = await createSnapshot(files);
+    return new Response(JSON.stringify(result), { status: 200, headers: headersJSON() });
+  }
 
   // Mode A: raw → same as old behavior (accept ready files[])
   if (mode === "raw") {
