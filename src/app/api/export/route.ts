@@ -1,9 +1,11 @@
 import { NextRequest } from "next/server";
 import { makeZip, type ZipFile } from "../../../lib/utils/zip";
 import { runWithFallback } from "../../../lib/providers/router";
+import { mkdir, readFile, writeFile } from "fs/promises";
+import path from "path";
+import crypto from "crypto";
 
-// Edge-only
-export const runtime = "edge";
+export const runtime = "nodejs";
 
 /* ---------- Common headers ---------- */
 function headersZip(name: string, size: number, shaHex: string) {
@@ -37,12 +39,49 @@ export async function OPTIONS() {
 }
 
 /* ---------- Helpers ---------- */
-async function sha256Hex(u8: Uint8Array) {
-  const d = await crypto.subtle.digest("SHA-256", u8);
-  return [...new Uint8Array(d)].map(b => b.toString(16).padStart(2, "0")).join("");
+function sha256Hex(data: Uint8Array | string) {
+  const buf = typeof data === "string" ? Buffer.from(data) : Buffer.from(data);
+  return crypto.createHash("sha256").update(buf).digest("hex");
 }
 
 function isoNow() { return new Date().toISOString(); }
+
+function tsFolder(d = new Date()) {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+}
+
+async function saveSnapshot(files: ZipFile[], target: string, lang: string) {
+  const now = new Date();
+  const tsDir = tsFolder(now);
+  const timestamp = now.toISOString();
+  const entries: any[] = [];
+
+  for (const f of files) {
+    const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
+    const rel = path.join("snapshots", tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
+    const full = path.join(process.cwd(), rel);
+    await mkdir(path.dirname(full), { recursive: true });
+    await writeFile(full, data);
+    entries.push({
+      path: rel.replace(/\\/g, "/"),
+      sha256: sha256Hex(data),
+      target,
+      lang,
+      timestamp
+    });
+  }
+
+  const manifestPath = path.join(process.cwd(), "snapshots", "manifest.json");
+  let manifest: any[] = [];
+  try {
+    const existing = await readFile(manifestPath, "utf-8");
+    manifest = JSON.parse(existing);
+  } catch {}
+  manifest.push(...entries);
+  await mkdir(path.dirname(manifestPath), { recursive: true });
+  await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+}
 
 function buildTreeFromCompose(payload: any) {
   // EXPECTS:
@@ -129,6 +168,8 @@ export async function POST(req: NextRequest) {
   }
 
   const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
+  const target = typeof body?.target === "string" ? body.target : "default";
+  const lang = typeof body?.lang === "string" ? body.lang : "en";
 
   // Mode A: raw → same as old behavior (accept ready files[])
   if (mode === "raw") {
@@ -137,8 +178,9 @@ export async function POST(req: NextRequest) {
     if (!files || !files.length) {
       return new Response(JSON.stringify({ error: "no_files" }), { status: 400, headers: headersJSON() });
     }
+    await saveSnapshot(files, target, lang);
     const zip = makeZip(files);
-    const shaHex = await sha256Hex(zip);
+    const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
   }
 
@@ -148,8 +190,9 @@ export async function POST(req: NextRequest) {
     if (!files.length) {
       return new Response(JSON.stringify({ error: "compose_empty" }), { status: 400, headers: headersJSON() });
     }
+    await saveSnapshot(files, target, lang);
     const zip = makeZip(files);
-    const shaHex = await sha256Hex(zip);
+    const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
   }
 
@@ -200,8 +243,9 @@ export async function POST(req: NextRequest) {
     };
 
     const { name, files } = buildTreeFromCompose(composePayload);
+    await saveSnapshot(files, target, lang);
     const zip = makeZip(files);
-    const shaHex = await sha256Hex(zip);
+    const shaHex = sha256Hex(zip);
     return new Response(zip, { status: 200, headers: headersZip(name, zip.byteLength, shaHex) });
   }
 
