@@ -17,6 +17,7 @@ export default function Page() {
   const [busy, setBusy] = useState(false);
   const [zipBusy, setZipBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
+  const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     try {
@@ -34,17 +35,44 @@ export default function Page() {
   }), [openaiKey, deepseekKey]);
 
   async function doGenerate() {
-    setBusy(true); setMsg("");
+    setBusy(true); setMsg(""); setOut(""); setProgress(0);
     try {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers,
         body: JSON.stringify({ template, model, max_tokens: maxTokens, text })
       });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j?.error || "generate_failed");
-      setOut(j?.text || "");
-      setMsg(`OK • model=${j?.model_used} • in=${j?.tokens_in} • out=${j?.tokens_out} • ${j?.latency_ms}ms`);
+      if (!res.body) throw new Error("no_body");
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let meta:any = null;
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() || "";
+        for (const line of lines) {
+          if (!line.trim()) continue;
+          const j = JSON.parse(line);
+          if (j.type === "meta") {
+            meta = j;
+          } else if (j.type === "chunk") {
+            setOut(o => o + j.data);
+            if (meta?.total) setProgress((j.sent / meta.total) * 100);
+          } else if (j.type === "error") {
+            throw new Error(j.error || "stream_error");
+          }
+        }
+      }
+      if (!res.ok) {
+        throw new Error(meta?.error || "generate_failed");
+      }
+      if (meta) {
+        setMsg(`OK • model=${meta.model_used} • in=${meta.tokens_in} • out=${meta.tokens_out} • ${meta.latency_ms}ms`);
+        setProgress(100);
+      }
     } catch (e:any) {
       setMsg(`ERROR: ${e?.message || e}`);
     } finally { setBusy(false); }
@@ -166,6 +194,7 @@ export default function Page() {
 
       <div className="card">
         <label>Output</label>
+        {busy && <progress value={progress} max={100} style={{width:"100%", marginBottom:8}} />}
         <textarea className="output" value={out} readOnly />
       </div>
     </>

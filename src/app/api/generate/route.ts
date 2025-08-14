@@ -30,25 +30,45 @@ export async function POST(req: NextRequest) {
   }
 
   const prompt = buildPrompt(input.template, input.text);
-  try {
-    const out = await runWithFallback(
-      input.model === "auto" ? "auto" : (input.model as any),
-      { openai: openaiKey || undefined, deepseek: deepseekKey || undefined },
-      prompt,
-      input.max_tokens
-    );
-    const final = OutputSchema.parse(out);
-    return new Response(JSON.stringify(final), {
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
-        "X-Content-Type-Options": "nosniff",
-        "Access-Control-Allow-Origin": "*"
+
+  const stream = new ReadableStream({
+    async start(controller) {
+      const encoder = new TextEncoder();
+      try {
+        const out = await runWithFallback(
+          input.model === "auto" ? "auto" : (input.model as any),
+          { openai: openaiKey || undefined, deepseek: deepseekKey || undefined },
+          prompt,
+          input.max_tokens
+        );
+        const final = OutputSchema.parse(out);
+        const text = final.text;
+        const meta = { ...final, text: undefined, total: text.length };
+        controller.enqueue(encoder.encode(JSON.stringify({ type: "meta", ...meta }) + "\n"));
+        let sent = 0;
+        const size = 64;
+        while (sent < text.length) {
+          const chunk = text.slice(sent, sent + size);
+          sent += chunk.length;
+          controller.enqueue(encoder.encode(JSON.stringify({ type: "chunk", data: chunk, sent }) + "\n"));
+        }
+        controller.enqueue(encoder.encode(JSON.stringify({ type: "done" }) + "\n"));
+        controller.close();
+      } catch (e:any) {
+        controller.enqueue(encoder.encode(JSON.stringify({ type: "error", error: e?.message || String(e) }) + "\n"));
+        controller.close();
       }
-    });
-  } catch (e:any) {
-    return new Response(JSON.stringify({ error: "provider_error", detail: e?.message || String(e) }), { status: 502 });
-  }
+    }
+  });
+
+  return new Response(stream, {
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-store",
+      "X-Content-Type-Options": "nosniff",
+      "Access-Control-Allow-Origin": "*"
+    }
+  });
 }
 
 function buildPrompt(template: "WideAR" | "ReVTeX" | "InquiryTR", userText: string) {
