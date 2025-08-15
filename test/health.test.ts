@@ -18,7 +18,7 @@ test('health endpoint exposes policies, storage, kv, and capsule fields', async 
   assert.ok('kv' in body);
   assert.ok(
     body.capsule &&
-      'latest' in body.capsule &&
+      'name' in body.capsule &&
       'sha256' in body.capsule &&
       'ts' in body.capsule
   );

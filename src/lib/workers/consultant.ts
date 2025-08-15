@@ -1,18 +1,10 @@
-import { SecretaryResult } from "./secretary";
-import { JudgeReport } from "./judge";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
-/**
- * Consultant merges the secretary's issues and judge's report into an action plan.
- */
-export function runConsultant(audit: SecretaryResult, report: JudgeReport): string {
-  const lines: string[] = [];
-  if (audit.issues.length) {
-    lines.push("Resolve issues:");
-    for (const i of audit.issues) lines.push(`- ${i}`);
-  } else {
-    lines.push("No outstanding issues");
-  }
-  lines.push(`Current score: ${report.scoreTotal}`);
-  return lines.join("\n");
+export async function runConsultant() {
+  const content = "Consultant notes\n";
+  const filePath = path.join(process.cwd(), "paper", "notes.txt");
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, content, "utf8");
+  return content;
 }
-

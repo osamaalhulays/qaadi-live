@@ -10,7 +10,9 @@ export const JudgeCriterionSchema = z.object({
 export const JudgeReportSchema = z.object({
   score_total: z.number().min(0).max(200),
   criteria: z.array(JudgeCriterionSchema),
-  notes: z.string().optional()
+  notes: z.string().optional(),
+  percentage: z.number().min(0).max(100),
+  classification: z.enum(["accepted", "needs_improvement", "weak"])
 });
 
 export type JudgeCriterion = z.infer<typeof JudgeCriterionSchema>;

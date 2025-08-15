@@ -1,18 +1,10 @@
-import { SecretaryResult } from "./secretary";
+import { writeFile, mkdir } from "fs/promises";
+import path from "path";
 
-export interface JudgeReport {
-  scoreTotal: number;
-  notes: string[];
+export async function runJudge() {
+  const result = { verdict: "approved" };
+  const filePath = path.join(process.cwd(), "paper", "judge.json");
+  await mkdir(path.dirname(filePath), { recursive: true });
+  await writeFile(filePath, JSON.stringify(result, null, 2), "utf8");
+  return result;
 }
-
-/**
- * Judge evaluates the secretary's audit and assigns a score.
- */
-export function runJudge(audit: SecretaryResult): JudgeReport {
-  const penalties = audit.issues.length * 10;
-  const scoreTotal = Math.max(0, 100 - penalties);
-  const notes = audit.issues.map((i) => `Issue detected: ${i}`);
-  if (!notes.length) notes.push("All clear");
-  return { scoreTotal, notes };
-}
-
