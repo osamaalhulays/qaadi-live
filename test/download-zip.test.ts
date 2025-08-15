@@ -71,17 +71,17 @@ test('reads snapshots manifest, filters by slug/version and uses v6 archive name
   await rm(path.join(dir, 'manifest.json'));
 });
 
-test('includes latest snapshot files in archive', async () => {
-  const root = process.cwd();
-  const snapDir = path.join(root, 'public', 'snapshots', 'demo', '2024-01-01_0000', 'paper', 'revtex', 'en');
+  test('includes latest snapshot files in archive', async () => {
+    const root = process.cwd();
+    const snapDir = path.join(root, 'public', 'snapshots', 'demo', 'v1.0', '2024-01-01_0000', 'paper', 'revtex', 'en');
   await mkdir(snapDir, { recursive: true });
   const draft = Buffer.from('draft');
   const secretary = Buffer.from('secretary');
   await writeFile(path.join(snapDir, 'draft.tex'), draft);
   await writeFile(path.join(snapDir, 'secretary.md'), secretary);
   const manifest = [
-    {
-      path: 'snapshots/demo/2024-01-01_0000/paper/revtex/en/draft.tex',
+      {
+        path: 'snapshots/demo/v1.0/2024-01-01_0000/paper/revtex/en/draft.tex',
       sha256: crypto.createHash('sha256').update(draft).digest('hex'),
       target: 'revtex',
       lang: 'en',
@@ -90,8 +90,8 @@ test('includes latest snapshot files in archive', async () => {
       timestamp: '2024-01-01T00:00:00.000Z',
       type: 'paper'
     },
-    {
-      path: 'snapshots/demo/2024-01-01_0000/paper/revtex/en/secretary.md',
+      {
+        path: 'snapshots/demo/v1.0/2024-01-01_0000/paper/revtex/en/secretary.md',
       sha256: crypto.createHash('sha256').update(secretary).digest('hex'),
       target: 'revtex',
       lang: 'en',

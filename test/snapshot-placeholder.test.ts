@@ -79,6 +79,7 @@ test('copies comparison.md to QaadiVault', async () => {
     'theory-demo',
     'snapshots',
     'demo',
+    'v1',
     '2024-01-01_0000',
     'paper',
     'revtex',

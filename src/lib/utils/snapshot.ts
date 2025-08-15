@@ -38,6 +38,7 @@ export const ROLE_FILES = [
   "plan.md",
   "notes.txt",
   "comparison.md",
+  "summary.md",
 ] as const;
 
 export async function saveSnapshot(
@@ -54,6 +55,7 @@ export async function saveSnapshot(
   const covers: string[] = [];
 
   const safeSlug = sanitizeSlug(slug);
+  const safeV = sanitizeSlug(v);
 
   const roleData: Record<string, Buffer> = {};
   for (const name of ROLE_FILES) {
@@ -63,9 +65,29 @@ export async function saveSnapshot(
   }
 
   if (target === "inquiry") {
-    if (roleData["plan.md"]) covers.push(sha256Hex(roleData["plan.md"]));
-    if (roleData["judge.json"]) covers.push(sha256Hex(roleData["judge.json"]));
-    files.push({ path: "paper/inquiry.json", content: JSON.stringify({ covers }, null, 2) });
+    const coverSet = new Set<string>();
+    if (roleData["plan.md"]) coverSet.add(sha256Hex(roleData["plan.md"]));
+    if (roleData["judge.json"]) coverSet.add(sha256Hex(roleData["judge.json"]));
+
+    const inquiryFile = files.find((f) => f.path === "paper/inquiry.json");
+    if (inquiryFile) {
+      try {
+        const raw =
+          typeof inquiryFile.content === "string"
+            ? inquiryFile.content
+            : Buffer.from(inquiryFile.content).toString("utf8");
+        const j = JSON.parse(raw);
+        if (Array.isArray(j?.questions)) {
+          for (const q of j.questions) {
+            if (Array.isArray(q?.covers)) {
+              for (const c of q.covers) coverSet.add(c);
+            }
+          }
+        }
+      } catch {}
+    }
+
+    covers.push(...coverSet);
   }
 
   const vaultBase = path.join(process.cwd(), `QaadiVault/theory-${safeSlug}`);
@@ -73,7 +95,7 @@ export async function saveSnapshot(
   for (const f of files) {
     const name = f.path.replace(/^paper\//, "");
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
-    const rel = path.join("snapshots", safeSlug, tsDir, "paper", target, lang, name);
+    const rel = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang, name);
     const full = path.join(process.cwd(), "public", rel);
     const vaultFull = path.join(vaultBase, rel);
     await mkdir(path.dirname(full), { recursive: true });
@@ -86,9 +108,9 @@ export async function saveSnapshot(
       target,
       lang,
       slug: safeSlug,
-      v,
+      v: safeV,
       timestamp,
-      type: ROLE_FILES.includes(name) ? "role" : "paper"
+      type: ROLE_FILES.includes(name as any) ? "role" : "paper",
     });
   }
 
@@ -96,7 +118,7 @@ export async function saveSnapshot(
   for (const name of missingRoles) {
     const data = roleData[name];
     if (!data) continue;
-    const rel = path.join("snapshots", safeSlug, tsDir, "paper", target, lang, name);
+    const rel = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang, name);
     const full = path.join(process.cwd(), "public", rel);
     const vaultFull = path.join(vaultBase, rel);
     await mkdir(path.dirname(full), { recursive: true });
@@ -109,14 +131,14 @@ export async function saveSnapshot(
       target,
       lang,
       slug: safeSlug,
-      v,
+      v: safeV,
       timestamp,
-      type: "role"
+      type: "role",
     });
   }
 
   if (target !== "wide" && target !== "inquiry") {
-    const base = path.join("snapshots", safeSlug, tsDir, "paper", target, lang);
+    const base = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang);
 
     const relBib = path.join(base, "biblio.bib");
     const fullBib = path.join(process.cwd(), "public", relBib);
@@ -131,9 +153,9 @@ export async function saveSnapshot(
       target,
       lang,
       slug: safeSlug,
-      v,
+      v: safeV,
       timestamp,
-      type: "paper"
+      type: "paper",
     });
 
     const relFigs = path.join(base, "figs");
@@ -147,9 +169,9 @@ export async function saveSnapshot(
       target,
       lang,
       slug: safeSlug,
-      v,
+      v: safeV,
       timestamp,
-      type: "paper"
+      type: "paper",
     });
   }
 

@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { makeZip, type ZipFile } from "../../../lib/utils/zip";
 import { runWithFallback } from "../../../lib/providers/router";
+import { mkdir, writeFile } from "fs/promises";
+import path from "path";
 import crypto from "crypto";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { saveSnapshot } from "../../../lib/utils/snapshot";
@@ -18,7 +20,7 @@ function headersZip(name: string, size: number, shaHex: string) {
     "Content-Length": String(size),
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, X-OpenAI-Key, X-DeepSeek-Key"
+    "Access-Control-Allow-Headers": "Content-Type, X-OpenAI-Key, X-DeepSeek-Key",
   };
 }
 
@@ -29,7 +31,7 @@ function headersJSON() {
     "X-Content-Type-Options": "nosniff",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, X-OpenAI-Key, X-DeepSeek-Key"
+    "Access-Control-Allow-Headers": "Content-Type, X-OpenAI-Key, X-DeepSeek-Key",
   };
 }
 
@@ -46,7 +48,7 @@ function sha256Hex(data: Uint8Array | string) {
 
 function isoNow() { return new Date().toISOString(); }
 
-function buildTreeFromCompose(payload: any) {
+async function buildTreeFromCompose(payload: any) {
   // EXPECTS:
   // {
   //   name?: "qaadi_export.zip",
@@ -66,16 +68,16 @@ function buildTreeFromCompose(payload: any) {
     created_at: isoNow(),
     build: {
       tag: (process.env.NEXT_PUBLIC_BUILD_TAG ?? "qaadi-fast-track"),
-      byok: true
+      byok: true,
     },
-    meta: payload?.meta ?? {}
+    meta: payload?.meta ?? {},
   };
 
   // 00_manifest.json + 90_build_info.json
   files.push({ path: "paper/00_manifest.json", content: JSON.stringify(manifest, null, 2) });
   files.push({
     path: "paper/90_build_info.json",
-    content: JSON.stringify({ created_at: isoNow(), env: "edge" }, null, 2)
+    content: JSON.stringify({ created_at: isoNow(), env: "edge" }, null, 2),
   });
 
   // 10_input.md
@@ -86,16 +88,33 @@ function buildTreeFromCompose(payload: any) {
   if (payload?.secretary?.audit !== undefined) {
     files.push({
       path: "paper/20_secretary_audit.json",
-      content: JSON.stringify(payload.secretary.audit, null, 2)
+      content: JSON.stringify(payload.secretary.audit, null, 2),
     });
   }
 
   // 30_judge_report.json
   if (payload?.judge?.report !== undefined) {
+    const report = payload.judge.report;
+    let percentage = 0;
+    let classification: "accepted" | "needs_improvement" | "weak" = "weak";
+    if (Array.isArray(report?.criteria) && typeof report?.score_total === "number") {
+      const max = report.criteria.length * 10;
+      percentage = max > 0 ? (report.score_total / max) * 100 : 0;
+      if (percentage >= 80) classification = "accepted";
+      else if (percentage >= 60) classification = "needs_improvement";
+    }
+    const enriched = { ...report, percentage, classification };
     files.push({
       path: "paper/30_judge_report.json",
-      content: JSON.stringify(payload.judge.report, null, 2)
+      content: JSON.stringify(enriched, null, 2),
     });
+    try {
+      const root = process.cwd();
+      await mkdir(path.join(root, "paper"), { recursive: true });
+      await writeFile(path.join(root, "paper", "judge.json"), JSON.stringify(enriched, null, 2));
+      await mkdir(path.join(root, "public", "paper"), { recursive: true });
+      await writeFile(path.join(root, "public", "paper", "judge.json"), JSON.stringify(enriched, null, 2));
+    } catch {}
   }
 
   // 40_consultant_plan.md
@@ -109,13 +128,13 @@ function buildTreeFromCompose(payload: any) {
   }
 
   // comparison.md
-    const comparisonTable =
-      `| Framework | Compatibility |\n` +
-      `| --- | --- |\n` +
-      `| Relativity | Compatible |\n` +
-      `| Quantum Mechanics | Compatible |\n` +
-      `| Field Theory | Compatible |`;
-    files.push({ path: "paper/comparison.md", content: comparisonTable });
+  const comparisonTable =
+    `| Framework | Compatibility |\n` +
+    `| --- | --- |\n` +
+    `| Relativity | Compatible |\n` +
+    `| Quantum Mechanics | Compatible |\n` +
+    `| Field Theory | Compatible |`;
+  files.push({ path: "paper/comparison.md", content: comparisonTable });
 
   return { name, files };
 }
@@ -126,7 +145,7 @@ function promptsForOrchestrate(inputText: string) {
     secretary: `You are Qaadi Secretary. Audit the submission: list missing items, ambiguity, formatting issues. Output strict JSON: { "ready_percent": number, "issues": [ { "type": "...", "note": "..." } ] }.\n\nINPUT:\n${inputText}`,
     judge: `You are Qaadi Judge. Evaluate scientifically against 20 internal criteria. Output strict JSON: { "score_total": number, "criteria": [ { "id": 1, "name": "...", "score": number, "notes": "..." } ], "notes": "..." }.\n\nINPUT:\n${inputText}`,
     consultant: `You are Qaadi Consultant. Merge secretary issues + judge gaps into an action plan. Output a concise Markdown plan (no code fences). INPUT:\n${inputText}`,
-    journalist: `You are Qaadi Journalist. Produce a concise, publication-ready summary in Arabic. No code fences. INPUT:\n${inputText}`
+    journalist: `You are Qaadi Journalist. Produce a concise, publication-ready summary in Arabic. No code fences. INPUT:\n${inputText}`,
   };
 }
 
@@ -165,7 +184,7 @@ export async function POST(req: NextRequest) {
 
   // Mode B: compose → client provides unit outputs; server builds canonical tree
   if (mode === "compose") {
-    const { name, files } = buildTreeFromCompose(body);
+    const { name, files } = await buildTreeFromCompose(body);
     if (!files.length) {
       return new Response(JSON.stringify({ error: "compose_empty" }), { status: 400, headers: headersJSON() });
     }
@@ -198,7 +217,7 @@ export async function POST(req: NextRequest) {
       runWithFallback(selection, { openai: openaiKey || undefined, deepseek: deepseekKey || undefined }, prompts.secretary, max_tokens),
       runWithFallback(selection, { openai: openaiKey || undefined, deepseek: deepseekKey || undefined }, prompts.judge, max_tokens),
       runWithFallback(selection, { openai: openaiKey || undefined, deepseek: deepseekKey || undefined }, prompts.consultant, max_tokens),
-      runWithFallback(selection, { openai: openaiKey || undefined, deepseek: deepseekKey || undefined }, prompts.journalist, max_tokens)
+      runWithFallback(selection, { openai: openaiKey || undefined, deepseek: deepseekKey || undefined }, prompts.journalist, max_tokens),
     ]);
 
     // Normalize texts
@@ -218,10 +237,10 @@ export async function POST(req: NextRequest) {
       judge: { report: tryJSON(judgeText) },
       consultant: { plan: consultantText },
       journalist: { summary: journalistText },
-      meta: { model: selection, max_tokens }
+      meta: { model: selection, max_tokens },
     };
 
-    const { name, files } = buildTreeFromCompose(composePayload);
+    const { name, files } = await buildTreeFromCompose(composePayload);
     await saveSnapshot(files, target, lang, slug, v);
     const zip = makeZip(files);
     const shaHex = sha256Hex(zip);
