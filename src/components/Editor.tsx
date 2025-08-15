@@ -2,6 +2,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { latestFilesFor } from "../lib/utils/manifest";
 import ScoreCharts from "./ScoreCharts";
+import {
+  loadUserCriteria,
+  saveUserCriteria,
+  type UserCriterion,
+} from "../lib/userCriteria";
 
 type Target =
   | "wide"
@@ -42,6 +47,10 @@ export default function Editor() {
   const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
   const [files, setFiles] = useState<string[]>([]);
   const [judge, setJudge] = useState<any>(null);
+  const [userCriteria, setUserCriteria] = useState<UserCriterion[]>([]);
+  const [newCritName, setNewCritName] = useState("");
+  const [newCritType, setNewCritType] = useState<"internal" | "external">("internal");
+  const [newCritDesc, setNewCritDesc] = useState("");
 
   const slug = useMemo(() => {
     if (typeof window !== "undefined") {
@@ -91,12 +100,35 @@ export default function Editor() {
       }
     } catch {}
   }, [lang]);
+  useEffect(() => { setUserCriteria(loadUserCriteria()); }, []);
+  useEffect(() => { saveUserCriteria(userCriteria); }, [userCriteria]);
 
   const headers = useMemo(() => ({
     "Content-Type": "application/json",
     "X-OpenAI-Key": openaiKey || "",
     "X-DeepSeek-Key": deepseekKey || ""
   }), [openaiKey, deepseekKey]);
+
+  function addCriterion() {
+    if (!newCritName.trim()) return;
+    const name = newCritName.trim();
+    if (userCriteria.some((c) => c.name === name)) return;
+    const c: UserCriterion = {
+      name,
+      type: newCritType,
+      description: newCritDesc.trim(),
+      isActive: true,
+    };
+    setUserCriteria([...userCriteria, c]);
+    setNewCritName("");
+    setNewCritDesc("");
+  }
+
+  function toggleCriterion(idx: number) {
+    const list = [...userCriteria];
+    list[idx].isActive = !list[idx].isActive;
+    setUserCriteria(list);
+  }
 
   async function doGenerate() {
     setBusy(true); setMsg("");
@@ -309,6 +341,30 @@ export default function Editor() {
               {files.map(f => <li key={f}>{f}</li>)}
             </ul>
           </div>
+        )}
+      </div>
+      <div className="card" style={{marginBottom:12}}>
+        <label>معايير المستخدم</label>
+        <div className="grid grid-4">
+          <input placeholder="الاسم" value={newCritName} onChange={e=>setNewCritName(e.target.value)} />
+          <select value={newCritType} onChange={e=>setNewCritType(e.target.value as "internal" | "external")}>
+            <option value="internal">داخلي</option>
+            <option value="external">خارجي</option>
+          </select>
+          <input placeholder="الوصف" value={newCritDesc} onChange={e=>setNewCritDesc(e.target.value)} />
+          <button className="btn" onClick={addCriterion}>إضافة</button>
+        </div>
+        {userCriteria.length > 0 && (
+          <ul className="user-criteria-list">
+            {userCriteria.map((c, idx) => (
+              <li key={c.name}>
+                <label>
+                  <input type="checkbox" checked={c.isActive} onChange={() => toggleCriterion(idx)} /> {c.name}
+                  {c.description && <span> – {c.description}</span>}
+                </label>
+              </li>
+            ))}
+          </ul>
         )}
       </div>
 
