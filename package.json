@@ -7,7 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node --test -r ts-node/register test/**/*.ts",
+    "test": "node --test --loader ts-node/esm --experimental-specifier-resolution=node test/**/*.ts",
     "migrate-registry": "ts-node scripts/migrate-registry.ts"
   },
   "dependencies": {
