@@ -32,6 +32,8 @@ function tsFolder(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
+export const ROLE_FILES = ["secretary.md", "judge.json", "plan.md", "notes.txt", "comparison.md"];
+
 export async function saveSnapshot(
   files: { path: string; content: string | Uint8Array }[],
   target: string,
@@ -47,9 +49,8 @@ export async function saveSnapshot(
 
   const safeSlug = sanitizeSlug(slug);
 
-  const roleNames = ["secretary.md", "judge.json", "plan.md", "notes.txt", "comparison.md"];
   const roleData: Record<string, Buffer> = {};
-  for (const name of roleNames) {
+  for (const name of ROLE_FILES) {
     try {
       roleData[name] = await readFile(path.join(process.cwd(), "paper", name));
     } catch {}
@@ -81,11 +82,11 @@ export async function saveSnapshot(
       slug: safeSlug,
       v,
       timestamp,
-      type: roleNames.includes(name) ? "role" : "paper"
+      type: ROLE_FILES.includes(name) ? "role" : "paper"
     });
   }
 
-  const missingRoles = roleNames.filter((n) => !files.some((f) => f.path.replace(/^paper\//, "") === n));
+  const missingRoles = ROLE_FILES.filter((n) => !files.some((f) => f.path.replace(/^paper\//, "") === n));
   for (const name of missingRoles) {
     const data = roleData[name];
     if (!data) continue;

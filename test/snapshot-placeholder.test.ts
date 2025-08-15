@@ -4,7 +4,7 @@ import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
-import { saveSnapshot } from '../src/app/api/generate/route';
+import { saveSnapshot } from '../src/lib/utils/snapshot';
 
 function fakeDates() {
   const realDate = Date;

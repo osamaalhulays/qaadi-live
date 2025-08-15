@@ -5,7 +5,7 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
-import { sanitizeSlug, type SnapshotEntry } from "../../../lib/utils/snapshot";
+import { sanitizeSlug, type SnapshotEntry, ROLE_FILES } from "../../../lib/utils/snapshot";
 
 export const runtime = "nodejs";
 
@@ -60,7 +60,6 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
   const timestamp = now.toISOString();
   const entries: SnapshotEntry[] = [];
 
-  const roleNames = ["secretary.md", "judge.json", "plan.md", "notes.txt", "comparison.md"];
   const vaultBase = path.join(process.cwd(), `QaadiVault/theory-${safeSlug}`);
 
   for (const f of files) {
@@ -81,11 +80,11 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
       slug: safeSlug,
       v,
       timestamp,
-      type: roleNames.includes(name) ? "role" : "paper"
+      type: ROLE_FILES.includes(name) ? "role" : "paper"
     });
   }
 
-  const missingRoles = roleNames.filter((n) => !files.some((f) => f.path.replace(/^paper\//, "") === n));
+  const missingRoles = ROLE_FILES.filter((n) => !files.some((f) => f.path.replace(/^paper\//, "") === n));
   for (const name of missingRoles) {
     try {
       const data = await readFile(path.join(process.cwd(), "paper", name));
