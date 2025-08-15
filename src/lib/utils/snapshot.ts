@@ -43,17 +43,20 @@ export async function saveSnapshot(
   const timestamp = now.toISOString();
   const entries: SnapshotEntry[] = [];
   const covers: string[] = [];
+  const list = [...files];
 
   if (target === "inquiry") {
     try {
       const planData = await readFile(path.join(process.cwd(), "paper", "plan.md"));
       covers.push(sha256Hex(planData));
+      list.push({ path: "paper/plan.md", content: planData });
     } catch {}
     try {
       const judgeData = await readFile(path.join(process.cwd(), "paper", "judge.json"));
       covers.push(sha256Hex(judgeData));
+      list.push({ path: "paper/judge.json", content: judgeData });
     } catch {}
-    files.push({
+    list.push({
       path: "paper/inquiry.json",
       content: JSON.stringify({ covers }, null, 2)
     });
@@ -61,7 +64,7 @@ export async function saveSnapshot(
 
   const safeSlug = sanitizeSlug(slug);
 
-  for (const f of files) {
+  for (const f of list) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
     const rel = path.join("snapshots", safeSlug, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
     const full = path.join(process.cwd(), "public", rel);
