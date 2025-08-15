@@ -52,7 +52,8 @@ export async function saveSnapshot(
     "judge.json",
     "plan.md",
     "notes.txt",
-    "comparison.md"
+    "comparison.md",
+    "summary.md"
   ];
   const roleData: Record<string, Buffer> = {};
   for (const name of roleNames) {

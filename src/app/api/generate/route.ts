@@ -6,6 +6,14 @@ import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { saveSnapshot } from "../../../lib/utils/snapshot";
 import fs from "fs/promises";
 import path from "path";
+import {
+  runSecretary,
+  runResearchSecretary,
+  runJudge,
+  runConsultant,
+  runLead,
+  runJournalist
+} from "../../../lib/workers";
 
 export const runtime = "nodejs";
 
@@ -32,6 +40,69 @@ function detectDir(s: string): "rtl" | "ltr" | "mixed" {
 }
 
 export async function POST(req: NextRequest) {
+  const url = new URL(req.url);
+  if (url.searchParams.get("workflow") === "orchestrator") {
+    const body: any = await req.json().catch(() => ({}));
+    const cards = Array.isArray(body.cards) ? body.cards.slice(0, 10) : [];
+    const names = cards.map((c: any) => String(c?.name || "card"));
+    const target = body.target || "workflow";
+    const lang = body.lang || "en";
+    const slug = body.slug || "demo";
+    const v = body.v || "v1";
+
+    const sec = await runSecretary();
+    await saveSnapshot([{ path: "paper/secretary.md", content: sec }], target, lang, slug, v);
+
+    for (const name of names) {
+      const plan = await runResearchSecretary(name);
+      await saveSnapshot(
+        [{ path: `paper/plan-${plan.name}.md`, content: plan.content }],
+        target,
+        lang,
+        slug,
+        v
+      );
+    }
+
+    const judge = await runJudge();
+    await saveSnapshot(
+      [{ path: "paper/judge.json", content: JSON.stringify(judge, null, 2) }],
+      target,
+      lang,
+      slug,
+      v
+    );
+
+    const notes = await runConsultant();
+    await saveSnapshot(
+      [{ path: "paper/notes.txt", content: notes }],
+      target,
+      lang,
+      slug,
+      v
+    );
+
+    const comparison = await runLead(names);
+    await saveSnapshot(
+      [{ path: "paper/comparison.md", content: comparison }],
+      target,
+      lang,
+      slug,
+      v
+    );
+
+    const summary = await runJournalist();
+    await saveSnapshot(
+      [{ path: "paper/summary.md", content: summary }],
+      target,
+      lang,
+      slug,
+      v
+    );
+
+    return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+
   let input;
   try { input = InputSchema.parse(await req.json()); }
   catch { return new Response(JSON.stringify({ error: "bad_input" }), { status: 400 }); }
