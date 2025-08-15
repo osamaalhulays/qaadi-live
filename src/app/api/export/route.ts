@@ -55,6 +55,7 @@ function tsFolder(d = new Date()) {
 
 async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug: string, v: string) {
   const safeSlug = sanitizeSlug(slug);
+  const safeV = sanitizeSlug(v);
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
@@ -62,7 +63,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
 
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
-    const rel = path.join("snapshots", safeSlug, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
+    const rel = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
     const full = path.join(process.cwd(), "public", rel);
     await mkdir(path.dirname(full), { recursive: true });
     await writeFile(full, data);
@@ -72,7 +73,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
       target,
       lang,
       slug: safeSlug,
-      v,
+      v: safeV,
       timestamp,
       type: "paper"
     });
@@ -82,7 +83,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
   for (const name of roleNames) {
     try {
       const data = await readFile(path.join(process.cwd(), "paper", name));
-      const rel = path.join("snapshots", safeSlug, tsDir, "paper", target, lang, name);
+      const rel = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang, name);
       const full = path.join(process.cwd(), "public", rel);
       await mkdir(path.dirname(full), { recursive: true });
       await writeFile(full, data);
@@ -92,7 +93,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
         target,
         lang,
         slug: safeSlug,
-        v,
+        v: safeV,
         timestamp,
         type: "role"
       });

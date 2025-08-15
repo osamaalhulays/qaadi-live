@@ -43,32 +43,26 @@ export default function Editor() {
   const [files, setFiles] = useState<string[]>([]);
   const [judge, setJudge] = useState<any>(null);
 
-  const slug = useMemo(() => {
+  const [slug, setSlug] = useState("default");
+  const [v, setV] = useState("default");
+
+  useEffect(() => {
     if (typeof window !== "undefined") {
-      return (
-        window.location.pathname.split("/").filter(Boolean)[0] ||
-        new URLSearchParams(window.location.search).get("slug") ||
-        "default"
-      );
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      const params = new URLSearchParams(window.location.search);
+      const s = parts[0] || params.get("slug") || "default";
+      const ver = parts[1] || params.get("v") || "default";
+      setSlug(s);
+      setV(ver);
     }
-    return "default";
   }, []);
-  const v = useMemo(() => {
-    if (typeof window !== "undefined") {
-      return (
-        window.location.pathname.split("/").filter(Boolean)[1] ||
-        new URLSearchParams(window.location.search).get("v") ||
-        "default"
-      );
-    }
-    return "default";
-  }, []);
+
+  const slugRe = /^[A-Za-z0-9_-]*$/;
 
   const snapshotPath = useMemo(() => {
     if (!files.length) return null;
-    const latest = files.find(f => f.startsWith(`${v}/`)) || files[0];
-    return `/snapshots/${slug}/${latest}`;
-  }, [files, slug, v]);
+    return `/${files[0]}`;
+  }, [files]);
 
   useEffect(() => {
     try {
@@ -91,6 +85,7 @@ export default function Editor() {
       }
     } catch {}
   }, [lang]);
+  useEffect(() => { refreshFiles(); }, [slug, v]);
 
   const headers = useMemo(() => ({
     "Content-Type": "application/json",
@@ -221,6 +216,31 @@ export default function Editor() {
         <div>
           <label>OpenAI Key</label>
           <input value={openaiKey} onChange={e=>setOpenaiKey(e.target.value)} placeholder="...sk" />
+        </div>
+      </div>
+
+      <div className="card grid grid-2" style={{marginBottom:12}}>
+        <div>
+          <label>Slug</label>
+          <input
+            value={slug}
+            onChange={e => {
+              const val = e.target.value;
+              if (slugRe.test(val)) setSlug(val);
+            }}
+            placeholder="demo"
+          />
+        </div>
+        <div>
+          <label>Version</label>
+          <input
+            value={v}
+            onChange={e => {
+              const val = e.target.value;
+              if (slugRe.test(val)) setV(val);
+            }}
+            placeholder="v1"
+          />
         </div>
       </div>
 
