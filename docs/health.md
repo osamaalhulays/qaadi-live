@@ -15,7 +15,7 @@ service. The JSON response has the following structure:
   "storage": "<storage-state>",
   "kv": "<kv-state>",
   "capsule": {
-    "latest": "<capsule-version>",
+    "name": "<capsule-name>",
     "sha256": "<capsule-checksum>",
     "ts": "<capsule-timestamp>"
   }
