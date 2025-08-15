@@ -14,6 +14,7 @@ export interface JudgeCriterionOutput {
 export interface JudgeReportOutput {
   score_total: number;
   criteria: JudgeCriterionOutput[];
+  user_criteria: JudgeCriterionOutput[];
 }
 
 /**
@@ -39,7 +40,7 @@ export async function runJudge(
   const userMapped: JudgeCriterionOutput[] = activeUser.map((c, idx) => {
     const covered = text.toLowerCase().includes(c.name.toLowerCase());
     return {
-      id: qn21Mapped.length + idx + 1,
+      id: idx + 1,
       name: c.name,
       type: c.type,
       score: covered ? 1 : 0,
@@ -47,10 +48,13 @@ export async function runJudge(
     };
   });
 
-  const criteria = [...qn21Mapped, ...userMapped];
-  const score_total = criteria.reduce((sum, c) => sum + c.score, 0);
+  const score_total = qn21Mapped.reduce((sum, c) => sum + c.score, 0);
 
-  const report: JudgeReportOutput = { score_total, criteria };
+  const report: JudgeReportOutput = {
+    score_total,
+    criteria: qn21Mapped,
+    user_criteria: userMapped,
+  };
 
   await mkdir(path.dirname(outFile), { recursive: true });
   await writeFile(outFile, JSON.stringify(report, null, 2));

@@ -111,8 +111,10 @@ export default function Editor() {
 
   function addCriterion() {
     if (!newCritName.trim()) return;
+    const name = newCritName.trim();
+    if (userCriteria.some((c) => c.name === name)) return;
     const c: UserCriterion = {
-      name: newCritName.trim(),
+      name,
       type: newCritType,
       description: newCritDesc.trim(),
       isActive: true,
@@ -355,9 +357,10 @@ export default function Editor() {
         {userCriteria.length > 0 && (
           <ul className="user-criteria-list">
             {userCriteria.map((c, idx) => (
-              <li key={idx}>
+              <li key={c.name}>
                 <label>
                   <input type="checkbox" checked={c.isActive} onChange={() => toggleCriterion(idx)} /> {c.name}
+                  {c.description && <span> – {c.description}</span>}
                 </label>
               </li>
             ))}
