@@ -2,7 +2,7 @@
 import { useEffect, useRef } from "react";
 
 interface Criterion {
-  id: number;
+  id: string | number;
   name: string;
   score: number;
   type?: "internal" | "external";

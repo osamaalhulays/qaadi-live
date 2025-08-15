@@ -4,7 +4,7 @@ import { evaluateQN21 } from "./q21";
 import { getActiveCriteria, UserCriterion } from "./userCriteria";
 
 export interface JudgeCriterionOutput {
-  id: number;
+  id: string;
   name: string;
   score: number;
   type: "internal" | "external";
@@ -31,17 +31,18 @@ export async function runJudge(
   const activeUser = getActiveCriteria(userCriteria);
 
   const qn21Mapped: JudgeCriterionOutput[] = qn21.map((c, idx) => ({
-    id: idx + 1,
+    id: String(idx + 1),
     name: c.code,
     type: c.type,
     score: c.score,
     covered: c.score >= c.weight,
+    description: c.description,
   }));
 
-  const userMapped: JudgeCriterionOutput[] = activeUser.map((c, idx) => {
+  const userMapped: JudgeCriterionOutput[] = activeUser.map((c) => {
     const covered = text.toLowerCase().includes(c.name.toLowerCase());
     return {
-      id: qn21Mapped.length + idx + 1,
+      id: c.id,
       name: c.name,
       type: c.type,
       score: covered ? 1 : 0,

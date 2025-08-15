@@ -112,8 +112,9 @@ export default function Editor() {
   function addCriterion() {
     if (!newCritName.trim()) return;
     const name = newCritName.trim();
-    if (userCriteria.some((c) => c.name === name)) return;
+    if (userCriteria.some((c) => c.name.toLowerCase() === name.toLowerCase())) return;
     const c: UserCriterion = {
+      id: crypto.randomUUID(),
       name,
       type: newCritType,
       description: newCritDesc.trim(),
@@ -124,10 +125,10 @@ export default function Editor() {
     setNewCritDesc("");
   }
 
-  function toggleCriterion(idx: number) {
-    const list = [...userCriteria];
-    list[idx].isActive = !list[idx].isActive;
-    setUserCriteria(list);
+  function toggleCriterion(id: string) {
+    setUserCriteria((list) =>
+      list.map((c) => (c.id === id ? { ...c, isActive: !c.isActive } : c))
+    );
   }
 
   async function doGenerate() {
@@ -356,10 +357,14 @@ export default function Editor() {
         </div>
         {userCriteria.length > 0 && (
           <ul className="user-criteria-list">
-            {userCriteria.map((c, idx) => (
-              <li key={c.name}>
+            {userCriteria.map((c) => (
+              <li key={c.id}>
                 <label>
-                  <input type="checkbox" checked={c.isActive} onChange={() => toggleCriterion(idx)} /> {c.name}
+                  <input
+                    type="checkbox"
+                    checked={c.isActive}
+                    onChange={() => toggleCriterion(c.id)}
+                  /> {c.name}
                   {c.description && <span> – {c.description}</span>}
                 </label>
               </li>

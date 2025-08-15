@@ -1,4 +1,6 @@
 export interface UserCriterion {
+  /** Stable identifier for the criterion */
+  id: string;
   /** User-friendly name of the criterion */
   name: string;
   /** Whether the criterion is internal or external */
