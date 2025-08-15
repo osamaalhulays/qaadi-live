@@ -346,11 +346,11 @@ async function loadGlossary(req: NextRequest): Promise<Record<string, string> | 
 /**
  * Orchestrates all worker roles sequentially.
  */
-export async function orchestrate() {
+export async function orchestrate(cards: string[] = []) {
   const audit = await runSecretary();
   const report = await runJudge();
   const plan = await runConsultant();
-  const comparison = await runLead([]);
+  const comparison = await runLead(cards);
   const summary = await runJournalist();
   return { audit, report, plan, comparison, summary };
 }
