@@ -63,12 +63,29 @@ export async function saveSnapshot(
   }
 
   if (target === "inquiry") {
-    if (roleData["plan.md"]) covers.push(sha256Hex(roleData["plan.md"]));
-    if (roleData["judge.json"]) covers.push(sha256Hex(roleData["judge.json"]));
-    files.push({
-      path: "paper/inquiry.json",
-      content: JSON.stringify({ covers }, null, 2)
-    });
+    const coverSet = new Set<string>();
+    if (roleData["plan.md"]) coverSet.add(sha256Hex(roleData["plan.md"]));
+    if (roleData["judge.json"]) coverSet.add(sha256Hex(roleData["judge.json"]));
+
+    const inquiryFile = files.find((f) => f.path === "paper/inquiry.json");
+    if (inquiryFile) {
+      try {
+        const raw =
+          typeof inquiryFile.content === "string"
+            ? inquiryFile.content
+            : Buffer.from(inquiryFile.content).toString("utf8");
+        const j = JSON.parse(raw);
+        if (Array.isArray(j?.questions)) {
+          for (const q of j.questions) {
+            if (Array.isArray(q?.covers)) {
+              for (const c of q.covers) coverSet.add(c);
+            }
+          }
+        }
+      } catch {}
+    }
+
+    covers.push(...coverSet);
   }
 
   for (const f of files) {
