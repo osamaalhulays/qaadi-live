@@ -21,5 +21,10 @@
     "@types/react": "18.2.66",
     "@types/node": "20.11.30",
     "ts-node": "10.9.2"
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "jsx": "react-jsx"
+    }
   }
 }

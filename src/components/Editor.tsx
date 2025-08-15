@@ -1,7 +1,7 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense, lazy } from "react";
 import { latestFilesFor } from "../lib/utils/manifest";
-import ScoreCharts from "./ScoreCharts";
+const ScoreCharts = lazy(() => import("./ScoreCharts"));
 
 type Target =
   | "wide"
@@ -25,12 +25,17 @@ type Lang =
   | "other";
 type ModelSel = "openai" | "deepseek" | "auto";
 
-export default function Editor() {
+interface Props {
+  initialTarget?: Target | "";
+  initialLang?: Lang | "";
+}
+
+export default function Editor({ initialTarget = "", initialLang = "" }: Props = {}) {
   const [openaiKey, setOpenaiKey] = useState("");
   const [deepseekKey, setDeepseekKey] = useState("");
 
-  const [target, setTarget] = useState<Target | "">("");
-  const [lang, setLang] = useState<Lang | "">("");
+  const [target, setTarget] = useState<Target | "">(initialTarget);
+  const [lang, setLang] = useState<Lang | "">(initialLang);
   const [model, setModel] = useState<ModelSel>("auto");
   const [maxTokens, setMaxTokens] = useState(2048);
   const [text, setText] = useState("");
@@ -300,7 +305,9 @@ export default function Editor() {
         )}
         {judge?.criteria && (
           <div className="charts">
-            <ScoreCharts criteria={judge.criteria} />
+            <Suspense fallback={null}>
+              <ScoreCharts criteria={judge.criteria} />
+            </Suspense>
           </div>
         )}
         {files.length > 0 && (

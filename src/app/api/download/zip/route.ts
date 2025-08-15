@@ -54,8 +54,12 @@ export async function GET(req: NextRequest) {
     const registry = await readFile(regPath, "utf-8");
     const registrySha = crypto.createHash("sha256").update(registry).digest("hex");
     const canonicalPath = path.join(root, "QaadiDB", `theory-${slug}`, "canonical", v, "canonical.json");
-    const canonical = await readFile(canonicalPath, "utf-8");
-    const canonicalSha = crypto.createHash("sha256").update(canonical).digest("hex");
+    let canonical = "{}";
+    let canonicalSha = crypto.createHash("sha256").update(canonical).digest("hex");
+    try {
+      canonical = await readFile(canonicalPath, "utf-8");
+      canonicalSha = crypto.createHash("sha256").update(canonical).digest("hex");
+    } catch {}
     const builtAt = new Date().toISOString();
     const manifest = JSON.stringify({ kind: "qaadi-ga", slug, version: v, built_at: builtAt }, null, 2);
     let snapEntries: SnapshotEntry[] = [];
@@ -111,8 +115,9 @@ export async function GET(req: NextRequest) {
       const latest = snapEntries.reduce((a, b) =>
         a.timestamp > b.timestamp ? a : b
       );
-      const tsDir = latest.path.split("/")[2];
-      const prefix = `snapshots/${slug}/${tsDir}/`;
+      const parts = latest.path.split("/");
+      const tsDir = parts[3];
+      const prefix = `snapshots/${slug}/${v}/${tsDir}/`;
       for (const e of snapEntries.filter((s) => s.path.startsWith(prefix))) {
         if (e.path.endsWith("/")) continue;
         try {
