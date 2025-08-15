@@ -111,7 +111,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
 }
 
-function buildTreeFromCompose(payload: any) {
+async function buildTreeFromCompose(payload: any) {
   // EXPECTS:
   // {
   //   name?: "qaadi_export.zip",
@@ -157,10 +157,27 @@ function buildTreeFromCompose(payload: any) {
 
   // 30_judge_report.json
   if (payload?.judge?.report !== undefined) {
+    const report = payload.judge.report;
+    let percentage = 0;
+    let classification: "accepted" | "needs_improvement" | "weak" = "weak";
+    if (Array.isArray(report?.criteria) && typeof report?.score_total === "number") {
+      const max = report.criteria.length * 10;
+      percentage = max > 0 ? (report.score_total / max) * 100 : 0;
+      if (percentage >= 80) classification = "accepted";
+      else if (percentage >= 60) classification = "needs_improvement";
+    }
+    const enriched = { ...report, percentage, classification };
     files.push({
       path: "paper/30_judge_report.json",
-      content: JSON.stringify(payload.judge.report, null, 2)
+      content: JSON.stringify(enriched, null, 2)
     });
+    try {
+      const root = process.cwd();
+      await mkdir(path.join(root, "paper"), { recursive: true });
+      await writeFile(path.join(root, "paper", "judge.json"), JSON.stringify(enriched, null, 2));
+      await mkdir(path.join(root, "public", "paper"), { recursive: true });
+      await writeFile(path.join(root, "public", "paper", "judge.json"), JSON.stringify(enriched, null, 2));
+    } catch {}
   }
 
   // 40_consultant_plan.md
@@ -221,7 +238,7 @@ export async function POST(req: NextRequest) {
 
   // Mode B: compose → client provides unit outputs; server builds canonical tree
   if (mode === "compose") {
-    const { name, files } = buildTreeFromCompose(body);
+    const { name, files } = await buildTreeFromCompose(body);
     if (!files.length) {
       return new Response(JSON.stringify({ error: "compose_empty" }), { status: 400, headers: headersJSON() });
     }
@@ -277,7 +294,7 @@ export async function POST(req: NextRequest) {
       meta: { model: selection, max_tokens }
     };
 
-    const { name, files } = buildTreeFromCompose(composePayload);
+    const { name, files } = await buildTreeFromCompose(composePayload);
     await saveSnapshot(files, target, lang, slug, v);
     const zip = makeZip(files);
     const shaHex = sha256Hex(zip);
