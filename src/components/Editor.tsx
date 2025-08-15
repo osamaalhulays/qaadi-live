@@ -24,12 +24,18 @@ type Lang =
   | "other";
 type ModelSel = "openai" | "deepseek" | "auto";
 
-export default function Editor() {
+export default function Editor({
+  initialTarget = "",
+  initialLang = ""
+}: {
+  initialTarget?: Target | "";
+  initialLang?: Lang | "";
+}) {
   const [openaiKey, setOpenaiKey] = useState("");
   const [deepseekKey, setDeepseekKey] = useState("");
 
-  const [target, setTarget] = useState<Target | "">("");
-  const [lang, setLang] = useState<Lang | "">("");
+  const [target, setTarget] = useState<Target | "">(initialTarget);
+  const [lang, setLang] = useState<Lang | "">(initialLang);
   const [model, setModel] = useState<ModelSel>("auto");
   const [maxTokens, setMaxTokens] = useState(2048);
   const [text, setText] = useState("");
