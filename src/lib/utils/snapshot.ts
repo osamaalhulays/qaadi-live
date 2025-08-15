@@ -48,10 +48,12 @@ export async function saveSnapshot(
     try {
       const planData = await readFile(path.join(process.cwd(), "paper", "plan.md"));
       covers.push(sha256Hex(planData));
+      files.push({ path: "paper/plan.md", content: planData });
     } catch {}
     try {
       const judgeData = await readFile(path.join(process.cwd(), "paper", "judge.json"));
       covers.push(sha256Hex(judgeData));
+      files.push({ path: "paper/judge.json", content: judgeData });
     } catch {}
     files.push({
       path: "paper/inquiry.json",
