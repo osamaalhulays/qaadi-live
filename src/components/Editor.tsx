@@ -102,16 +102,24 @@ export default function Editor() {
     setBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
-      const res = await fetch("/api/generate", {
+      const url = target === "inquiry" ? "/api/inquiry" : "/api/generate";
+      const payload =
+        target === "inquiry"
+          ? { lang, plan: text, slug, v }
+          : { target, lang, model, max_tokens: maxTokens, text, slug, v };
+      const res = await fetch(url, {
         method: "POST",
         headers,
-        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text, slug, v })
+        body: JSON.stringify(payload)
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "generate_failed");
       setOut(j?.text || "");
-      setVerify(j?.checks || null);
-      setMsg(`OK • model=${j?.model_used} • in=${j?.tokens_in} • out=${j?.tokens_out} • ${j?.latency_ms}ms`);
+      if (target !== "inquiry") setVerify(j?.checks || null);
+      else setVerify(null);
+      if (target !== "inquiry")
+        setMsg(`OK • model=${j?.model_used} • in=${j?.tokens_in} • out=${j?.tokens_out} • ${j?.latency_ms}ms`);
+      else setMsg("OK");
       if (Array.isArray(j?.files)) setFiles(j.files);
       else await refreshFiles();
     } catch (e:any) {
