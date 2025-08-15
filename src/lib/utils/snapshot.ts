@@ -51,8 +51,7 @@ export async function saveSnapshot(
 
   const roleNames = [
     "secretary.md",
-    "judge.json",
-    "plan.md",
+    ...(target === "inquiry" ? ["judge.json", "plan.md"] : []),
     "notes.txt",
     "comparison.md",
     "summary.md"
@@ -98,7 +97,8 @@ export async function saveSnapshot(
   }
 
   for (const f of list) {
-    const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
+    const data =
+      typeof f.content === "string" ? Buffer.from(f.content) : f.content;
     const rel = path.join(
       "snapshots",
       safeSlug,
