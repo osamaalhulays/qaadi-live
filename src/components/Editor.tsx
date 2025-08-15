@@ -42,6 +42,8 @@ export default function Editor() {
   const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
   const [files, setFiles] = useState<string[]>([]);
   const [judge, setJudge] = useState<any>(null);
+  const [selfTest, setSelfTest] = useState<null | { ratio:number; deviations:{role:string; expected:string; found:string}[] }>(null);
+  const [selfBusy, setSelfBusy] = useState(false);
 
   const slug = useMemo(() => {
     if (typeof window !== "undefined") {
@@ -92,6 +94,18 @@ export default function Editor() {
     } catch {}
   }, [lang]);
 
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/api/selftest?slug=${slug}`);
+        if (res.ok) {
+          const j = await res.json();
+          setSelfTest(j);
+        }
+      } catch {}
+    })();
+  }, [slug]);
+
   const headers = useMemo(() => ({
     "Content-Type": "application/json",
     "X-OpenAI-Key": openaiKey || "",
@@ -118,6 +132,23 @@ export default function Editor() {
       setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `ERROR: ${e?.message || e}`);
       setVerify(null);
     } finally { setBusy(false); }
+  }
+
+  async function runSelfTest() {
+    setSelfBusy(true); setMsg("");
+    try {
+      const res = await fetch("/api/selftest", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ slug, sample: text })
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j?.error || "selftest_failed");
+      setSelfTest(j);
+      setMsg(`Self-Test ${(j.ratio * 100).toFixed(0)}%`);
+    } catch (e:any) {
+      setMsg(`Self-Test ERROR: ${e?.message || e}`);
+    } finally { setSelfBusy(false); }
   }
 
   async function exportOrchestrate() {
@@ -279,12 +310,16 @@ export default function Editor() {
           <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export (compose demo)"}</button>
           <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export ZIP"}</button>
           <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang}>{busy ? "جارٍ…" : "Generate"}</button>
+          <button className="btn" onClick={runSelfTest} disabled={selfBusy || !text}>{selfBusy ? "..." : "Self-Test"}</button>
           {snapshotPath && (
             <a className="btn" href={snapshotPath} target="_blank" rel="noopener noreferrer">Open Snapshot</a>
           )}
         </div>
         {!snapshotPath && <div className="note">No snapshot yet</div>}
         {msg && <div className="note">{msg}</div>}
+        {selfTest && (
+          <div className="note">Self-Test {(selfTest.ratio * 100).toFixed(0)}% · deviations: {selfTest.deviations.length}</div>
+        )}
         {verify && (
           <div className="verify-bar">
             <span>
