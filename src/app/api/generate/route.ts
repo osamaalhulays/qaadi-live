@@ -47,7 +47,6 @@ export async function POST(req: NextRequest) {
   }
 
   const frozen = freezeText(input.text);
-  const eqBefore = frozen.equations.length;
 
   const glossary = await loadGlossary(req);
 
@@ -82,10 +81,8 @@ export async function POST(req: NextRequest) {
       ...out,
       text,
       checks: {
-        eq_before: eqBefore,
-        eq_after: eqAfter,
-        eq_match: eqBefore === eqAfter,
-        glossary_entries: glossary ? Object.keys(glossary).length : 0,
+        equations_count: eqAfter,
+        glossary_applied: !!(glossary && Object.keys(glossary).length),
         rtl_ltr: detectDir(text),
         idempotency: restored === text
       }

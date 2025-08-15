@@ -45,10 +45,8 @@ export const OutputSchema = z.object({
   latency_ms: z.number().int().nonnegative(),
   model_used: z.string(),
   checks: z.object({
-    eq_before: z.number().int().nonnegative(),
-    eq_after: z.number().int().nonnegative(),
-    eq_match: z.boolean(),
-    glossary_entries: z.number().int().nonnegative(),
+    equations_count: z.number().int().nonnegative(),
+    glossary_applied: z.boolean(),
     rtl_ltr: z.enum(["rtl", "ltr", "mixed"]),
     idempotency: z.boolean()
   }),

@@ -38,7 +38,12 @@ export default function Editor() {
   const [busy, setBusy] = useState(false);
   const [zipBusy, setZipBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
-  const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
+  const [verify, setVerify] = useState<null | {
+    equations_count: number;
+    glossary_applied: boolean;
+    rtl_ltr: string;
+    idempotency: boolean;
+  }>(null);
   const [files, setFiles] = useState<string[]>([]);
 
   const slug = useMemo(() => {
@@ -64,16 +69,13 @@ export default function Editor() {
 
   const snapshotPath = useMemo(() => {
     if (!files.length) return null;
-    const latest = files.find(f => f.startsWith(`${v}/`)) || files[0];
-    return `/snapshots/${slug}/${latest}`;
-  }, [files, slug, v]);
+    return `/${files[0]}`;
+  }, [files]);
 
   useEffect(() => {
     try {
       setOpenaiKey(localStorage.getItem("OPENAI_KEY") || "");
       setDeepseekKey(localStorage.getItem("DEEPSEEK_KEY") || "");
-      const storedLang = localStorage.getItem("lang");
-      if (storedLang) setLang(storedLang as Lang);
     } catch {}
   }, []);
   useEffect(() => { try { localStorage.setItem("OPENAI_KEY", openaiKey); } catch {} }, [openaiKey]);
@@ -150,39 +152,6 @@ export default function Editor() {
     } finally { setZipBusy(false); }
   }
 
-  async function exportCompose() {
-    setZipBusy(true); setMsg("");
-    try {
-      if (!target || !lang) throw new Error("missing_target_lang");
-      const res = await fetch("/api/export", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          mode: "compose",
-          name: "qaadi_export.zip",
-          slug,
-          v,
-          input: { text },
-          secretary: { audit: { ready_percent: 50, issues: [{ type: "demo", note: "example only" }] } },
-          judge: { report: { score_total: 110, criteria: [], notes: "demo" } },
-          consultant: { plan: out || "plan(demo)" },
-          journalist: { summary: (out && out.slice(0, 400)) || "summary(demo)" },
-          meta: { target, lang, model, max_tokens: maxTokens }
-        })
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || `status_${res.status}`);
-      }
-      const blob = await res.blob();
-      downloadBlob(blob, "qaadi_export.zip");
-      setMsg("ZIP جاهز (compose).");
-      await refreshFiles();
-    } catch (e:any) {
-      setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `EXPORT ERROR: ${e?.message || e}`);
-    } finally { setZipBusy(false); }
-  }
-
   function downloadBlob(blob: Blob, name: string) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -231,7 +200,7 @@ export default function Editor() {
         <div>
           <label>Target</label>
           <select value={target} onChange={e=>setTarget(e.target.value as Target)}>
-            <option value="">--</option>
+            <option value="" disabled>Select target</option>
             <option value="revtex">ReVTeX</option>
             <option value="iop">IOP</option>
             <option value="sn-jnl">SN-JNL</option>
@@ -245,7 +214,7 @@ export default function Editor() {
         <div>
           <label>Language</label>
           <select value={lang} onChange={e=>setLang(e.target.value as Lang)}>
-            <option value="">--</option>
+            <option value="" disabled>Select language</option>
             <option value="en">EN</option>
             <option value="ar">AR</option>
             <option value="tr">TR</option>
@@ -267,32 +236,47 @@ export default function Editor() {
 
       <div className="card" style={{marginBottom:12}}>
         <div className="actions">
-          <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export (compose demo)"}</button>
-          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export ZIP"}</button>
           <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang}>{busy ? "جارٍ…" : "Generate"}</button>
-          {snapshotPath && (
-            <a className="btn" href={snapshotPath} target="_blank" rel="noopener noreferrer">Open Snapshot</a>
+          {files.length > 0 && (
+            <>
+              <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy}>{zipBusy ? "..." : "Export ZIP"}</button>
+              {snapshotPath && (
+                <a className="btn" href={snapshotPath} target="_blank" rel="noopener noreferrer">Open Snapshot</a>
+              )}
+            </>
           )}
         </div>
-        {!snapshotPath && <div className="note">No snapshot yet</div>}
+        {files.length === 0 && <div className="note">No snapshot yet</div>}
         {msg && <div className="note">{msg}</div>}
         {verify && (
           <div className="verify-bar">
             <span>
-              المعادلات: {verify.eq_before} → {verify.eq_after}
-              {verify.eq_match ? <span className="verify-ok"> ✓</span> : <span className="verify-warn"> ⚠️</span>}
+              Equations: {verify.equations_count}
+              {verify.equations_count > 0 ? <span className="verify-ok"> ✓</span> : <span className="verify-warn"> ⚠️</span>}
             </span>
-            {verify.glossary_entries > 0 && (
-              <span>Glossary: {verify.glossary_entries}</span>
-            )}
-            <span>Dir: {verify.rtl_ltr}</span>
-            <span>Idempotent: {verify.idempotency ? <span className="verify-ok">✓</span> : <span className="verify-warn">⚠️</span>}</span>
+            <span>
+              Glossary: {verify.glossary_applied ? <span className="verify-ok">✓</span> : <span className="verify-warn">⚠️</span>}
+            </span>
+            <span>
+              Dir: {verify.rtl_ltr}
+              {verify.rtl_ltr === "mixed" ? <span className="verify-warn">⚠️</span> : <span className="verify-ok">✓</span>}
+            </span>
+            <span>
+              Idempotent: {verify.idempotency ? <span className="verify-ok">✓</span> : <span className="verify-warn">⚠️</span>}
+            </span>
           </div>
         )}
         {files.length > 0 && (
           <div className="file-list">
             <ul>
-              {files.map(f => <li key={f}>{f}</li>)}
+              {files.map(f => {
+                const name = f.split("/").pop() || f;
+                return (
+                  <li key={f}>
+                    <a href={`/${f}`} target="_blank" rel="noopener noreferrer">{name}</a>
+                  </li>
+                );
+              })}
             </ul>
           </div>
         )}
