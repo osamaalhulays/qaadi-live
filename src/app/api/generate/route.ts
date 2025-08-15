@@ -121,7 +121,6 @@ export async function POST(req: NextRequest) {
   }
 }
 
-export { saveSnapshot };
 
 export function buildPrompt(
   target:
