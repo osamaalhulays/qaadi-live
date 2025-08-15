@@ -298,9 +298,16 @@ export default function Editor() {
             <span>Idempotent: {verify.idempotency ? <span className="verify-ok">✓</span> : <span className="verify-warn">⚠️</span>}</span>
           </div>
         )}
-        {judge?.criteria && (
+        {judge && (
           <div className="charts">
-            <ScoreCharts criteria={judge.criteria} />
+            {typeof judge.percentage === "number" && judge.classification && (
+              <div className="judge-summary" style={{marginBottom:8}}>
+                {judge.classification} • {judge.percentage.toFixed(1)}%
+              </div>
+            )}
+            {judge.criteria && (
+              <ScoreCharts criteria={judge.criteria} />
+            )}
           </div>
         )}
         {files.length > 0 && (

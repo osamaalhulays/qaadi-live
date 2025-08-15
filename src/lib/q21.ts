@@ -55,3 +55,31 @@ export function evaluateQN21(text: string): QN21Result[] {
   });
 }
 
+export interface QN21Summary {
+  /** Total points obtained across all criteria. */
+  total: number;
+  /** Maximum obtainable points. */
+  max: number;
+  /** Percentage of points obtained (0-100). */
+  percentage: number;
+  /** Classification based on the percentage. */
+  classification: "accepted" | "needs_improvement" | "weak";
+}
+
+/**
+ * Summarize an array of QN21 results into total score, percentage, and
+ * classification. The classification thresholds are:
+ * - accepted: ≥80%
+ * - needs_improvement: 60–79%
+ * - weak: <60%
+ */
+export function summarizeQN21(results: QN21Result[]): QN21Summary {
+  const total = results.reduce((sum, r) => sum + r.score, 0);
+  const max = results.reduce((sum, r) => sum + r.weight, 0);
+  const percentage = max === 0 ? 0 : (total / max) * 100;
+  let classification: QN21Summary["classification"] = "weak";
+  if (percentage >= 80) classification = "accepted";
+  else if (percentage >= 60) classification = "needs_improvement";
+  return { total, max, percentage, classification };
+}
+
