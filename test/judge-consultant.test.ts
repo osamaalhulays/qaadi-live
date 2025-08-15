@@ -4,8 +4,8 @@ import { mkdtemp, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
-import { runJudge, runConsultant } from '../src/lib/utils/review';
-import { saveSnapshot } from '../src/lib/utils/snapshot';
+import { runJudge, runConsultant } from '../src/lib/utils/review.ts';
+import { saveSnapshot } from '../src/lib/utils/snapshot.ts';
 
 test('judge and consultant workflow saves artifacts', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
