@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { latestFilesFor } from "../lib/utils/manifest";
+import ScoreCharts from "./ScoreCharts";
 
 type Target =
   | "wide"
@@ -40,6 +41,7 @@ export default function Editor() {
   const [msg, setMsg] = useState<string>("");
   const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
   const [files, setFiles] = useState<string[]>([]);
+  const [judge, setJudge] = useState<any>(null);
 
   const slug = useMemo(() => {
     if (typeof window !== "undefined") {
@@ -200,6 +202,13 @@ export default function Editor() {
         setFiles(fl);
       } else setFiles([]);
     } catch { setFiles([]); }
+    try {
+      const jr = await fetch("/paper/judge.json");
+      if (jr.ok) {
+        const jj = await jr.json();
+        setJudge(jj);
+      } else setJudge(null);
+    } catch { setJudge(null); }
   }
 
   return (
@@ -287,6 +296,11 @@ export default function Editor() {
             )}
             <span>Dir: {verify.rtl_ltr}</span>
             <span>Idempotent: {verify.idempotency ? <span className="verify-ok">✓</span> : <span className="verify-warn">⚠️</span>}</span>
+          </div>
+        )}
+        {judge?.criteria && (
+          <div className="charts">
+            <ScoreCharts criteria={judge.criteria} />
           </div>
         )}
         {files.length > 0 && (
