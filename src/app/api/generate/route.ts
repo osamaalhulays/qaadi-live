@@ -50,13 +50,13 @@ export async function POST(req: NextRequest) {
     const slug = body.slug || "demo";
     const v = body.v || "v1";
 
-    const sec = await runSecretary();
-    await saveSnapshot([{ path: "paper/secretary.md", content: sec }], target, lang, slug, v);
+    const { audit, report, plan, comparison, summary } = await orchestrate(names);
+    await saveSnapshot([{ path: "paper/secretary.md", content: audit }], target, lang, slug, v);
 
     for (const name of names) {
-      const plan = await runResearchSecretary(name);
+      const r = await runResearchSecretary(name);
       await saveSnapshot(
-        [{ path: `paper/plan-${plan.name}.md`, content: plan.content }],
+        [{ path: `paper/plan-${r.name}.md`, content: r.content }],
         target,
         lang,
         slug,
@@ -64,25 +64,22 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const judge = await runJudge();
     await saveSnapshot(
-      [{ path: "paper/judge.json", content: JSON.stringify(judge, null, 2) }],
+      [{ path: "paper/judge.json", content: JSON.stringify(report, null, 2) }],
       target,
       lang,
       slug,
       v
     );
 
-    const notes = await runConsultant();
     await saveSnapshot(
-      [{ path: "paper/notes.txt", content: notes }],
+      [{ path: "paper/notes.txt", content: plan }],
       target,
       lang,
       slug,
       v
     );
 
-    const comparison = await runLead(names);
     await saveSnapshot(
       [{ path: "paper/comparison.md", content: comparison }],
       target,
@@ -91,7 +88,6 @@ export async function POST(req: NextRequest) {
       v
     );
 
-    const summary = await runJournalist();
     await saveSnapshot(
       [{ path: "paper/summary.md", content: summary }],
       target,
