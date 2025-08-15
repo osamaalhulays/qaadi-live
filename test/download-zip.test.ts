@@ -4,6 +4,7 @@ import { GET } from '../src/app/api/download/zip/route';
 import { NextRequest } from 'next/server';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import path from 'node:path';
+import crypto from 'node:crypto';
 
 function unzipStore(u8: Uint8Array): Record<string, Uint8Array> {
   const view32 = (i: number) => new DataView(u8.buffer, u8.byteOffset + i, 4).getUint32(0, true);
@@ -68,4 +69,47 @@ test('reads snapshots manifest, filters by slug/version and uses v6 archive name
   assert.deepStrictEqual(determinism2.matrix, [[1]]);
 
   await rm(path.join(dir, 'manifest.json'));
+});
+
+test('includes latest snapshot files in archive', async () => {
+  const root = process.cwd();
+  const snapDir = path.join(root, 'public', 'snapshots', 'demo', '2024-01-01_0000', 'paper', 'revtex', 'en');
+  await mkdir(snapDir, { recursive: true });
+  const draft = Buffer.from('draft');
+  const secretary = Buffer.from('secretary');
+  await writeFile(path.join(snapDir, 'draft.tex'), draft);
+  await writeFile(path.join(snapDir, 'secretary.md'), secretary);
+  const manifest = [
+    {
+      path: 'snapshots/demo/2024-01-01_0000/paper/revtex/en/draft.tex',
+      sha256: crypto.createHash('sha256').update(draft).digest('hex'),
+      target: 'revtex',
+      lang: 'en',
+      slug: 'demo',
+      v: 'v1.0',
+      timestamp: '2024-01-01T00:00:00.000Z',
+      type: 'paper'
+    },
+    {
+      path: 'snapshots/demo/2024-01-01_0000/paper/revtex/en/secretary.md',
+      sha256: crypto.createHash('sha256').update(secretary).digest('hex'),
+      target: 'revtex',
+      lang: 'en',
+      slug: 'demo',
+      v: 'v1.0',
+      timestamp: '2024-01-01T00:00:00.000Z',
+      type: 'role'
+    }
+  ];
+  await writeFile(path.join(root, 'public', 'snapshots', 'manifest.json'), JSON.stringify(manifest), 'utf-8');
+
+  const req = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
+  const res = await GET(req);
+  assert.strictEqual(res.status, 200);
+  const buf = Buffer.from(await res.arrayBuffer());
+  const files = unzipStore(buf);
+  assert.ok(files['paper/revtex/en/draft.tex']);
+  assert.ok(files['paper/revtex/en/secretary.md']);
+
+  await rm(path.join(root, 'public', 'snapshots'), { recursive: true, force: true });
 });

@@ -73,8 +73,30 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
       lang,
       slug: safeSlug,
       v,
-      timestamp
+      timestamp,
+      type: "paper"
     });
+  }
+
+  const roleNames = ["secretary.md", "judge.json", "plan.md", "notes.txt", "comparison.md"];
+  for (const name of roleNames) {
+    try {
+      const data = await readFile(path.join(process.cwd(), "paper", name));
+      const rel = path.join("snapshots", safeSlug, tsDir, "paper", target, lang, name);
+      const full = path.join(process.cwd(), "public", rel);
+      await mkdir(path.dirname(full), { recursive: true });
+      await writeFile(full, data);
+      entries.push({
+        path: rel.replace(/\\/g, "/"),
+        sha256: sha256Hex(data),
+        target,
+        lang,
+        slug: safeSlug,
+        v,
+        timestamp,
+        type: "role"
+      });
+    } catch {}
   }
 
   const manifestPath = path.join(process.cwd(), "public", "snapshots", "manifest.json");
