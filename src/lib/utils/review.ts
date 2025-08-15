@@ -1,4 +1,4 @@
-import { writeFile, readFile } from 'fs/promises';
+import { writeFile, readFile, mkdir } from 'fs/promises';
 import path from 'path';
 
 export interface JudgeCriterion {
@@ -29,7 +29,9 @@ export async function runJudge(criteria: JudgeCriterion[]): Promise<JudgeReport>
     }
   }
   const report: JudgeReport = { score_total, gaps };
-  const outPath = path.join(process.cwd(), 'paper', 'judge.json');
+  const paperDir = path.join(process.cwd(), 'paper');
+  await mkdir(paperDir, { recursive: true });
+  const outPath = path.join(paperDir, 'judge.json');
   await writeFile(outPath, JSON.stringify(report, null, 2));
   return report;
 }
@@ -41,19 +43,21 @@ export async function runJudge(criteria: JudgeCriterion[]): Promise<JudgeReport>
  * The resulting Markdown is written to paper/plan.md.
  */
 export async function runConsultant(): Promise<string> {
-  const judgePath = path.join(process.cwd(), 'paper', 'judge.json');
+  const paperDir = path.join(process.cwd(), 'paper');
+  await mkdir(paperDir, { recursive: true });
+  const judgePath = path.join(paperDir, 'judge.json');
   const raw = await readFile(judgePath, 'utf-8');
   const data: JudgeReport = JSON.parse(raw);
-  const lines: string[] = [];
+  const lines: string[] = ['# Development Plan', ''];
   for (const g of data.gaps.internal) {
     lines.push(`- [P0] ${g}`);
   }
   for (const g of data.gaps.external) {
     lines.push(`- [P1] ${g}`);
   }
-  lines.push('- [P2] polish and review');
+  lines.push('- [P2] polish and review', '');
   const plan = lines.join('\n');
-  const planPath = path.join(process.cwd(), 'paper', 'plan.md');
+  const planPath = path.join(paperDir, 'plan.md');
   await writeFile(planPath, plan);
   return plan;
 }
