@@ -4,6 +4,10 @@ import { runWithFallback } from "../../../lib/providers/router";
 import { freezeText, restoreText, countEquations } from "../../../lib/utils/freeze";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { saveSnapshot } from "../../../lib/utils/snapshot";
+import { runSecretary, SecretaryInput } from "../../../lib/workers/secretary";
+import { runJudge } from "../../../lib/workers/judge";
+import { runConsultant } from "../../../lib/workers/consultant";
+import { runJournalist } from "../../../lib/workers/journalist";
 
 export const runtime = "nodejs";
 
@@ -241,4 +245,15 @@ async function loadGlossary(req: NextRequest): Promise<Record<string, string> | 
     if (j && typeof j === "object") return j as Record<string, string>;
   } catch {}
   return null;
+}
+
+/**
+ * Orchestrates all worker roles sequentially.
+ */
+export function orchestrate(input: SecretaryInput) {
+  const audit = runSecretary(input);
+  const report = runJudge(audit);
+  const plan = runConsultant(audit, report);
+  const summary = runJournalist(plan);
+  return { audit, report, plan, summary };
 }
