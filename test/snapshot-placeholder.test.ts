@@ -59,3 +59,32 @@ test('saves role files with type role', async () => {
   const role = manifest.find((e: any) => e.path.endsWith('secretary.md'));
   assert.ok(role && role.type === 'role');
 });
+
+test('copies comparison.md to QaadiVault', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
+  const prev = process.cwd();
+  process.chdir(dir);
+  await mkdir('paper', { recursive: true });
+  await writeFile('paper/comparison.md', '| F | C |');
+  const restore = fakeDates();
+  try {
+    await saveSnapshot([{ path: 'paper/draft.tex', content: 'y' }], 'revtex', 'en', 'demo', 'v1');
+  } finally {
+    restore();
+    process.chdir(prev);
+  }
+  const vaultPath = path.join(
+    dir,
+    'QaadiVault',
+    'theory-demo',
+    'snapshots',
+    'demo',
+    '2024-01-01_0000',
+    'paper',
+    'revtex',
+    'en',
+    'comparison.md'
+  );
+  const stored = await readFile(vaultPath, 'utf-8');
+  assert.match(stored, /\| F \| C \|/);
+});
