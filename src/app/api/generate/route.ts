@@ -7,7 +7,6 @@ import { saveSnapshot } from "../../../lib/utils/snapshot";
 import { runSecretary, SecretaryInput } from "../../../lib/workers/secretary";
 import { runJudge } from "../../../lib/workers/judge";
 import { runConsultant } from "../../../lib/workers/consultant";
-import { runLead } from "../../../lib/workers/lead";
 import { runJournalist } from "../../../lib/workers/journalist";
 
 export const runtime = "nodejs";
@@ -255,7 +254,6 @@ export function orchestrate(input: SecretaryInput) {
   const audit = runSecretary(input);
   const report = runJudge(audit);
   const plan = runConsultant(audit, report);
-  const overview = runLead(audit, report, plan);
   const publication = runJournalist(plan);
-  return { ...overview, publication };
+  return { audit, report, plan, publication };
 }
