@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { latestFilesFor } from "../lib/utils/manifest";
+import { loadUserCriteria, saveUserCriteria, upsertCriterion, UserCriterion } from "../lib/userCriteria";
 
 type Target =
   | "wide"
@@ -39,7 +40,9 @@ export default function Editor() {
   const [zipBusy, setZipBusy] = useState(false);
   const [msg, setMsg] = useState<string>("");
   const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
-  const [files, setFiles] = useState<string[]>([]);
+    const [files, setFiles] = useState<string[]>([]);
+    const [criteria, setCriteria] = useState<UserCriterion[]>([]);
+    const [newCrit, setNewCrit] = useState("");
 
   const slug = useMemo(() => {
     if (typeof window !== "undefined") {
@@ -68,14 +71,15 @@ export default function Editor() {
     return `/snapshots/${slug}/${latest}`;
   }, [files, slug, v]);
 
-  useEffect(() => {
-    try {
-      setOpenaiKey(localStorage.getItem("OPENAI_KEY") || "");
-      setDeepseekKey(localStorage.getItem("DEEPSEEK_KEY") || "");
-      const storedLang = localStorage.getItem("lang");
-      if (storedLang) setLang(storedLang as Lang);
-    } catch {}
-  }, []);
+    useEffect(() => {
+      try {
+        setOpenaiKey(localStorage.getItem("OPENAI_KEY") || "");
+        setDeepseekKey(localStorage.getItem("DEEPSEEK_KEY") || "");
+        const storedLang = localStorage.getItem("lang");
+        if (storedLang) setLang(storedLang as Lang);
+        setCriteria(loadUserCriteria());
+      } catch {}
+    }, []);
   useEffect(() => { try { localStorage.setItem("OPENAI_KEY", openaiKey); } catch {} }, [openaiKey]);
   useEffect(() => { try { localStorage.setItem("DEEPSEEK_KEY", deepseekKey); } catch {} }, [deepseekKey]);
   useEffect(() => {
@@ -90,11 +94,24 @@ export default function Editor() {
     } catch {}
   }, [lang]);
 
-  const headers = useMemo(() => ({
-    "Content-Type": "application/json",
-    "X-OpenAI-Key": openaiKey || "",
-    "X-DeepSeek-Key": deepseekKey || ""
-  }), [openaiKey, deepseekKey]);
+    const headers = useMemo(() => ({
+      "Content-Type": "application/json",
+      "X-OpenAI-Key": openaiKey || "",
+      "X-DeepSeek-Key": deepseekKey || ""
+    }), [openaiKey, deepseekKey]);
+
+    function toggleCriterion(id: string) {
+      const updated = criteria.map(c => c.id === id ? { ...c, enabled: !c.enabled } : c);
+      setCriteria(updated);
+      saveUserCriteria(updated);
+    }
+
+    function addCriterion() {
+      if (!newCrit.trim()) return;
+      const updated = upsertCriterion({ id: Date.now().toString(), name: newCrit.trim(), enabled: true });
+      setCriteria(updated);
+      setNewCrit("");
+    }
 
   async function doGenerate() {
     setBusy(true); setMsg("");
@@ -134,7 +151,8 @@ export default function Editor() {
           lang,
           slug,
           v,
-          input: { text }
+          input: { text },
+          userCriteria: criteria.filter(c => c.enabled)
         })
       });
       if (!res.ok) {
@@ -257,6 +275,24 @@ export default function Editor() {
             <option value="ja">JA</option>
             <option value="other">Other</option>
           </select>
+        </div>
+      </div>
+      
+      <div className="card" style={{marginBottom:12}}>
+        <label>User Criteria</label>
+        <ul>
+          {criteria.map(c => (
+            <li key={c.id}>
+              <label>
+                <input type="checkbox" checked={c.enabled} onChange={() => toggleCriterion(c.id)} /> {c.name}
+              </label>
+            </li>
+          ))}
+        </ul>
+        {criteria.length === 0 && <div className="note">No user criteria</div>}
+        <div className="actions">
+          <input value={newCrit} onChange={e=>setNewCrit(e.target.value)} placeholder="New criterion" />
+          <button className="btn" onClick={addCriterion}>Add</button>
         </div>
       </div>
 

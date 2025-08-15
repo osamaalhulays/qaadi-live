@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { makeZip, type ZipFile } from "../../../lib/utils/zip";
 import { runWithFallback } from "../../../lib/providers/router";
+import { runJudge } from "../../../lib/runJudge";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
@@ -177,11 +178,12 @@ export async function POST(req: NextRequest) {
     return new Response(JSON.stringify({ error: "idempotency_conflict" }), { status: 409, headers: headersJSON() });
   }
 
-  const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
-  const target = typeof body?.target === "string" ? body.target : "default";
-  const lang = typeof body?.lang === "string" ? body.lang : "en";
-  const slug = typeof body?.slug === "string" ? body.slug : "default";
-  const v = typeof body?.v === "string" ? body.v : "default";
+    const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
+    const target = typeof body?.target === "string" ? body.target : "default";
+    const lang = typeof body?.lang === "string" ? body.lang : "en";
+    const slug = typeof body?.slug === "string" ? body.slug : "default";
+    const v = typeof body?.v === "string" ? body.v : "default";
+    const userCriteria = Array.isArray(body?.userCriteria) ? body.userCriteria : [];
 
   // Mode A: raw → same as old behavior (accept ready files[])
   if (mode === "raw") {
@@ -244,11 +246,16 @@ export async function POST(req: NextRequest) {
     // Try to parse secretary/judge JSONs; if fail, keep as text fallback
     const tryJSON = (s: string) => { try { return JSON.parse(s); } catch { return s; } };
 
+    const baseReport = tryJSON(judgeText);
+    const mergedReport = runJudge(
+      typeof baseReport === "object" && baseReport ? baseReport : { score_total: 0, criteria: [], notes: "" },
+      userCriteria
+    );
     const composePayload = {
       name: typeof body?.name === "string" ? body.name : "qaadi_export.zip",
       input: { text: inputText },
       secretary: { audit: tryJSON(secretaryText) },
-      judge: { report: tryJSON(judgeText) },
+      judge: { report: mergedReport },
       consultant: { plan: consultantText },
       journalist: { summary: journalistText },
       meta: { model: selection, max_tokens }
