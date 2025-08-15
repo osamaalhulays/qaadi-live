@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { latestFilesFor } from "../lib/utils/manifest";
 import ScoreCharts from "./ScoreCharts";
+import ReadinessBar from "./ReadinessBar";
 
 type Target =
   | "wide"
@@ -300,6 +301,7 @@ export default function Editor() {
         )}
         {judge?.criteria && (
           <div className="charts">
+            <ReadinessBar criteria={judge.criteria} />
             <ScoreCharts criteria={judge.criteria} />
           </div>
         )}

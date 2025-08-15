@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface Criterion {
   id: number;
@@ -10,19 +10,37 @@ interface Criterion {
 }
 
 interface Props {
-  criteria: Criterion[];
+  criteria?: Criterion[];
 }
 
 export default function ScoreCharts({ criteria }: Props) {
+  const [data, setData] = useState<Criterion[]>(criteria || []);
   const barRef = useRef<HTMLCanvasElement | null>(null);
   const radarRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (criteria) setData(criteria);
+    else {
+      (async () => {
+        try {
+          const res = await fetch("/paper/judge.json");
+          if (res.ok) {
+            const j = await res.json();
+            if (Array.isArray(j.criteria)) setData(j.criteria);
+          }
+        } catch {
+          setData([]);
+        }
+      })();
+    }
+  }, [criteria]);
 
   useEffect(() => {
     let bar: any;
     let radar: any;
 
     const load = async () => {
-      if (typeof window === "undefined") return;
+      if (typeof window === "undefined" || !data.length) return;
       const w = window as any;
       if (!w.Chart) {
         await new Promise((resolve, reject) => {
@@ -36,9 +54,9 @@ export default function ScoreCharts({ criteria }: Props) {
       const Chart = (window as any).Chart;
       if (!Chart) return;
 
-      const labels = criteria.map(c => c.name);
-      const scores = criteria.map(c => c.score);
-      const colors = criteria.map(c =>
+      const labels = data.map(c => c.name);
+      const scores = data.map(c => c.score);
+      const colors = data.map(c =>
         c.covered ? "#16a34a" : c.type === "external" ? "#1d4ed8" : "#dc2626"
       );
 
@@ -88,7 +106,7 @@ export default function ScoreCharts({ criteria }: Props) {
       bar?.destroy?.();
       radar?.destroy?.();
     };
-  }, [criteria]);
+  }, [data]);
 
   return (
     <div className="score-charts">

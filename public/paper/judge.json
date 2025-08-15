@@ -1,0 +1,25 @@
+{
+  "criteria": [
+    { "id": 1, "name": "I1", "score": 1, "type": "internal", "covered": true },
+    { "id": 2, "name": "I2", "score": 1, "type": "internal", "covered": true },
+    { "id": 3, "name": "I3", "score": 1, "type": "internal", "covered": true },
+    { "id": 4, "name": "I4", "score": 1, "type": "internal", "covered": true },
+    { "id": 5, "name": "I5", "score": 1, "type": "internal", "covered": true },
+    { "id": 6, "name": "I6", "score": 1, "type": "internal", "covered": true },
+    { "id": 7, "name": "I7", "score": 1, "type": "internal", "covered": true },
+    { "id": 8, "name": "I8", "score": 1, "type": "internal", "covered": true },
+    { "id": 9, "name": "I9", "score": 0, "type": "internal" },
+    { "id": 10, "name": "I10", "score": 0, "type": "internal" },
+    { "id": 11, "name": "E1", "score": 1, "type": "external", "covered": true },
+    { "id": 12, "name": "E2", "score": 1, "type": "external", "covered": true },
+    { "id": 13, "name": "E3", "score": 1, "type": "external", "covered": true },
+    { "id": 14, "name": "E4", "score": 1, "type": "external", "covered": true },
+    { "id": 15, "name": "E5", "score": 0, "type": "external" },
+    { "id": 16, "name": "E6", "score": 0, "type": "external" },
+    { "id": 17, "name": "E7", "score": 0, "type": "external" },
+    { "id": 18, "name": "E8", "score": 0, "type": "external" },
+    { "id": 19, "name": "E9", "score": 0, "type": "external" },
+    { "id": 20, "name": "E10", "score": 0, "type": "external" },
+    { "id": 21, "name": "E11", "score": 0, "type": "external" }
+  ]
+}
