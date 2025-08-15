@@ -86,12 +86,15 @@ export async function saveSnapshot(
         }
       } catch {}
     }
-    const coversArr = Array.from(coverSet);
+    const coversArr = Array.from(coverSet).sort();
     covers.push(...coversArr);
-    list.push({
-      path: "paper/inquiry.json",
-      content: JSON.stringify({ covers: coversArr }, null, 2)
-    });
+    const inquiryIndex = list.findIndex((f) => f.path === "paper/inquiry.json");
+    const inquiryContent = JSON.stringify({ covers: coversArr }, null, 2);
+    if (inquiryIndex >= 0) {
+      list[inquiryIndex] = { path: "paper/inquiry.json", content: inquiryContent };
+    } else {
+      list.push({ path: "paper/inquiry.json", content: inquiryContent });
+    }
   }
 
   for (const f of list) {
