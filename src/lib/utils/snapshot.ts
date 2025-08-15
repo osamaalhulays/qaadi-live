@@ -10,6 +10,7 @@ export interface SnapshotEntry {
   timestamp: string;
   slug: string;
   v: string;
+  type: "paper" | "role";
 }
 
 const slugRe = /^[a-zA-Z0-9_-]+$/;
@@ -44,22 +45,30 @@ export async function saveSnapshot(
   const entries: SnapshotEntry[] = [];
   const covers: string[] = [];
 
+  const safeSlug = sanitizeSlug(slug);
+
+  const roleNames = [
+    "secretary.md",
+    "judge.json",
+    "plan.md",
+    "notes.txt",
+    "comparison.md"
+  ];
+  const roleData: Record<string, Buffer> = {};
+  for (const name of roleNames) {
+    try {
+      roleData[name] = await readFile(path.join(process.cwd(), "paper", name));
+    } catch {}
+  }
+
   if (target === "inquiry") {
-    try {
-      const planData = await readFile(path.join(process.cwd(), "paper", "plan.md"));
-      covers.push(sha256Hex(planData));
-    } catch {}
-    try {
-      const judgeData = await readFile(path.join(process.cwd(), "paper", "judge.json"));
-      covers.push(sha256Hex(judgeData));
-    } catch {}
+    if (roleData["plan.md"]) covers.push(sha256Hex(roleData["plan.md"]));
+    if (roleData["judge.json"]) covers.push(sha256Hex(roleData["judge.json"]));
     files.push({
       path: "paper/inquiry.json",
       content: JSON.stringify({ covers }, null, 2)
     });
   }
-
-  const safeSlug = sanitizeSlug(slug);
 
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
@@ -74,7 +83,27 @@ export async function saveSnapshot(
       lang,
       slug: safeSlug,
       v,
-      timestamp
+      timestamp,
+      type: "paper"
+    });
+  }
+
+  for (const name of roleNames) {
+    const data = roleData[name];
+    if (!data) continue;
+    const rel = path.join("snapshots", safeSlug, tsDir, "paper", target, lang, name);
+    const full = path.join(process.cwd(), "public", rel);
+    await mkdir(path.dirname(full), { recursive: true });
+    await writeFile(full, data);
+    entries.push({
+      path: rel.replace(/\\/g, "/"),
+      sha256: sha256Hex(data),
+      target,
+      lang,
+      slug: safeSlug,
+      v,
+      timestamp,
+      type: "role"
     });
   }
 
@@ -92,7 +121,8 @@ export async function saveSnapshot(
       lang,
       slug: safeSlug,
       v,
-      timestamp
+      timestamp,
+      type: "paper"
     });
 
     const relFigs = path.join(base, "figs");
@@ -105,7 +135,8 @@ export async function saveSnapshot(
       lang,
       slug: safeSlug,
       v,
-      timestamp
+      timestamp,
+      type: "paper"
     });
   }
 
