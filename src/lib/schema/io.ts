@@ -33,8 +33,8 @@ export const InputSchema = z.object({
     .max(8192)
     .default(2048),
   text: z.string().min(1),
-  slug: z.string().default("default"),
-  v: z.string().default("default")
+  slug: z.string().regex(/^[A-Za-z0-9_-]+$/).default("default"),
+  v: z.string().regex(/^[A-Za-z0-9_-]+$/).default("default")
 });
 export type Input = z.infer<typeof InputSchema>;
 

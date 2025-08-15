@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { latestFilesFor } from "../lib/utils/manifest";
+import ScoreCharts from "./ScoreCharts";
 
 type Target =
   | "wide"
@@ -40,33 +41,30 @@ export default function Editor() {
   const [msg, setMsg] = useState<string>("");
   const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
   const [files, setFiles] = useState<string[]>([]);
+  const [judge, setJudge] = useState<any>(null);
+  const [selfTest, setSelfTest] = useState<null | { ratio:number; deviations:{role:string; expected:string; found:string}[] }>(null);
+  const [selfBusy, setSelfBusy] = useState(false);
 
-  const slug = useMemo(() => {
+  const [slug, setSlug] = useState("default");
+  const [v, setV] = useState("default");
+
+  useEffect(() => {
     if (typeof window !== "undefined") {
-      return (
-        window.location.pathname.split("/").filter(Boolean)[0] ||
-        new URLSearchParams(window.location.search).get("slug") ||
-        "default"
-      );
+      const parts = window.location.pathname.split("/").filter(Boolean);
+      const params = new URLSearchParams(window.location.search);
+      const s = parts[0] || params.get("slug") || "default";
+      const ver = parts[1] || params.get("v") || "default";
+      setSlug(s);
+      setV(ver);
     }
-    return "default";
   }, []);
-  const v = useMemo(() => {
-    if (typeof window !== "undefined") {
-      return (
-        window.location.pathname.split("/").filter(Boolean)[1] ||
-        new URLSearchParams(window.location.search).get("v") ||
-        "default"
-      );
-    }
-    return "default";
-  }, []);
+
+  const slugRe = /^[A-Za-z0-9_-]*$/;
 
   const snapshotPath = useMemo(() => {
     if (!files.length) return null;
-    const latest = files.find(f => f.startsWith(`${v}/`)) || files[0];
-    return `/snapshots/${slug}/${latest}`;
-  }, [files, slug, v]);
+    return `/${files[0]}`;
+  }, [files]);
 
   useEffect(() => {
     try {
@@ -89,6 +87,19 @@ export default function Editor() {
       }
     } catch {}
   }, [lang]);
+  useEffect(() => { refreshFiles(); }, [slug, v]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await fetch(`/api/selftest?slug=${slug}`);
+        if (res.ok) {
+          const j = await res.json();
+          setSelfTest(j);
+        }
+      } catch {}
+    })();
+  }, [slug]);
 
   const headers = useMemo(() => ({
     "Content-Type": "application/json",
@@ -100,22 +111,47 @@ export default function Editor() {
     setBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
-      const res = await fetch("/api/generate", {
+      const url = target === "inquiry" ? "/api/inquiry" : "/api/generate";
+      const payload =
+        target === "inquiry"
+          ? { lang, plan: text, slug, v }
+          : { target, lang, model, max_tokens: maxTokens, text, slug, v };
+      const res = await fetch(url, {
         method: "POST",
         headers,
-        body: JSON.stringify({ target, lang, model, max_tokens: maxTokens, text, slug, v })
+        body: JSON.stringify(payload)
       });
       const j = await res.json();
       if (!res.ok) throw new Error(j?.error || "generate_failed");
       setOut(j?.text || "");
-      setVerify(j?.checks || null);
-      setMsg(`OK • model=${j?.model_used} • in=${j?.tokens_in} • out=${j?.tokens_out} • ${j?.latency_ms}ms`);
+      if (target !== "inquiry") setVerify(j?.checks || null);
+      else setVerify(null);
+      if (target !== "inquiry")
+        setMsg(`OK • model=${j?.model_used} • in=${j?.tokens_in} • out=${j?.tokens_out} • ${j?.latency_ms}ms`);
+      else setMsg("OK");
       if (Array.isArray(j?.files)) setFiles(j.files);
       else await refreshFiles();
     } catch (e:any) {
       setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `ERROR: ${e?.message || e}`);
       setVerify(null);
     } finally { setBusy(false); }
+  }
+
+  async function runSelfTest() {
+    setSelfBusy(true); setMsg("");
+    try {
+      const res = await fetch("/api/selftest", {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ slug, sample: text })
+      });
+      const j = await res.json();
+      if (!res.ok) throw new Error(j?.error || "selftest_failed");
+      setSelfTest(j);
+      setMsg(`Self-Test ${(j.ratio * 100).toFixed(0)}%`);
+    } catch (e:any) {
+      setMsg(`Self-Test ERROR: ${e?.message || e}`);
+    } finally { setSelfBusy(false); }
   }
 
   async function exportOrchestrate() {
@@ -200,6 +236,13 @@ export default function Editor() {
         setFiles(fl);
       } else setFiles([]);
     } catch { setFiles([]); }
+    try {
+      const jr = await fetch("/paper/judge.json");
+      if (jr.ok) {
+        const jj = await jr.json();
+        setJudge(jj);
+      } else setJudge(null);
+    } catch { setJudge(null); }
   }
 
   return (
@@ -212,6 +255,31 @@ export default function Editor() {
         <div>
           <label>OpenAI Key</label>
           <input value={openaiKey} onChange={e=>setOpenaiKey(e.target.value)} placeholder="...sk" />
+        </div>
+      </div>
+
+      <div className="card grid grid-2" style={{marginBottom:12}}>
+        <div>
+          <label>Slug</label>
+          <input
+            value={slug}
+            onChange={e => {
+              const val = e.target.value;
+              if (slugRe.test(val)) setSlug(val);
+            }}
+            placeholder="demo"
+          />
+        </div>
+        <div>
+          <label>Version</label>
+          <input
+            value={v}
+            onChange={e => {
+              const val = e.target.value;
+              if (slugRe.test(val)) setV(val);
+            }}
+            placeholder="v1"
+          />
         </div>
       </div>
 
@@ -270,12 +338,16 @@ export default function Editor() {
           <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export (compose demo)"}</button>
           <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export ZIP"}</button>
           <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang}>{busy ? "جارٍ…" : "Generate"}</button>
+          <button className="btn" onClick={runSelfTest} disabled={selfBusy || !text}>{selfBusy ? "..." : "Self-Test"}</button>
           {snapshotPath && (
             <a className="btn" href={snapshotPath} target="_blank" rel="noopener noreferrer">Open Snapshot</a>
           )}
         </div>
         {!snapshotPath && <div className="note">No snapshot yet</div>}
         {msg && <div className="note">{msg}</div>}
+        {selfTest && (
+          <div className="note">Self-Test {(selfTest.ratio * 100).toFixed(0)}% · deviations: {selfTest.deviations.length}</div>
+        )}
         {verify && (
           <div className="verify-bar">
             <span>
@@ -287,6 +359,18 @@ export default function Editor() {
             )}
             <span>Dir: {verify.rtl_ltr}</span>
             <span>Idempotent: {verify.idempotency ? <span className="verify-ok">✓</span> : <span className="verify-warn">⚠️</span>}</span>
+          </div>
+        )}
+        {judge && (
+          <div className="charts">
+            {typeof judge.percentage === "number" && judge.classification && (
+              <div className="judge-summary" style={{marginBottom:8}}>
+                {judge.classification} • {judge.percentage.toFixed(1)}%
+              </div>
+            )}
+            {judge.criteria && (
+              <ScoreCharts criteria={judge.criteria} />
+            )}
           </div>
         )}
         {files.length > 0 && (

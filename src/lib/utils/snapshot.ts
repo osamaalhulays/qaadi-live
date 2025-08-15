@@ -10,6 +10,7 @@ export interface SnapshotEntry {
   timestamp: string;
   slug: string;
   v: string;
+  type: "paper" | "role";
 }
 
 const slugRe = /^[a-zA-Z0-9_-]+$/;
@@ -44,26 +45,53 @@ export async function saveSnapshot(
   const entries: SnapshotEntry[] = [];
   const covers: string[] = [];
 
-  if (target === "inquiry") {
+  const safeSlug = sanitizeSlug(slug);
+  const safeV = sanitizeSlug(v);
+
+  const roleNames = [
+    "secretary.md",
+    "judge.json",
+    "plan.md",
+    "notes.txt",
+    "comparison.md",
+    "summary.md"
+  ];
+  const roleData: Record<string, Buffer> = {};
+  for (const name of roleNames) {
     try {
-      const planData = await readFile(path.join(process.cwd(), "paper", "plan.md"));
-      covers.push(sha256Hex(planData));
+      roleData[name] = await readFile(path.join(process.cwd(), "paper", name));
     } catch {}
-    try {
-      const judgeData = await readFile(path.join(process.cwd(), "paper", "judge.json"));
-      covers.push(sha256Hex(judgeData));
-    } catch {}
-    files.push({
-      path: "paper/inquiry.json",
-      content: JSON.stringify({ covers }, null, 2)
-    });
   }
 
-  const safeSlug = sanitizeSlug(slug);
+  if (target === "inquiry") {
+    const coverSet = new Set<string>();
+    if (roleData["plan.md"]) coverSet.add(sha256Hex(roleData["plan.md"]));
+    if (roleData["judge.json"]) coverSet.add(sha256Hex(roleData["judge.json"]));
+
+    const inquiryFile = files.find((f) => f.path === "paper/inquiry.json");
+    if (inquiryFile) {
+      try {
+        const raw =
+          typeof inquiryFile.content === "string"
+            ? inquiryFile.content
+            : Buffer.from(inquiryFile.content).toString("utf8");
+        const j = JSON.parse(raw);
+        if (Array.isArray(j?.questions)) {
+          for (const q of j.questions) {
+            if (Array.isArray(q?.covers)) {
+              for (const c of q.covers) coverSet.add(c);
+            }
+          }
+        }
+      } catch {}
+    }
+
+    covers.push(...coverSet);
+  }
 
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
-    const rel = path.join("snapshots", safeSlug, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
+    const rel = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
     const full = path.join(process.cwd(), "public", rel);
     await mkdir(path.dirname(full), { recursive: true });
     await writeFile(full, data);
@@ -73,13 +101,33 @@ export async function saveSnapshot(
       target,
       lang,
       slug: safeSlug,
-      v,
-      timestamp
+      v: safeV,
+      timestamp,
+      type: "paper"
+    });
+  }
+
+  for (const name of roleNames) {
+    const data = roleData[name];
+    if (!data) continue;
+    const rel = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang, name);
+    const full = path.join(process.cwd(), "public", rel);
+    await mkdir(path.dirname(full), { recursive: true });
+    await writeFile(full, data);
+    entries.push({
+      path: rel.replace(/\\/g, "/"),
+      sha256: sha256Hex(data),
+      target,
+      lang,
+      slug: safeSlug,
+      v: safeV,
+      timestamp,
+      type: "role"
     });
   }
 
   if (target !== "wide" && target !== "inquiry") {
-    const base = path.join("snapshots", safeSlug, tsDir, "paper", target, lang);
+    const base = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang);
 
     const relBib = path.join(base, "biblio.bib");
     const fullBib = path.join(process.cwd(), "public", relBib);
@@ -91,8 +139,9 @@ export async function saveSnapshot(
       target,
       lang,
       slug: safeSlug,
-      v,
-      timestamp
+      v: safeV,
+      timestamp,
+      type: "paper"
     });
 
     const relFigs = path.join(base, "figs");
@@ -104,8 +153,9 @@ export async function saveSnapshot(
       target,
       lang,
       slug: safeSlug,
-      v,
-      timestamp
+      v: safeV,
+      timestamp,
+      type: "paper"
     });
   }
 

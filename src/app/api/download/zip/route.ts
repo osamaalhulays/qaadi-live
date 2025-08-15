@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { makeZip, type ZipFile } from "../../../../lib/utils/zip";
 import { readFile } from "fs/promises";
+import { type SnapshotEntry } from "../../../../lib/utils/snapshot";
 import path from "path";
 import crypto from "crypto";
 
@@ -57,40 +58,36 @@ export async function GET(req: NextRequest) {
     const canonicalSha = crypto.createHash("sha256").update(canonical).digest("hex");
     const builtAt = new Date().toISOString();
     const manifest = JSON.stringify({ kind: "qaadi-ga", slug, version: v, built_at: builtAt }, null, 2);
-    let matrix: number[][] = [];
+    let snapEntries: SnapshotEntry[] = [];
     try {
       const snapPath = path.join(root, "public", "snapshots", "manifest.json");
       const snapRaw = await readFile(snapPath, "utf-8");
-      const snapEntries = (JSON.parse(snapRaw) as Array<{
-        timestamp: string;
-        path: string;
-        sha256: string;
-        slug: string;
-        v: string;
-      }>).filter((e) => e.slug === slug && e.v === v);
-      if (snapEntries.length === 0) {
-        matrix = [[1]];
-      } else {
-        const groups: Record<string, Record<string, string>> = {};
-        for (const e of snapEntries) {
-          if (!groups[e.timestamp]) groups[e.timestamp] = {};
-          groups[e.timestamp][e.path] = e.sha256;
-        }
-        const stamps = Object.keys(groups).sort();
-        matrix = stamps.map((a) =>
-          stamps.map((b) => {
-            const A = groups[a];
-            const B = groups[b];
-            const keys = new Set([...Object.keys(A), ...Object.keys(B)]);
-            for (const k of keys) {
-              if (A[k] !== B[k]) return 0;
-            }
-            return 1;
-          })
-        );
-      }
-    } catch {
+      snapEntries = (JSON.parse(snapRaw) as SnapshotEntry[]).filter(
+        (e) => e.slug === slug && e.v === v
+      );
+    } catch {}
+
+    let matrix: number[][] = [];
+    if (snapEntries.length === 0) {
       matrix = [[1]];
+    } else {
+      const groups: Record<string, Record<string, string>> = {};
+      for (const e of snapEntries) {
+        if (!groups[e.timestamp]) groups[e.timestamp] = {};
+        groups[e.timestamp][e.path] = e.sha256;
+      }
+      const stamps = Object.keys(groups).sort();
+      matrix = stamps.map((a) =>
+        stamps.map((b) => {
+          const A = groups[a];
+          const B = groups[b];
+          const keys = new Set([...Object.keys(A), ...Object.keys(B)]);
+          for (const k of keys) {
+            if (A[k] !== B[k]) return 0;
+          }
+          return 1;
+        })
+      );
     }
     const determinism = JSON.stringify({ version: 1, matrix }, null, 2);
     const provenance = JSON.stringify(
@@ -107,11 +104,28 @@ export async function GET(req: NextRequest) {
 
     const files: ZipFile[] = [
       { path: `QaadiDB/theory-${slug}/registry.json`, content: registry },
-      { path: `QaadiDB/theory-${slug}/canonical/${v}/canonical.json`, content: canonical },
-      { path: "manifest.json", content: manifest },
-      { path: "determinism_matrix.json", content: determinism },
-      { path: "provenance.json", content: provenance }
+      { path: `QaadiDB/theory-${slug}/canonical/${v}/canonical.json`, content: canonical }
     ];
+
+    if (snapEntries.length) {
+      const latest = snapEntries.reduce((a, b) =>
+        a.timestamp > b.timestamp ? a : b
+      );
+      const tsDir = latest.path.split("/")[2];
+      const prefix = `snapshots/${slug}/${tsDir}/`;
+      for (const e of snapEntries.filter((s) => s.path.startsWith(prefix))) {
+        if (e.path.endsWith("/")) continue;
+        try {
+          const data = await readFile(path.join(root, "public", e.path));
+          const rel = e.path.slice(prefix.length);
+          files.push({ path: rel, content: data });
+        } catch {}
+      }
+    }
+
+    files.push({ path: "manifest.json", content: manifest });
+    files.push({ path: "determinism_matrix.json", content: determinism });
+    files.push({ path: "provenance.json", content: provenance });
     const zip = makeZip(files);
     const shaHex = crypto.createHash("sha256").update(zip).digest("hex");
     const name = `qaadi_v6_${slug}_${v}_${tsNow()}.zip`;
