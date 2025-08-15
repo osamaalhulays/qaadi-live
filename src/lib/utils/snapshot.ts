@@ -32,7 +32,13 @@ function tsFolder(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
-export const ROLE_FILES = ["secretary.md", "judge.json", "plan.md", "notes.txt", "comparison.md"];
+export const ROLE_FILES = [
+  "secretary.md",
+  "judge.json",
+  "plan.md",
+  "notes.txt",
+  "comparison.md",
+] as const;
 
 export async function saveSnapshot(
   files: { path: string; content: string | Uint8Array }[],

@@ -109,8 +109,13 @@ function buildTreeFromCompose(payload: any) {
   }
 
   // comparison.md
-  const comparisonTable = `| Framework | Compatibility |\n| --- | --- |\n| Relativity | Compatible |\n| Quantum Mechanics | Compatible |\n| Field Theory | Compatible |`;
-  files.push({ path: "paper/comparison.md", content: comparisonTable });
+    const comparisonTable =
+      `| Framework | Compatibility |\n` +
+      `| --- | --- |\n` +
+      `| Relativity | Compatible |\n` +
+      `| Quantum Mechanics | Compatible |\n` +
+      `| Field Theory | Compatible |`;
+    files.push({ path: "paper/comparison.md", content: comparisonTable });
 
   return { name, files };
 }
