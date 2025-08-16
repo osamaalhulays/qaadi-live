@@ -7,6 +7,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "pretest": "ts-node scripts/setup-test-data.ts",
     "test": "jest",
     "migrate-registry": "ts-node scripts/migrate-registry.ts"
   },
