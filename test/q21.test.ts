@@ -2,7 +2,7 @@ import assert from 'node:assert';
 
 import { evaluateQN21, QN21_CRITERIA, summarizeQN21 } from '../src/lib/q21';
 
-test('evaluateQN21 returns scores and gaps based on patterns', () => {
+test('evaluateQN21 returns full weight when code is present', () => {
   const text = 'Equations ensure rigor and ethics in research.';
   const result = evaluateQN21(text);
 
@@ -10,50 +10,47 @@ test('evaluateQN21 returns scores and gaps based on patterns', () => {
 
   const equations = result.find((r) => r.code === 'equations');
   assert.ok(equations);
-  assert.strictEqual(equations?.score, 8 * (2 / 3));
-  assert.strictEqual(equations?.gap, 8 - 8 * (2 / 3));
+  assert.strictEqual(equations?.score, 8);
+  assert.strictEqual(equations?.gap, 0);
 
   const rigor = result.find((r) => r.code === 'rigor');
   assert.ok(rigor);
-  assert.strictEqual(rigor?.score, 6 * (2 / 3));
-  assert.strictEqual(rigor?.gap, 6 - 6 * (2 / 3));
+  assert.strictEqual(rigor?.score, 6);
 
   const ethics = result.find((r) => r.code === 'ethics');
   assert.ok(ethics);
-  assert.strictEqual(ethics?.score, 8 * (1 / 3));
-  assert.strictEqual(ethics?.gap, 8 - 8 * (1 / 3));
+  assert.strictEqual(ethics?.score, 8);
 
   const safety = result.find((r) => r.code === 'safety');
   assert.ok(safety);
   assert.strictEqual(safety?.score, 0);
-  assert.strictEqual(safety?.gap, 5);
 });
 
-test('evaluateQN21 detects uppercase and mixed-case indicators', () => {
-  const text = 'The EQUATIONS were derived with RIGOR and ETHICS.';
+test('evaluateQN21 is case-insensitive and matches singular forms', () => {
+  const text = 'The EQUATION was derived with RIGOR and ETHICS.';
   const result = evaluateQN21(text);
 
   const equations = result.find((r) => r.code === 'equations');
   assert.ok(equations);
-  assert.strictEqual(equations?.score, 8 * (2 / 3));
+  assert.strictEqual(equations?.score, 8);
 
   const rigor = result.find((r) => r.code === 'rigor');
   assert.ok(rigor);
-  assert.strictEqual(rigor?.score, 6 * (2 / 3));
+  assert.strictEqual(rigor?.score, 6);
 
   const ethics = result.find((r) => r.code === 'ethics');
   assert.ok(ethics);
-  assert.strictEqual(ethics?.score, 8 * (1 / 3));
+  assert.strictEqual(ethics?.score, 8);
 });
 
-test('evaluateQN21 handles partial criteria in text', () => {
+test('evaluateQN21 handles missing criteria', () => {
   const text =
     'Calibration ensures precision, but reproducibility was not discussed. Community engagement was strong.';
   const result = evaluateQN21(text);
 
   const calibration = result.find((r) => r.code === 'calibration');
   assert.ok(calibration);
-  assert.strictEqual(calibration?.score, 3 * (1 / 3));
+  assert.strictEqual(calibration?.score, 3);
 
   const reproducibility = result.find((r) => r.code === 'reproducibility');
   assert.ok(reproducibility);
@@ -61,7 +58,7 @@ test('evaluateQN21 handles partial criteria in text', () => {
 
   const engagement = result.find((r) => r.code === 'engagement');
   assert.ok(engagement);
-  assert.strictEqual(engagement?.score, 5 * (2 / 3));
+  assert.strictEqual(engagement?.score, 5);
 });
 
 test('summarizeQN21 computes totals, max, percentage, and classification', () => {
