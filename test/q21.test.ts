@@ -49,14 +49,16 @@ test('evaluateQN21 handles partial criteria in text', () => {
 });
 
 test('summarizeQN21 computes percentage and classification', () => {
-  const text = QN21_CRITERIA.slice(0, 17)
-    .map((c) => c.keywords[0])
-    .join(' ');
+  const included = QN21_CRITERIA.slice(0, 17);
+  const text = included.map((c) => c.keywords[0]).join(' ');
   const result = evaluateQN21(text);
   const summary = summarizeQN21(result);
-  assert.strictEqual(summary.total, 17);
-  assert.strictEqual(summary.max, QN21_CRITERIA.length);
-  assert.ok(summary.percentage > 80);
-  assert.strictEqual(summary.classification, 'accepted');
+  const expectedTotal = included.reduce((sum, c) => sum + c.weight, 0);
+  const expectedMax = QN21_CRITERIA.reduce((sum, c) => sum + c.weight, 0);
+  const expectedPercentage = (expectedTotal / expectedMax) * 100;
+  assert.strictEqual(summary.total, expectedTotal);
+  assert.strictEqual(summary.max, expectedMax);
+  assert.strictEqual(summary.percentage, expectedPercentage);
+  assert.strictEqual(summary.classification, 'needs_improvement');
 });
 
