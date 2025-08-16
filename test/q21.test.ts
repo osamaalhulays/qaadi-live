@@ -139,6 +139,7 @@ test('evaluateQN21 handles sticky regex patterns consistently', () => {
   QN21_CRITERIA.push(stickyCriterion as any);
   try {
     const text = 'ma';
+    // Run evaluation twice to ensure lastIndex is reset between calls
     const run = () => {
       const result = evaluateQN21(text);
       const sticky = result.find((r) => r.code === 'sticky');

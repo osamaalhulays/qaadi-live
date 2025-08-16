@@ -78,6 +78,8 @@ export function evaluateQN21(text: string): QN21Result[] {
   return QN21_CRITERIA.map((c) => {
     const matches = c.patterns.reduce((count, p) => {
       const found = sentences.some((s) => {
+        // Reset lastIndex so global or sticky patterns test from the start
+        // of each sentence.
         p.lastIndex = 0;
         return p.test(s) && !/\b(no|not|without)\b/i.test(s);
       });
