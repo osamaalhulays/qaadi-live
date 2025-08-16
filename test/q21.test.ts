@@ -67,17 +67,35 @@ test('evaluateQN21 handles partial criteria in text', () => {
 });
 
 test('summarizeQN21 computes totals, max, percentage, and classification', () => {
+  const criterionA = {
+    code: 'c1',
+    type: 'internal',
+    weight: 5,
+    description: '',
+    keywords: [],
+  } as const;
+  const criterionB = {
+    code: 'c2',
+    type: 'internal',
+    weight: 3,
+    description: '',
+    keywords: [],
+  } as const;
+  const criterionC = {
+    code: 'c3',
+    type: 'internal',
+    weight: 2,
+    description: '',
+    keywords: [],
+  } as const;
   const results = [
-    { ...QN21_CRITERIA[0], score: QN21_CRITERIA[0].weight, gap: 0 },
-    { ...QN21_CRITERIA[1], score: 0, gap: QN21_CRITERIA[1].weight },
-    { ...QN21_CRITERIA[2], score: QN21_CRITERIA[2].weight, gap: 0 },
+    { ...criterionA, score: 5, gap: 0 },
+    { ...criterionB, score: 0, gap: 3 },
+    { ...criterionC, score: 2, gap: 0 },
   ];
   const summary = summarizeQN21(results);
-  const expectedTotal = QN21_CRITERIA[0].weight + QN21_CRITERIA[2].weight;
-  const expectedMax =
-    QN21_CRITERIA[0].weight +
-    QN21_CRITERIA[1].weight +
-    QN21_CRITERIA[2].weight;
+  const expectedTotal = 7; // 5 + 0 + 2
+  const expectedMax = 10; // 5 + 3 + 2
   assert.strictEqual(summary.total, expectedTotal);
   assert.strictEqual(summary.max, expectedMax);
   assert.strictEqual(summary.percentage, (expectedTotal / expectedMax) * 100);

@@ -6,7 +6,7 @@ const createJestConfig = nextJest({
 
 /** @type {import('jest').Config} */
 const config = {
-  testEnvironment: 'jsdom',
+  testEnvironment: 'node',
   transform: {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',
@@ -22,4 +22,3 @@ const config = {
 };
 
 export default createJestConfig(config);
-

@@ -1,8 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert';
 import { GET } from '../src/app/api/download/zip/route.ts';
-import { NextRequest } from 'next/server';
-import { mkdir, writeFile, rm, cp } from 'node:fs/promises';
+import { mkdir, writeFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
 
@@ -24,19 +23,8 @@ async function ensureTheory(slug: string, v: string) {
   );
 }
 
-test.before(async () => {
-  const srcDB = path.join(root, 'docs', 'examples', 'QaadiDB');
-  const destDB = path.join(root, 'QaadiDB');
-  await cp(srcDB, destDB, { recursive: true });
-
-  const srcVault = path.join(root, 'docs', 'examples', 'QaadiVault');
-  const destVault = path.join(root, 'QaadiVault');
-  await cp(srcVault, destVault, { recursive: true });
-});
-
 test.after(async () => {
   await rm(path.join(root, 'QaadiDB'), { recursive: true, force: true });
-  await rm(path.join(root, 'QaadiVault'), { recursive: true, force: true });
 });
 
 function unzipStore(u8: Uint8Array): Record<string, Uint8Array> {
@@ -59,7 +47,7 @@ function unzipStore(u8: Uint8Array): Record<string, Uint8Array> {
 
 test('determinism and provenance non-empty', async () => {
   await ensureTheory('demo', 'v1.0');
-  const req = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
+  const req = { url: 'http://localhost/api/download/zip?slug=demo&v=v1.0' } as any;
   const res = await GET(req);
   assert.strictEqual(res.status, 200);
   const buf = Buffer.from(await res.arrayBuffer());
@@ -84,7 +72,7 @@ test('reads snapshots manifest, filters by slug/version and uses v6 archive name
   await ensureTheory('demo', 'v1.0');
   await ensureTheory('demo', 'v2.0');
 
-  const req1 = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
+  const req1 = { url: 'http://localhost/api/download/zip?slug=demo&v=v1.0' } as any;
   const res1 = await GET(req1);
   assert.strictEqual(res1.status, 200);
   const disp = res1.headers.get('Content-Disposition');
@@ -97,7 +85,7 @@ test('reads snapshots manifest, filters by slug/version and uses v6 archive name
     [0, 1]
   ]);
 
-  const req2 = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v2.0');
+  const req2 = { url: 'http://localhost/api/download/zip?slug=demo&v=v2.0' } as any;
   const res2 = await GET(req2);
   assert.strictEqual(res2.status, 200);
   const buf2 = Buffer.from(await res2.arrayBuffer());
@@ -141,7 +129,7 @@ test('includes latest snapshot files in archive', async () => {
 
   await ensureTheory('demo', 'v1.0');
 
-  const req = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
+  const req = { url: 'http://localhost/api/download/zip?slug=demo&v=v1.0' } as any;
   const res = await GET(req);
   assert.strictEqual(res.status, 200);
   const buf = Buffer.from(await res.arrayBuffer());
@@ -151,4 +139,3 @@ test('includes latest snapshot files in archive', async () => {
 
   await rm(path.join(root, 'public', 'snapshots'), { recursive: true, force: true });
 });
-
