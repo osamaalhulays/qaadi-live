@@ -20,7 +20,7 @@ const config = {
   },
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   testMatch: [
-    '**/test/(q21|judge|customCriteria|evaluateCriteriaPartial|health|consultant|lead|journalist).test.ts',
+    '**/test/{q21,judge,customCriteria,evaluateCriteriaPartial,health,consultant,lead,journalist}.test.ts',
   ],
 };
 

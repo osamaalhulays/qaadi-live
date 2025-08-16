@@ -38,10 +38,7 @@ export async function runLead(cards: string[], root = process.cwd()) {
     ([item, sources]) => `- ${item} (${Array.from(sources).join(", ")})`
   );
 
-  const bestBlock = [
-    "## Best Items",
-    bestLines.length ? bestLines.join("\n") : "- None",
-  ].join("\n");
+  const bestBlock = `## Best Items\n${bestLines.length ? bestLines.join("\n") : "- None"}`;
 
   const content = ["# Comparison", bestBlock, ...sections].join("\n\n");
 
