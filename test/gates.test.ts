@@ -1,4 +1,3 @@
-import test from 'node:test';
 import assert from 'node:assert';
 import { runGates } from '../src/lib/workflow';
 
@@ -44,4 +43,21 @@ test('runGates blocks evaluation when fields are missing', () => {
   const gate = runGates({ secretary: { audit: { keywords: [] } } });
   const shouldEvaluate = gate.missing.length === 0;
   assert.strictEqual(shouldEvaluate, false);
+});
+
+test('runGates returns all fields missing when report is absent', () => {
+  const result = runGates({});
+  assert.strictEqual(result.ready_percent, 0);
+  assert.deepStrictEqual(result.missing, [
+    'summary',
+    'equations',
+    'references',
+    'keywords',
+    'tokens',
+    'boundary',
+    'post_analysis',
+    'risks',
+    'predictions',
+    'testability',
+  ]);
 });
