@@ -48,15 +48,21 @@ test('evaluateQN21 handles partial criteria in text', () => {
   assert.strictEqual(engagement?.score, 5);
 });
 
-test('summarizeQN21 computes percentage and classification', () => {
-  const text = QN21_CRITERIA.slice(0, 17)
-    .map((c) => c.keywords[0])
-    .join(' ');
-  const result = evaluateQN21(text);
-  const summary = summarizeQN21(result);
-  assert.strictEqual(summary.total, 17);
-  assert.strictEqual(summary.max, QN21_CRITERIA.length);
-  assert.ok(summary.percentage > 80);
-  assert.strictEqual(summary.classification, 'accepted');
+test('summarizeQN21 computes totals, max, percentage, and classification', () => {
+  const results = [
+    { ...QN21_CRITERIA[0], score: QN21_CRITERIA[0].weight, gap: 0 },
+    { ...QN21_CRITERIA[1], score: QN21_CRITERIA[1].weight, gap: 0 },
+    { ...QN21_CRITERIA[2], score: 0, gap: QN21_CRITERIA[2].weight },
+  ];
+  const summary = summarizeQN21(results);
+  const expectedTotal = QN21_CRITERIA[0].weight + QN21_CRITERIA[1].weight;
+  const expectedMax =
+    QN21_CRITERIA[0].weight +
+    QN21_CRITERIA[1].weight +
+    QN21_CRITERIA[2].weight;
+  assert.strictEqual(summary.total, expectedTotal);
+  assert.strictEqual(summary.max, expectedMax);
+  assert.strictEqual(summary.percentage, (expectedTotal / expectedMax) * 100);
+  assert.strictEqual(summary.classification, 'needs_improvement');
 });
 
