@@ -1,5 +1,5 @@
 import test from 'node:test';
-import assert from 'node:assert';
+import assert from 'node:assert/strict';
 import { runGates } from '../src/lib/workflow';
 
 test('runGates detects missing fields', () => {
