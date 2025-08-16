@@ -7,6 +7,7 @@ const createJestConfig = nextJest({
 /** @type {import('jest').Config} */
 const config = {
   testEnvironment: 'node',
+  setupFiles: ['<rootDir>/test/setup.ts'],
   transform: {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',
@@ -19,7 +20,6 @@ const config = {
     ],
   },
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  setupFiles: ['<rootDir>/test/setup.ts'],
   // Match all test files within any `test` directory
   testMatch: ['**/test/**/*.test.ts'],
 };

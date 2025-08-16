@@ -33,12 +33,26 @@ async function ensureDirs() {
   await mkdir(ARCHIVE, { recursive: true });
 }
 
+const DEFAULT_CRITERIA: Criterion[] = [
+  {
+    id: "SAFE",
+    description: "Safety compliance",
+    weight: 5,
+    keywords: ["safety", "compliance"],
+    enabled: true,
+    category: "internal",
+    version: 1,
+  },
+];
+
 export async function loadCriteria(): Promise<Criterion[]> {
   try {
     const raw = await readFile(LATEST, "utf-8");
-    return JSON.parse(raw) as Criterion[];
+    const parsed = JSON.parse(raw) as Criterion[];
+    const ids = new Set(parsed.map((c) => c.id));
+    return [...parsed, ...DEFAULT_CRITERIA.filter((c) => !ids.has(c.id))];
   } catch {
-    return [];
+    return [...DEFAULT_CRITERIA];
   }
 }
 
