@@ -29,8 +29,9 @@ export async function runJudge(text?: string) {
   const qn21Results = evaluateQN21(content);
   const custom = await loadCriteria();
   const customResults = evaluateCriteria(content, custom);
-  console.log("runJudge: qn21Results", qn21Results);
-  console.log("runJudge: customResults", customResults);
+  const debug = process.env.DEBUG_JUDGE === "true";
+  if (debug) console.log("runJudge: qn21Results", qn21Results);
+  if (debug) console.log("runJudge: customResults", customResults);
 
   const combined: ChartCriterion[] = [];
   qn21Results.forEach((c, i) => {
@@ -54,7 +55,7 @@ export async function runJudge(text?: string) {
     });
   });
 
-  console.log("runJudge: combined criteria", combined);
+  if (debug) console.log("runJudge: combined criteria", combined);
 
   const total = [...qn21Results, ...customResults].reduce((s, c) => s + c.score, 0);
   const max = [...qn21Results, ...customResults].reduce((s, c) => s + c.weight, 0);
@@ -66,10 +67,11 @@ export async function runJudge(text?: string) {
     .filter((c) => c.gap > 0)
     .map((c) => ({ id: c.id, name: c.name, gap: c.gap }));
 
-  console.log(
-    `runJudge: total=${total}, max=${max}, percentage=${percentage}, classification=${classification}`
-  );
-  console.log("runJudge: gaps", gaps);
+  if (debug)
+    console.log(
+      `runJudge: total=${total}, max=${max}, percentage=${percentage}, classification=${classification}`
+    );
+  if (debug) console.log("runJudge: gaps", gaps);
 
   const result = {
     verdict: "approved",
