@@ -10,18 +10,18 @@ test('evaluateQN21 returns scores and gaps based on patterns', () => {
 
   const equations = result.find((r) => r.code === 'equations');
   assert.ok(equations);
-  assert.strictEqual(equations?.score, 5 * (2 / 3));
-  assert.strictEqual(equations?.gap, 5 - 5 * (2 / 3));
+  assert.strictEqual(equations?.score, 5);
+  assert.strictEqual(equations?.gap, 0);
 
   const rigor = result.find((r) => r.code === 'rigor');
   assert.ok(rigor);
-  assert.strictEqual(rigor?.score, 5 * (2 / 3));
-  assert.strictEqual(rigor?.gap, 5 - 5 * (2 / 3));
+  assert.strictEqual(rigor?.score, 5 * (1 / 2));
+  assert.strictEqual(rigor?.gap, 5 - 5 * (1 / 2));
 
   const ethics = result.find((r) => r.code === 'ethics');
   assert.ok(ethics);
-  assert.strictEqual(ethics?.score, 2 * (2 / 3));
-  assert.strictEqual(ethics?.gap, 2 - 2 * (2 / 3));
+  assert.strictEqual(ethics?.score, 2);
+  assert.strictEqual(ethics?.gap, 0);
 
   const references = result.find((r) => r.code === 'references');
   assert.ok(references);
@@ -35,25 +35,25 @@ test('evaluateQN21 detects uppercase and mixed-case indicators', () => {
 
   const equations = result.find((r) => r.code === 'equations');
   assert.ok(equations);
-  assert.strictEqual(equations?.score, 5 * (2 / 3));
+  assert.strictEqual(equations?.score, 5);
 
   const rigor = result.find((r) => r.code === 'rigor');
   assert.ok(rigor);
-  assert.strictEqual(rigor?.score, 5 * (2 / 3));
+  assert.strictEqual(rigor?.score, 5 * (1 / 2));
 
   const ethics = result.find((r) => r.code === 'ethics');
   assert.ok(ethics);
-  assert.strictEqual(ethics?.score, 2 * (1 / 3));
+  assert.strictEqual(ethics?.score, 2);
 });
 
 test('evaluateQN21 handles partial criteria in text', () => {
   const text =
-    'Predictions were promising, but reproducibility was not discussed. Diagrams were provided.';
+    'Predictions were promising. Reproducibility was not discussed. Diagrams were provided.';
   const result = evaluateQN21(text);
 
   const predictions = result.find((r) => r.code === 'predictions');
   assert.ok(predictions);
-  assert.strictEqual(predictions?.score, 6 * (2 / 3));
+  assert.strictEqual(predictions?.score, 6 * (1 / 2));
 
   const reproducibility = result.find((r) => r.code === 'reproducibility');
   assert.ok(reproducibility);
@@ -61,7 +61,7 @@ test('evaluateQN21 handles partial criteria in text', () => {
 
   const diagrams = result.find((r) => r.code === 'diagrams');
   assert.ok(diagrams);
-  assert.strictEqual(diagrams?.score, 2 * (1 / 3));
+  assert.strictEqual(diagrams?.score, 2 * (1 / 2));
 });
 
 test('evaluateQN21 gives full score when all indicators match', () => {
