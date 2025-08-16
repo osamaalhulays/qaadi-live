@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert';
+import { test, expect } from '@jest/globals';
 import { mkdtemp, writeFile, readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
@@ -22,11 +21,11 @@ test('runLead merges plans and highlights best items', async () => {
     const content = await runLead(['alpha', 'beta']);
     const cmpPath = path.join(paperDir, 'comparison.md');
     const fileContent = await readFile(cmpPath, 'utf8');
-    assert.strictEqual(content, fileContent);
-    assert.match(fileContent, /# Comparison/);
-    assert.match(fileContent, /## Best Items\n- Task A \(alpha, beta\)\n- Task C \(beta\)/);
-    assert.match(fileContent, /## alpha/);
-    assert.match(fileContent, /## beta/);
+    expect(content).toBe(fileContent);
+    expect(fileContent).toMatch(/# Comparison/);
+    expect(fileContent).toMatch(/## Best Items\n- Task A \(alpha, beta\)\n- Task C \(beta\)/);
+    expect(fileContent).toMatch(/## alpha/);
+    expect(fileContent).toMatch(/## beta/);
   } finally {
     process.chdir(prev);
   }

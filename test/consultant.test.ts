@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert';
+import { test, expect } from '@jest/globals';
 import { mkdtemp, writeFile, readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
@@ -23,9 +22,9 @@ test('runConsultant summarizes judge strengths and gaps', async () => {
     const content = await runConsultant();
     const notesPath = path.join(paperDir, 'notes.txt');
     const fileContent = await readFile(notesPath, 'utf8');
-    assert.strictEqual(content, fileContent);
-    assert.match(fileContent, /## Strengths\n- Method/);
-    assert.match(fileContent, /## Gaps\n- Data/);
+    expect(content).toBe(fileContent);
+    expect(fileContent).toMatch(/## Strengths\n- Method/);
+    expect(fileContent).toMatch(/## Gaps\n- Data/);
   } finally {
     process.chdir(prev);
   }

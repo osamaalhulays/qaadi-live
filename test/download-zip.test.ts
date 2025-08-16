@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert';
+import { test, expect, beforeAll, afterAll } from '@jest/globals';
 import { GET } from '../src/app/api/download/zip/route';
 import { NextRequest } from 'next/server';
 import { mkdir, writeFile, rm, cp } from 'node:fs/promises';
@@ -24,7 +23,7 @@ async function ensureTheory(slug: string, v: string) {
   );
 }
 
-test.before(async () => {
+beforeAll(async () => {
   const srcDB = path.join(root, 'docs', 'examples', 'QaadiDB');
   const destDB = path.join(root, 'QaadiDB');
   await cp(srcDB, destDB, { recursive: true });
@@ -34,7 +33,7 @@ test.before(async () => {
   await cp(srcVault, destVault, { recursive: true });
 });
 
-test.after(async () => {
+afterAll(async () => {
   await rm(path.join(root, 'QaadiDB'), { recursive: true, force: true });
   await rm(path.join(root, 'QaadiVault'), { recursive: true, force: true });
 });
@@ -61,13 +60,13 @@ test('determinism and provenance non-empty', async () => {
   await ensureTheory('demo', 'v1.0');
   const req = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
   const res = await GET(req);
-  assert.strictEqual(res.status, 200);
+  expect(res.status).toBe(200);
   const buf = Buffer.from(await res.arrayBuffer());
   const files = unzipStore(buf);
   const determinism = JSON.parse(Buffer.from(files['determinism_matrix.json']).toString());
   const provenance = JSON.parse(Buffer.from(files['provenance.json']).toString());
-  assert.ok(Array.isArray(determinism.matrix) && determinism.matrix.length > 0);
-  assert.ok(Array.isArray(provenance.sources) && provenance.sources.length > 0);
+  expect(Array.isArray(determinism.matrix) && determinism.matrix.length > 0).toBe(true);
+  expect(Array.isArray(provenance.sources) && provenance.sources.length > 0).toBe(true);
 });
 
 test('reads snapshots manifest, filters by slug/version and uses v6 archive name', async () => {
@@ -86,24 +85,24 @@ test('reads snapshots manifest, filters by slug/version and uses v6 archive name
 
   const req1 = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
   const res1 = await GET(req1);
-  assert.strictEqual(res1.status, 200);
+  expect(res1.status).toBe(200);
   const disp = res1.headers.get('Content-Disposition');
-  assert.ok(disp && /attachment; filename="qaadi_v6_demo_v1\.0_\d{14}\.zip"/.test(disp));
+  expect(disp && /attachment; filename="qaadi_v6_demo_v1\.0_\d{14}\.zip"/.test(disp)).toBe(true);
   const buf1 = Buffer.from(await res1.arrayBuffer());
   const files1 = unzipStore(buf1);
   const determinism1 = JSON.parse(Buffer.from(files1['determinism_matrix.json']).toString());
-  assert.deepStrictEqual(determinism1.matrix, [
+  expect(determinism1.matrix).toEqual([
     [1, 0],
     [0, 1]
   ]);
 
   const req2 = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v2.0');
   const res2 = await GET(req2);
-  assert.strictEqual(res2.status, 200);
+  expect(res2.status).toBe(200);
   const buf2 = Buffer.from(await res2.arrayBuffer());
   const files2 = unzipStore(buf2);
   const determinism2 = JSON.parse(Buffer.from(files2['determinism_matrix.json']).toString());
-  assert.deepStrictEqual(determinism2.matrix, [[1]]);
+  expect(determinism2.matrix).toEqual([[1]]);
 
   await rm(path.join(dir, 'manifest.json'));
 });
@@ -143,11 +142,11 @@ test('includes latest snapshot files in archive', async () => {
 
   const req = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
   const res = await GET(req);
-  assert.strictEqual(res.status, 200);
+  expect(res.status).toBe(200);
   const buf = Buffer.from(await res.arrayBuffer());
   const files = unzipStore(buf);
-  assert.ok(files['paper/revtex/en/draft.tex']);
-  assert.ok(files['paper/revtex/en/secretary.md']);
+  expect(files['paper/revtex/en/draft.tex']).toBeTruthy();
+  expect(files['paper/revtex/en/secretary.md']).toBeTruthy();
 
   await rm(path.join(root, 'public', 'snapshots'), { recursive: true, force: true });
 });

@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert';
+import { test, expect } from '@jest/globals';
 import { mkdtemp, writeFile, readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
@@ -26,9 +25,9 @@ test('runJournalist creates multilingual summaries and reports', async () => {
     ];
     for (const f of files) {
       const fc = await readFile(path.join(paperDir, f), 'utf8');
-      assert.match(fc, /E=mc\^2/);
+      expect(fc).toMatch(/E=mc\^2/);
     }
-    assert.strictEqual(content, await readFile(path.join(paperDir, 'summary.md'), 'utf8'));
+    expect(content).toBe(await readFile(path.join(paperDir, 'summary.md'), 'utf8'));
   } finally {
     process.chdir(prev);
   }

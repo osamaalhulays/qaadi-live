@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert';
+import { test, expect } from '@jest/globals';
 import { mkdtemp, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
@@ -31,40 +30,19 @@ test('runSecretary generates a complete secretary.md', async () => {
     const content = await runSecretary(sampleSecretary);
     const filePath = path.join(dir, 'paper', 'secretary.md');
     const fileContent = await readFile(filePath, 'utf8');
-    assert.strictEqual(fileContent, content);
-    assert.match(fileContent, /Ready%: 100/);
-    assert.match(fileContent, /## Summary\nProject overview/);
-    assert.match(
-      fileContent,
-      /## Keywords\n- analysis\n- physics/
-    );
-    assert.match(
-      fileContent,
-      /## Tokens and Definitions\n- c: speed of light\n- m: mass/
-    );
-    assert.match(
-      fileContent,
-      /## Equations\n- E=mc\^2\n- a\^2 \+ b\^2 = c\^2/
-    );
-    assert.match(
-      fileContent,
-      /## Boundary Conditions\n- t=0\n- x->∞/
-    );
-    assert.match(fileContent, /## Post-Analysis\ndimensionless/);
-    assert.match(
-      fileContent,
-      /## Risks\n- oversimplification/
-    );
-    assert.match(
-      fileContent,
-      /## Predictions\n- growth/
-    );
-    assert.match(fileContent, /## Testability\nlab experiments/);
-    assert.match(
-      fileContent,
-      /## References\n- Einstein 1905\n- Pythagoras/
-    );
-    assert.match(fileContent, /## Issues\n\s*$/);
+    expect(fileContent).toBe(content);
+    expect(fileContent).toMatch(/Ready%: 100/);
+    expect(fileContent).toMatch(/## Summary\nProject overview/);
+    expect(fileContent).toMatch(/## Keywords\n- analysis\n- physics/);
+    expect(fileContent).toMatch(/## Tokens and Definitions\n- c: speed of light\n- m: mass/);
+    expect(fileContent).toMatch(/## Equations\n- E=mc\^2\n- a\^2 \+ b\^2 = c\^2/);
+    expect(fileContent).toMatch(/## Boundary Conditions\n- t=0\n- x->∞/);
+    expect(fileContent).toMatch(/## Post-Analysis\ndimensionless/);
+    expect(fileContent).toMatch(/## Risks\n- oversimplification/);
+    expect(fileContent).toMatch(/## Predictions\n- growth/);
+    expect(fileContent).toMatch(/## Testability\nlab experiments/);
+    expect(fileContent).toMatch(/## References\n- Einstein 1905\n- Pythagoras/);
+    expect(fileContent).toMatch(/## Issues\n\s*$/);
   } finally {
     process.chdir(prev);
   }
@@ -78,20 +56,11 @@ test('runResearchSecretary writes plan files with QN-21 table', async () => {
     const { name, content } = await runResearchSecretary('alpha', samplePlan);
     const filePath = path.join(dir, 'paper', `plan-${name}.md`);
     const fileContent = await readFile(filePath, 'utf8');
-    assert.strictEqual(fileContent, content);
-    assert.match(fileContent, /# Plan for alpha/);
-    assert.match(
-      fileContent,
-      /\| Item \| Priority \| QN-21 Criterion \|\n\|------\|----------\|-----------------\|/
-    );
-    assert.match(
-      fileContent,
-      /\| استكمال الاشتقاق \| P0 \| QN-21-1 \|/
-    );
-    assert.match(
-      fileContent,
-      /\| تحسين الواجهة \| P2 \| QN-21-8 \|/
-    );
+    expect(fileContent).toBe(content);
+    expect(fileContent).toMatch(/# Plan for alpha/);
+    expect(fileContent).toMatch(/\| Item \| Priority \| QN-21 Criterion \|\n\|------\|----------\|-----------------\|/);
+    expect(fileContent).toMatch(/\| استكمال الاشتقاق \| P0 \| QN-21-1 \|/);
+    expect(fileContent).toMatch(/\| تحسين الواجهة \| P2 \| QN-21-8 \|/);
   } finally {
     process.chdir(prev);
   }
