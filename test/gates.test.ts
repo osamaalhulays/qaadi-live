@@ -23,9 +23,6 @@ test('runGates passes when all required fields are present', () => {
   const result = runGates({
     secretary: {
       audit: {
-        summary: 'A',
-        equations: ['E=mc^2'],
-        references: ['Ref'],
         keywords: ['physics'],
         tokens: ['c: light'],
         boundary: ['t=0'],
@@ -33,6 +30,9 @@ test('runGates passes when all required fields are present', () => {
         risks: ['oversimplification'],
         predictions: ['growth'],
         testability: 'lab',
+        summary: 'A',
+        equations: ['E=mc^2'],
+        references: ['Ref'],
       },
     },
   });
