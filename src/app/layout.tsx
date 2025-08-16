@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import Script from "next/script";
 import LangDirProvider from "../components/LangDirProvider";
+import ServiceWorkerRegister from "../components/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
   title: "Qaadi Live",
@@ -26,18 +26,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           sizes="32x32"
         />
         <link rel="manifest" href="/manifest.webmanifest" />
-        <Script
-          id="sw-register"
-          strategy="afterInteractive"
-          onLoad={() => {
-            if ("serviceWorker" in navigator) {
-              navigator.serviceWorker.register("/sw.js").catch(() => {});
-            }
-          }}
-        />
       </head>
       <body>
         <LangDirProvider />
+        <ServiceWorkerRegister />
         <div className="wrapper">{children}</div>
       </body>
     </html>
