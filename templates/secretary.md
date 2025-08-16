@@ -1,3 +1,5 @@
+<!-- mandatory fields: ready_percent, issues[].type, issues[].note -->
+
 # ملخص
 يلخص هذا المستند الإطار النظري المقترح، ويعرض الأهداف والفرضيات الرئيسة للدراسة.
 
