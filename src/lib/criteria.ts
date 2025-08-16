@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir } from "fs/promises";
+import { readFile, writeFile, mkdir, readdir } from "fs/promises";
 import path from "path";
 
 export interface Criterion {
@@ -78,6 +78,24 @@ export async function deleteCriterion(id: string): Promise<Criterion[]> {
   const next = criteria.filter((c) => c.id !== id);
   await saveCriteria(next);
   return next;
+}
+
+export async function listArchivedCriteria(): Promise<string[]> {
+  await ensureDirs();
+  const files = await readdir(ARCHIVE);
+  return files
+    .filter((f) => f.endsWith(".json"))
+    .map((f) => f.replace(/\.json$/i, ""))
+    .sort();
+}
+
+export async function restoreCriteria(timestamp: string): Promise<Criterion[]> {
+  await ensureDirs();
+  const file = path.join(ARCHIVE, `${timestamp.replace(/\.json$/i, "")}.json`);
+  const raw = await readFile(file, "utf-8");
+  const criteria = JSON.parse(raw) as Criterion[];
+  await saveCriteria(criteria);
+  return criteria;
 }
 
 export function evaluateCriteria(
