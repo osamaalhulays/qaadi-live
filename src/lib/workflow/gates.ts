@@ -3,25 +3,31 @@ export interface GateResult {
   missing: string[];
 }
 
-// Check mandatory fields inside secretary audit
+// Required fields for a complete secretary report
+const REQUIRED_FIELDS = ["summary", "equations", "references"];
+
+// Check mandatory fields inside secretary report and return missing ones
 export function runGates(data: any): GateResult {
-  const audit = data?.secretary?.audit ?? data;
+  const report = data?.secretary?.audit ?? data;
   const missing: string[] = [];
 
-  if (!audit || typeof audit !== "object") {
-    missing.push("audit");
-    return { ready_percent: 0, missing };
+  if (!report || typeof report !== "object") {
+    return { ready_percent: 0, missing: [...REQUIRED_FIELDS] };
   }
 
-  if (typeof audit.ready_percent !== "number") {
-    missing.push("ready_percent");
-  }
-  if (!Array.isArray(audit.issues)) {
-    missing.push("issues");
+  for (const field of REQUIRED_FIELDS) {
+    const value = (report as any)[field];
+    const isMissing =
+      value === undefined ||
+      value === null ||
+      (typeof value === "string" && !value.trim()) ||
+      (Array.isArray(value) && value.length === 0);
+    if (isMissing) missing.push(field);
   }
 
-  return {
-    ready_percent: typeof audit.ready_percent === "number" ? audit.ready_percent : 0,
-    missing
-  };
+  const ready_percent = Math.round(
+    ((REQUIRED_FIELDS.length - missing.length) / REQUIRED_FIELDS.length) * 100
+  );
+
+  return { ready_percent, missing };
 }
