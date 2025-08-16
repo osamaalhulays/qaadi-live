@@ -38,12 +38,13 @@ export async function runLead(cards: string[], root = process.cwd()) {
     ([item, sources]) => `- ${item} (${Array.from(sources).join(", ")})`
   );
 
-  const header = [
+  const headerLines = [
     "# Comparison",
     "",
     "## Best Items",
-    bestLines.length ? bestLines.join("\n") : "- None",
-  ].join("\n");
+    ...(bestLines.length ? bestLines : ["- None"]),
+  ];
+  const header = headerLines.join("\n");
   const content = [header, ...sections].join("\n\n");
 
   const filePath = path.join(dir, "comparison.md");
