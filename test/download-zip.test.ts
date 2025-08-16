@@ -9,11 +9,11 @@ import crypto from 'node:crypto';
 const root = process.cwd();
 
 test.before(async () => {
-  const srcDB = path.join(root, 'test', 'data', 'QaadiDB');
+  const srcDB = path.join(root, 'docs', 'examples', 'QaadiDB');
   const destDB = path.join(root, 'QaadiDB');
   await cp(srcDB, destDB, { recursive: true });
 
-  const srcVault = path.join(root, 'test', 'data', 'QaadiVault');
+  const srcVault = path.join(root, 'docs', 'examples', 'QaadiVault');
   const destVault = path.join(root, 'QaadiVault');
   await cp(srcVault, destVault, { recursive: true });
 });
