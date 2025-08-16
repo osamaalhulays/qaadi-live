@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { GET } from '../src/app/api/download/zip/route';
+import { GET } from '../src/app/api/download/zip/route.ts';
 import { NextRequest } from 'next/server';
 import { mkdir, writeFile, rm, cp } from 'node:fs/promises';
 import path from 'node:path';
@@ -151,3 +151,4 @@ test('includes latest snapshot files in archive', async () => {
 
   await rm(path.join(root, 'public', 'snapshots'), { recursive: true, force: true });
 });
+

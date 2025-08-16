@@ -7,8 +7,8 @@ export interface QN21Criterion {
   weight: number;
   /** Human readable description of the criterion. */
   description: string;
-  /** Keywords that indicate the presence of the criterion in text. */
-  keywords: string[];
+  /** Regular expression patterns that indicate the presence of the criterion in text. */
+  patterns: RegExp[];
 }
 
 export const QN21_CRITERIA: QN21Criterion[] = [
@@ -17,147 +17,147 @@ export const QN21_CRITERIA: QN21Criterion[] = [
     type: "internal",
     weight: 8,
     description: "Equation accuracy",
-    keywords: ["=", "equation", "boundary condition"],
+    patterns: [/=/i, /equation/i, /boundary condition/i],
   },
   {
     code: "rigor",
     type: "internal",
     weight: 6,
     description: "Analytical rigor",
-    keywords: ["analysis", "derive", "boundary condition"],
+    patterns: [/analysis/i, /derive/i, /boundary condition/i],
   },
   {
     code: "dimensional",
     type: "internal",
     weight: 5,
     description: "Dimensional consistency",
-    keywords: ["dimension", "units", "dimensional"],
+    patterns: [/dimension/i, /units/i, /dimensional/i],
   },
   {
     code: "notation",
     type: "internal",
     weight: 3,
     description: "Clarity of symbols",
-    keywords: ["symbol", "notation", "define"],
+    patterns: [/symbol/i, /notation/i, /define/i],
   },
   {
     code: "experiment",
     type: "internal",
     weight: 6,
     description: "Experimental design",
-    keywords: ["experiment", "setup", "procedure"],
+    patterns: [/experiment/i, /setup/i, /procedure/i],
   },
   {
     code: "calibration",
     type: "internal",
     weight: 3,
     description: "Calibration",
-    keywords: ["calibration", "calibrate", "standard"],
+    patterns: [/calibration/i, /calibrate/i, /standard/i],
   },
   {
     code: "measurement",
     type: "internal",
     weight: 4,
     description: "Measurement precision",
-    keywords: ["precision", "accurate", "measurement"],
+    patterns: [/precision/i, /accurate/i, /measurement/i],
   },
   {
     code: "data",
     type: "internal",
     weight: 4,
     description: "Data analysis",
-    keywords: ["data analysis", "statistics", "statistical"],
+    patterns: [/data analysis/i, /statistics/i, /statistical/i],
   },
   {
     code: "reproducibility",
     type: "internal",
     weight: 5,
     description: "Reproducibility",
-    keywords: ["reproduce", "replicate", "repeat"],
+    patterns: [/reproduce/i, /replicate/i, /repeat/i],
   },
   {
     code: "validation",
     type: "internal",
     weight: 4,
     description: "Validation",
-    keywords: ["validate", "validation", "comparison"],
+    patterns: [/validate/i, /validation/i, /comparison/i],
   },
   {
     code: "conservation",
     type: "internal",
     weight: 3,
     description: "Conservation laws",
-    keywords: ["conservation", "law", "conserve"],
+    patterns: [/conservation/i, /law/i, /conserve/i],
   },
   {
     code: "ethics",
     type: "external",
     weight: 8,
     description: "Ethics",
-    keywords: ["ethics", "ethical", "consent"],
+    patterns: [/ethics/i, /ethical/i, /consent/i],
   },
   {
     code: "safety",
     type: "external",
     weight: 5,
     description: "Safety compliance",
-    keywords: ["safety", "safe", "compliance"],
+    patterns: [/safety/i, /safe/i, /compliance/i],
   },
   {
     code: "environmental",
     type: "external",
     weight: 5,
     description: "Environmental impact",
-    keywords: ["environment", "environmental", "impact"],
+    patterns: [/environment/i, /environmental/i, /impact/i],
   },
   {
     code: "accessibility",
     type: "external",
     weight: 3,
     description: "Accessibility",
-    keywords: ["accessibility", "accessible", "inclusive"],
+    patterns: [/accessibility/i, /accessible/i, /inclusive/i],
   },
   {
     code: "privacy",
     type: "external",
     weight: 3,
     description: "Data privacy",
-    keywords: ["privacy", "confidential", "data protection"],
+    patterns: [/privacy/i, /confidential/i, /data protection/i],
   },
   {
     code: "interdisciplinary",
     type: "external",
     weight: 4,
     description: "Interdisciplinary integration",
-    keywords: ["interdisciplinary", "cross-disciplinary", "integration"],
+    patterns: [/interdisciplinary/i, /cross-disciplinary/i, /integration/i],
   },
   {
     code: "communication",
     type: "external",
     weight: 6,
     description: "Public communication",
-    keywords: ["public", "communication", "outreach"],
+    patterns: [/public/i, /communication/i, /outreach/i],
   },
   {
     code: "engagement",
     type: "external",
     weight: 5,
     description: "Community engagement",
-    keywords: ["community", "engagement", "stakeholder"],
+    patterns: [/community/i, /engagement/i, /stakeholder/i],
   },
   {
     code: "policy",
     type: "external",
     weight: 5,
     description: "Policy compliance",
-    keywords: ["policy", "regulation", "compliance"],
+    patterns: [/policy/i, /regulation/i, /compliance/i],
   },
   {
     code: "societal",
     type: "external",
     weight: 5,
     description: "Societal relevance",
-    keywords: ["societal", "society", "relevance"],
+    patterns: [/societal/i, /society/i, /relevance/i],
   },
 ];
 
@@ -171,16 +171,13 @@ export interface QN21Result extends QN21Criterion {
 /**
  * Evaluate text against the QN21 criteria.
  *
- * The evaluation is keyword based: if any keyword for a criterion appears
- * within the provided text (case insensitive) the full weight is awarded.
- * Otherwise the score is zero. The `gap` field expresses the missing weight.
+ * The evaluation is pattern based: if any regular expression for a criterion
+ * matches within the provided text the full weight is awarded. Otherwise the
+ * score is zero. The `gap` field expresses the missing weight.
  */
 export function evaluateQN21(text: string): QN21Result[] {
-  const lower = text.toLowerCase();
   return QN21_CRITERIA.map((c) => {
-    const score = c.keywords.some((k) => lower.includes(k.toLowerCase()))
-      ? c.weight
-      : 0;
+    const score = c.patterns.some((p) => p.test(text)) ? c.weight : 0;
     return { ...c, score, gap: c.weight - score };
   });
 }
