@@ -2,16 +2,22 @@
   "judges": [
     {
       "name": "د. أحمد",
-      "evaluations": [
+      "sessions": [
         {
-          "criterion": "الدقة العلمية",
-          "score": 0,
-          "reason": "لم يتم التقييم بعد"
-        },
-        {
-          "criterion": "سلامة المنهج",
-          "score": 0,
-          "reason": "لم يتم التقييم بعد"
+          "date": "2024-01-01",
+          "evaluations": [
+            {
+              "criterion": "الدقة العلمية",
+              "score": 0,
+              "comment": "لم يتم التقييم بعد"
+            },
+            {
+              "criterion": "سلامة المنهج",
+              "score": 0,
+              "comment": "لم يتم التقييم بعد"
+            }
+          ],
+          "judgeComment": "لم يتم التقييم بعد"
         }
       ]
     }
