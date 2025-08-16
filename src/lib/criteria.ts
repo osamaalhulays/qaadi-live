@@ -25,12 +25,18 @@ export interface CriterionResult extends Criterion {
   gap: number;
 }
 
-const BASE = path.join(process.cwd(), "QaadiVault", "criteria");
-const LATEST = path.join(BASE, "latest.json");
-const ARCHIVE = path.join(BASE, "archive");
+function getPaths() {
+  const base = path.join(process.cwd(), "QaadiVault", "criteria");
+  return {
+    base,
+    latest: path.join(base, "latest.json"),
+    archive: path.join(base, "archive"),
+  };
+}
 
 async function ensureDirs() {
-  await mkdir(ARCHIVE, { recursive: true });
+  const { archive } = getPaths();
+  await mkdir(archive, { recursive: true });
 }
 
 const DEFAULT_CRITERIA: Criterion[] = [
@@ -46,8 +52,9 @@ const DEFAULT_CRITERIA: Criterion[] = [
 ];
 
 export async function loadCriteria(): Promise<Criterion[]> {
+  const { latest } = getPaths();
   try {
-    const raw = await readFile(LATEST, "utf-8");
+    const raw = await readFile(latest, "utf-8");
     const parsed = JSON.parse(raw) as Criterion[];
     const ids = new Set(parsed.map((c) => c.id));
     return [...parsed, ...DEFAULT_CRITERIA.filter((c) => !ids.has(c.id))];
@@ -57,13 +64,15 @@ export async function loadCriteria(): Promise<Criterion[]> {
 }
 
 async function archive(criteria: Criterion[]) {
+  const { archive } = getPaths();
   const ts = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
-  await writeFile(path.join(ARCHIVE, `${ts}.json`), JSON.stringify(criteria, null, 2));
+  await writeFile(path.join(archive, `${ts}.json`), JSON.stringify(criteria, null, 2));
 }
 
 export async function saveCriteria(criteria: Criterion[]): Promise<void> {
+  const { latest } = getPaths();
   await ensureDirs();
-  await writeFile(LATEST, JSON.stringify(criteria, null, 2));
+  await writeFile(latest, JSON.stringify(criteria, null, 2));
   await archive(criteria);
 }
 
@@ -96,7 +105,8 @@ export async function deleteCriterion(id: string): Promise<Criterion[]> {
 
 export async function listArchivedCriteria(): Promise<string[]> {
   await ensureDirs();
-  const files = await readdir(ARCHIVE);
+  const { archive } = getPaths();
+  const files = await readdir(archive);
   return files
     .filter((f) => f.endsWith(".json"))
     .map((f) => f.replace(/\.json$/i, ""))
@@ -105,7 +115,8 @@ export async function listArchivedCriteria(): Promise<string[]> {
 
 export async function restoreCriteria(timestamp: string): Promise<Criterion[]> {
   await ensureDirs();
-  const file = path.join(ARCHIVE, `${timestamp.replace(/\.json$/i, "")}.json`);
+  const { archive } = getPaths();
+  const file = path.join(archive, `${timestamp.replace(/\.json$/i, "")}.json`);
   const raw = await readFile(file, "utf-8");
   const criteria = JSON.parse(raw) as Criterion[];
   await saveCriteria(criteria);
