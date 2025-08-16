@@ -2,6 +2,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { latestFilesFor } from "../lib/utils/manifest";
 import ScoreCharts from "./ScoreCharts";
+import type { Criterion } from "../lib/criteria";
 
 type Target =
   | "wide"
@@ -44,6 +45,12 @@ export default function Editor() {
   const [judge, setJudge] = useState<any>(null);
   const [selfTest, setSelfTest] = useState<null | { ratio:number; deviations:{role:string; expected:string; found:string}[] }>(null);
   const [selfBusy, setSelfBusy] = useState(false);
+
+  const [criteria, setCriteria] = useState<Criterion[]>([]);
+  const [newId, setNewId] = useState("");
+  const [newDesc, setNewDesc] = useState("");
+  const [newWeight, setNewWeight] = useState(1);
+  const [newKeywords, setNewKeywords] = useState("");
 
   const [slug, setSlug] = useState("default");
   const [v, setV] = useState("default");
@@ -88,6 +95,7 @@ export default function Editor() {
     } catch {}
   }, [lang]);
   useEffect(() => { refreshFiles(); }, [slug, v]);
+  useEffect(() => { refreshCriteriaList(); }, []);
 
   useEffect(() => {
     (async () => {
@@ -226,6 +234,16 @@ export default function Editor() {
     URL.revokeObjectURL(url);
   }
 
+  async function refreshCriteriaList() {
+    try {
+      const res = await fetch("/api/criteria");
+      if (res.ok) {
+        const list = await res.json();
+        setCriteria(Array.isArray(list) ? list : []);
+      } else setCriteria([]);
+    } catch { setCriteria([]); }
+  }
+
   async function refreshFiles() {
     try {
       const res = await fetch("/snapshots/manifest.json");
@@ -243,6 +261,44 @@ export default function Editor() {
         setJudge(jj);
       } else setJudge(null);
     } catch { setJudge(null); }
+    await refreshCriteriaList();
+  }
+
+  async function addCustomCriterion() {
+    try {
+      const payload = {
+        id: newId,
+        description: newDesc,
+        weight: Number(newWeight),
+        keywords: newKeywords.split(",").map(k => k.trim()).filter(Boolean),
+      };
+      const res = await fetch("/api/criteria", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (res.ok) {
+        const c = await res.json();
+        setCriteria(prev => [...prev, c]);
+        setNewId(""); setNewDesc(""); setNewWeight(1); setNewKeywords("");
+      }
+    } catch {}
+  }
+
+  async function toggleCriterion(id: string) {
+    const c = criteria.find(c => c.id === id);
+    if (!c) return;
+    try {
+      const res = await fetch("/api/criteria", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, enabled: !c.enabled }),
+      });
+      if (res.ok) {
+        const upd = await res.json();
+        setCriteria(prev => prev.map(x => x.id === id ? upd : x));
+      }
+    } catch {}
   }
 
   return (
@@ -325,6 +381,26 @@ export default function Editor() {
             <option value="ja">JA</option>
             <option value="other">Other</option>
           </select>
+        </div>
+      </div>
+
+      <div className="card" style={{marginBottom:12}}>
+        <label>Custom Criteria</label>
+        <div className="criteria-list">
+          {criteria.map(c => (
+            <div key={c.id}>
+              <label>
+                <input type="checkbox" checked={c.enabled} onChange={() => toggleCriterion(c.id)} /> {c.description} ({c.weight})
+              </label>
+            </div>
+          ))}
+        </div>
+        <div className="add-crit" style={{marginTop:8}}>
+          <input placeholder="ID" value={newId} onChange={e=>setNewId(e.target.value)} />
+          <input placeholder="Description" value={newDesc} onChange={e=>setNewDesc(e.target.value)} />
+          <input type="number" placeholder="Weight" value={newWeight} onChange={e=>setNewWeight(parseInt(e.target.value||"1"))} />
+          <input placeholder="keywords,comma" value={newKeywords} onChange={e=>setNewKeywords(e.target.value)} />
+          <button className="btn" type="button" onClick={addCustomCriterion}>Add</button>
         </div>
       </div>
 
