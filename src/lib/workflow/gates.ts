@@ -4,7 +4,14 @@ export interface GateResult {
 }
 
 // Required fields for a complete secretary report
-const REQUIRED_FIELDS = ["summary", "equations", "references"];
+// These map directly to sections in templates/secretary.md
+const REQUIRED_FIELDS = [
+  "summary",
+  "keywords",
+  "equations",
+  "boundary",
+  "references",
+];
 
 // Check mandatory fields inside secretary report and return missing ones
 export function runGates(data: any): GateResult {
