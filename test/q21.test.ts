@@ -64,6 +64,15 @@ test('evaluateQN21 handles partial criteria in text', () => {
   assert.strictEqual(diagrams?.score, 2 * (1 / 3));
 });
 
+test('evaluateQN21 gives full score when all indicators match', () => {
+  const text = 'Equation and equations illustrate fundamental EQUATIONs.';
+  const result = evaluateQN21(text);
+  const equations = result.find((r) => r.code === 'equations');
+  assert.ok(equations);
+  assert.strictEqual(equations?.score, 5);
+  assert.strictEqual(equations?.gap, 0);
+});
+
 test('summarizeQN21 computes totals, max, percentage, and classification', () => {
   const criterionA = {
     code: 'c1',

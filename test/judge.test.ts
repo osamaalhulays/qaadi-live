@@ -46,3 +46,10 @@ test('runJudge computes scores, gaps, and classification', async () => {
   }
 });
 
+test('runJudge never returns negative gaps', async () => {
+  const result = await runJudge('Equation and equations ensure rigor');
+  result.criteria.forEach((c: any) => {
+    assert.ok(c.gap >= 0);
+  });
+});
+
