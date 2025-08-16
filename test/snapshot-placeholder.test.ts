@@ -1,4 +1,5 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
@@ -37,10 +38,10 @@ describe('snapshot placeholders', () => {
     const manifest = JSON.parse(await readFile(manifestPath, 'utf-8'));
     const biblio = manifest.filter((e: any) => e.path.endsWith('biblio.bib') && e.slug === 'demo' && e.v === 'v1');
     const figs = manifest.filter((e: any) => e.path.endsWith('figs/') && e.slug === 'demo' && e.v === 'v1');
-    expect(biblio.length).toBe(2);
-    expect(figs.length).toBe(2);
-    expect(new Set(biblio.map((e: any) => e.sha256)).size).toBe(1);
-    expect(new Set(figs.map((e: any) => e.sha256)).size).toBe(1);
+    assert.strictEqual(biblio.length, 2);
+    assert.strictEqual(figs.length, 2);
+    assert.strictEqual(new Set(biblio.map((e: any) => e.sha256)).size, 1);
+    assert.strictEqual(new Set(figs.map((e: any) => e.sha256)).size, 1);
   });
 
   it('saves role files with type role', async () => {
@@ -57,6 +58,6 @@ describe('snapshot placeholders', () => {
     const manifestPath = path.join(dir, 'public', 'snapshots', 'manifest.json');
     const manifest = JSON.parse(await readFile(manifestPath, 'utf-8'));
     const role = manifest.find((e: any) => e.path.endsWith('secretary.md'));
-    expect(role && role.type === 'role').toBeTruthy();
+    assert.ok(role && role.type === 'role');
   });
 });

@@ -1,4 +1,5 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { latestFilesFor, ManifestEntry } from '../src/lib/utils/manifest';
 
 describe('latestFilesFor', () => {
@@ -10,6 +11,6 @@ describe('latestFilesFor', () => {
       { slug: 'demo', v: 'v2', timestamp: '20240104T000000', path: 'v2/latest.md' },
     ];
     const files = latestFilesFor(manifest, 'demo', 'v2');
-    expect(files).toEqual(['v2/latest.md']);
+    assert.deepStrictEqual(files, ['v2/latest.md']);
   });
 });

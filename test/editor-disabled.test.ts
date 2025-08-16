@@ -1,4 +1,5 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import Editor from '../src/components/Editor';
@@ -7,9 +8,9 @@ describe('Editor', () => {
   it('export and generate buttons require target and lang', () => {
     // initial render without target/lang -> buttons disabled
     const initial = renderToStaticMarkup(React.createElement(Editor));
-    expect(initial).toMatch(/<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
-    expect(initial).toMatch(/<button class="btn btn-primary"[^>]*disabled[^>]*>Export ZIP<\/button>/);
-    expect(initial).toMatch(/<button class="btn"[^>]*disabled[^>]*>Generate<\/button>/);
+    assert.match(initial, /<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
+    assert.match(initial, /<button class="btn btn-primary"[^>]*disabled[^>]*>Export ZIP<\/button>/);
+    assert.match(initial, /<button class="btn"[^>]*disabled[^>]*>Generate<\/button>/);
 
     // render with target and lang preset -> buttons enabled
     const origUseState = React.useState;
@@ -23,8 +24,8 @@ describe('Editor', () => {
     const withValues = renderToStaticMarkup(React.createElement(Editor));
     (React as any).useState = origUseState;
 
-    expect(withValues).not.toMatch(/<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
-    expect(withValues).not.toMatch(/<button class="btn btn-primary"[^>]*disabled[^>]*>Export ZIP<\/button>/);
-    expect(withValues).not.toMatch(/<button class="btn"[^>]*disabled[^>]*>Generate<\/button>/);
+    assert.doesNotMatch(withValues, /<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
+    assert.doesNotMatch(withValues, /<button class="btn btn-primary"[^>]*disabled[^>]*>Export ZIP<\/button>/);
+    assert.doesNotMatch(withValues, /<button class="btn"[^>]*disabled[^>]*>Generate<\/button>/);
   });
 });

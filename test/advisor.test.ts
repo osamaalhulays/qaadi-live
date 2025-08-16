@@ -1,4 +1,5 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { generateInquiryFromPlan } from '../src/lib/utils/inquiry';
 
 const samplePlan = `- Define scope
@@ -7,9 +8,9 @@ const samplePlan = `- Define scope
 describe('generateInquiryFromPlan', () => {
   it('creates questions with covers', () => {
     const { markdown, questions } = generateInquiryFromPlan(samplePlan, 'en');
-    expect(questions).toHaveLength(2);
-    expect(markdown).toContain('1.');
-    expect(questions[0].covers[0]).toBeTruthy();
-    expect(questions[0].question).toContain('Define scope');
+    assert.strictEqual(questions.length, 2);
+    assert.ok(markdown.includes('1.'));
+    assert.ok(questions[0].covers[0]);
+    assert.ok(questions[0].question.includes('Define scope'));
   });
 });

@@ -1,4 +1,5 @@
-import { describe, it, expect } from '@jest/globals';
+import { describe, it } from 'node:test';
+import assert from 'node:assert/strict';
 import { mkdtemp, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
@@ -24,10 +25,10 @@ describe('secretary workflow', () => {
       const content = await runSecretary(sampleSecretary);
       const filePath = path.join(dir, 'paper', 'secretary.md');
       const fileContent = await readFile(filePath, 'utf8');
-      expect(fileContent).toBe(content);
-      expect(fileContent).toMatch(/## Summary\nProject overview/);
-      expect(fileContent).toMatch(/## Conditions\nAll prerequisites must be met/);
-      expect(fileContent).toMatch(/## Equations\n- E=mc\^2\n- a\^2 \+ b\^2 = c\^2/);
+      assert.strictEqual(fileContent, content);
+      assert.match(fileContent, /## Summary\nProject overview/);
+      assert.match(fileContent, /## Conditions\nAll prerequisites must be met/);
+      assert.match(fileContent, /## Equations\n- E=mc\^2\n- a\^2 \+ b\^2 = c\^2/);
     } finally {
       process.chdir(prev);
     }
@@ -41,10 +42,10 @@ describe('secretary workflow', () => {
       const { name, content } = await runResearchSecretary('alpha', sampleCriteria);
       const filePath = path.join(dir, 'paper', `plan-${name}.md`);
       const fileContent = await readFile(filePath, 'utf8');
-      expect(fileContent).toBe(content);
-      expect(fileContent).toMatch(/# Plan for alpha/);
-      expect(fileContent).toMatch(/## performance\nOptimize algorithms/);
-      expect(fileContent).toMatch(/## usability\nImprove interface/);
+      assert.strictEqual(fileContent, content);
+      assert.match(fileContent, /# Plan for alpha/);
+      assert.match(fileContent, /## performance\nOptimize algorithms/);
+      assert.match(fileContent, /## usability\nImprove interface/);
     } finally {
       process.chdir(prev);
     }
