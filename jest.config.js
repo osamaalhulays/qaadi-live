@@ -19,6 +19,7 @@ const config = {
     ],
   },
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
+  setupFiles: ['<rootDir>/test/setup.ts'],
   testMatch: [
     '**/test/(q21|judge|customCriteria|evaluateCriteriaPartial|health).test.ts',
   ],
