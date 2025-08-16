@@ -1,4 +1,3 @@
-import test from 'node:test';
 import assert from 'node:assert';
 import { NextRequest } from 'next/server';
 import { GET } from '../src/app/api/templates/route';
