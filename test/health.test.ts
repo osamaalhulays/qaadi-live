@@ -13,8 +13,8 @@ test('health endpoint exposes policies, storage, kv, and capsule fields', async 
     storage_public_read_theory_zips: true
   });
 
-  expect('storage' in body).toBe(true);
-  expect('kv' in body).toBe(true);
+  expect(body).toHaveProperty('storage');
+  expect(body).toHaveProperty('kv');
   expect(
     body.capsule &&
       'name' in body.capsule &&

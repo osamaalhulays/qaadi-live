@@ -59,8 +59,8 @@ test('runResearchSecretary writes plan files with QN-21 table', async () => {
     expect(fileContent).toBe(content);
     expect(fileContent).toMatch(/# Plan for alpha/);
     expect(fileContent).toMatch(/\| Item \| Priority \| QN-21 Criterion \|\n\|------\|----------\|-----------------\|/);
-    expect(fileContent).toMatch(/\| استكمال الاشتقاق \| P0 \| QN-21-1 \|/);
-    expect(fileContent).toMatch(/\| تحسين الواجهة \| P2 \| QN-21-8 \|/);
+    expect(fileContent).toMatch(/\| استكمال الاشتقاق \| P0 \| \[QN-21-1\]\(https:\/\/example.com\/qn-21#1\) \|/);
+    expect(fileContent).toMatch(/\| تحسين الواجهة \| P2 \| \[QN-21-8\]\(https:\/\/example.com\/qn-21#8\) \|/);
   } finally {
     process.chdir(prev);
   }

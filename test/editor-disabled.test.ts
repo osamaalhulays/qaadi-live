@@ -1,3 +1,5 @@
+/** @jest-environment jsdom */
+
 import { test, expect } from '@jest/globals';
 import * as React from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
