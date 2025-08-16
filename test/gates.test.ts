@@ -6,8 +6,9 @@ test('runGates detects multiple missing fields', () => {
   const result = runGates({
     secretary: { audit: { keywords: ['physics'], tokens: ['c: light'] } }
   });
-  assert.strictEqual(result.ready_percent, 29);
+  assert.strictEqual(result.ready_percent, 25);
   assert.deepStrictEqual(result.missing, [
+    'summary',
     'boundary',
     'post_analysis',
     'risks',
@@ -20,6 +21,7 @@ test('runGates passes when all required fields are present', () => {
   const result = runGates({
     secretary: {
       audit: {
+        summary: 'Overview',
         keywords: ['physics'],
         tokens: ['c: light'],
         boundary: ['t=0'],

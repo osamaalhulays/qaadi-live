@@ -5,7 +5,7 @@ interface Criterion {
   id: number;
   name: string;
   score: number;
-  type?: "internal" | "external";
+  type?: "internal" | "external" | "advisory";
   covered?: boolean;
 }
 
@@ -39,7 +39,13 @@ export default function ScoreCharts({ criteria }: Props) {
       const labels = criteria.map(c => c.name);
       const scores = criteria.map(c => c.score);
       const colors = criteria.map(c =>
-        c.covered ? "#16a34a" : c.type === "external" ? "#1d4ed8" : "#dc2626"
+        c.covered
+          ? "#16a34a"
+          : c.type === "external"
+          ? "#1d4ed8"
+          : c.type === "advisory"
+          ? "#9333ea"
+          : "#dc2626"
       );
 
       if (barRef.current) {
@@ -95,6 +101,7 @@ export default function ScoreCharts({ criteria }: Props) {
       <div className="legend">
         <span><span className="box internal" /> داخلي</span>
         <span><span className="box external" /> خارجي</span>
+        <span><span className="box advisory" /> استشاري</span>
         <span><span className="box covered" /> مكتمل</span>
       </div>
       <div className="chart-wrapper"><canvas ref={barRef} /></div>
@@ -104,6 +111,7 @@ export default function ScoreCharts({ criteria }: Props) {
         .box { display:inline-block; width:12px; height:12px; margin-right:4px; }
         .internal { background:#dc2626; }
         .external { background:#1d4ed8; }
+        .advisory { background:#9333ea; }
         .covered { background:#16a34a; }
         .chart-wrapper { margin-bottom:16px; }
       `}</style>

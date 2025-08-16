@@ -22,19 +22,20 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   try {
-    const { id, description, weight, keywords, enabled = true } = await req.json();
+    const { id, description, weight, keywords, category, enabled = true } = await req.json();
     if (
       !id ||
       typeof description !== "string" ||
       typeof weight !== "number" ||
-      !Array.isArray(keywords)
+      !Array.isArray(keywords) ||
+      (category !== "internal" && category !== "external" && category !== "advisory")
     ) {
       return new Response(JSON.stringify({ error: "invalid_params" }), {
         status: 400,
         headers,
       });
     }
-    const criteria = await addCriterion({ id, description, weight, keywords, enabled });
+    const criteria = await addCriterion({ id, description, weight, keywords, category, enabled });
     const added = criteria.find((c) => c.id === id);
     return new Response(JSON.stringify(added), { status: 201, headers });
   } catch {
