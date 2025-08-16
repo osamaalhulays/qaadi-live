@@ -121,7 +121,10 @@ export async function POST(req: NextRequest) {
       return new Response(JSON.stringify({ error: "no_keys_provided" }), { status: 400 });
     }
     const { prompts, frozen } = buildTranslationPrompts(langs, text);
-    const translations: Record<string, string> = {};
+    const translations: Record<
+      string,
+      { text: string; dir: "rtl" | "ltr" | "mixed" }
+    > = {};
     for (const l of langs) {
       const out = await runWithFallback(
         model,
@@ -129,12 +132,13 @@ export async function POST(req: NextRequest) {
         prompts[l],
         maxTokens
       );
-      translations[l] = restoreText(
+      const restored = restoreText(
         out.text,
         frozen.equations,
         frozen.dois,
         frozen.codes
       );
+      translations[l] = { text: restored, dir: detectDir(restored) };
     }
     return new Response(JSON.stringify({ translations }), { status: 200 });
   }

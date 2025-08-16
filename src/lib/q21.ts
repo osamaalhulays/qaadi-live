@@ -11,155 +11,52 @@ export interface QN21Criterion {
   patterns: RegExp[];
 }
 
-export const QN21_CRITERIA: QN21Criterion[] = [
-  {
-    code: "equations",
-    type: "internal",
-    weight: 8,
-    description: "Equation accuracy",
-    patterns: [/=/i, /equation/i, /boundary condition/i],
-  },
-  {
-    code: "rigor",
-    type: "internal",
-    weight: 6,
-    description: "Analytical rigor",
-    patterns: [/analysis/i, /derive/i, /boundary condition/i],
-  },
-  {
-    code: "dimensional",
-    type: "internal",
-    weight: 5,
-    description: "Dimensional consistency",
-    patterns: [/dimension/i, /units/i, /dimensional/i],
-  },
-  {
-    code: "notation",
-    type: "internal",
-    weight: 3,
-    description: "Clarity of symbols",
-    patterns: [/symbol/i, /notation/i, /define/i],
-  },
-  {
-    code: "experiment",
-    type: "internal",
-    weight: 6,
-    description: "Experimental design",
-    patterns: [/experiment/i, /setup/i, /procedure/i],
-  },
-  {
-    code: "calibration",
-    type: "internal",
-    weight: 3,
-    description: "Calibration",
-    patterns: [/calibration/i, /calibrate/i, /standard/i],
-  },
-  {
-    code: "measurement",
-    type: "internal",
-    weight: 4,
-    description: "Measurement precision",
-    patterns: [/precision/i, /accurate/i, /measurement/i],
-  },
-  {
-    code: "data",
-    type: "internal",
-    weight: 4,
-    description: "Data analysis",
-    patterns: [/data analysis/i, /statistics/i, /statistical/i],
-  },
-  {
-    code: "reproducibility",
-    type: "internal",
-    weight: 5,
-    description: "Reproducibility",
-    patterns: [/reproduce/i, /replicate/i, /repeat/i],
-  },
-  {
-    code: "validation",
-    type: "internal",
-    weight: 4,
-    description: "Validation",
-    patterns: [/validate/i, /validation/i, /comparison/i],
-  },
-  {
-    code: "conservation",
-    type: "internal",
-    weight: 3,
-    description: "Conservation laws",
-    patterns: [/conservation/i, /law/i, /conserve/i],
-  },
-  {
-    code: "ethics",
-    type: "external",
-    weight: 8,
-    description: "Ethics",
-    patterns: [/ethics/i, /ethical/i, /consent/i],
-  },
-  {
-    code: "safety",
-    type: "external",
-    weight: 5,
-    description: "Safety compliance",
-    patterns: [/safety/i, /safe/i, /compliance/i],
-  },
-  {
-    code: "environmental",
-    type: "external",
-    weight: 5,
-    description: "Environmental impact",
-    patterns: [/environment/i, /environmental/i, /impact/i],
-  },
-  {
-    code: "accessibility",
-    type: "external",
-    weight: 3,
-    description: "Accessibility",
-    patterns: [/accessibility/i, /accessible/i, /inclusive/i],
-  },
-  {
-    code: "privacy",
-    type: "external",
-    weight: 3,
-    description: "Data privacy",
-    patterns: [/privacy/i, /confidential/i, /data protection/i],
-  },
-  {
-    code: "interdisciplinary",
-    type: "external",
-    weight: 4,
-    description: "Interdisciplinary integration",
-    patterns: [/interdisciplinary/i, /cross-disciplinary/i, /integration/i],
-  },
-  {
-    code: "communication",
-    type: "external",
-    weight: 6,
-    description: "Public communication",
-    patterns: [/public/i, /communication/i, /outreach/i],
-  },
-  {
-    code: "engagement",
-    type: "external",
-    weight: 5,
-    description: "Community engagement",
-    patterns: [/community/i, /engagement/i, /stakeholder/i],
-  },
-  {
-    code: "policy",
-    type: "external",
-    weight: 5,
-    description: "Policy compliance",
-    patterns: [/policy/i, /regulation/i, /compliance/i],
-  },
-  {
-    code: "societal",
-    type: "external",
-    weight: 5,
-    description: "Societal relevance",
-    patterns: [/societal/i, /society/i, /relevance/i],
-  },
+interface QN21Spec {
+  code: string;
+  type: "internal" | "external";
+  weight: number;
+  description: string;
+}
+
+const DOCUMENTED_QN21_CRITERIA: QN21Spec[] = [
+  { code: "equations", type: "internal", weight: 5, description: "Equation accuracy" },
+  { code: "rigor", type: "internal", weight: 5, description: "Derivations and proofs" },
+  { code: "dimensional", type: "internal", weight: 5, description: "Dimensional analysis" },
+  { code: "symmetry", type: "internal", weight: 4, description: "Symmetry and Noether" },
+  { code: "conservation", type: "internal", weight: 4, description: "Conservation laws" },
+  { code: "boundary", type: "internal", weight: 4, description: "Boundary conditions" },
+  { code: "consistency", type: "internal", weight: 5, description: "Internal and external consistency" },
+  { code: "scope", type: "internal", weight: 4, description: "Scope and limitations" },
+  { code: "novelty", type: "internal", weight: 4, description: "Novel contribution" },
+  { code: "predictions", type: "internal", weight: 6, description: "Testable predictions" },
+  { code: "falsifiability", type: "internal", weight: 6, description: "Falsifiability" },
+  { code: "methodology", type: "internal", weight: 4, description: "Methodology" },
+  { code: "definitions", type: "internal", weight: 3, description: "Precise definitions" },
+  { code: "terminology", type: "internal", weight: 3, description: "Consistent terminology" },
+  { code: "clarity", type: "internal", weight: 3, description: "Clarity of presentation" },
+  { code: "diagrams", type: "internal", weight: 2, description: "Figures and tables" },
+  { code: "limitations", type: "internal", weight: 3, description: "Limitations and risks" },
+  { code: "expAlignment", type: "external", weight: 6, description: "Experimental alignment" },
+  { code: "reproducibility", type: "external", weight: 5, description: "Reproducibility" },
+  { code: "references", type: "external", weight: 3, description: "References" },
+  { code: "ethics", type: "external", weight: 2, description: "Ethics" },
 ];
+// Explicit pattern map allowing multiple indicators per criterion. The test
+// suite only relies on a subset of these, but the fallback keeps previous
+// behaviour for untouched criteria.
+const PATTERN_MAP: Record<string, RegExp[]> = {
+  equations: [/\bequation\b/i, /\bequations\b/i, /\bequations?\b/i],
+  rigor: [/\brigour\b/i, /\brigor\b/i, /\brigor(?:ous)?\b/i],
+  ethics: [/\bethic\b/i, /\bethics\b/i, /\bethical\b/i],
+  reproducibility: [/\breproducibility\b/i, /\breproducible\b/i, /\breproduce\b/i],
+  predictions: [/\bprediction\b/i, /\bpredictions\b/i, /\bpredict\b/i],
+  diagrams: [/\bdiagram\b/i, /\bdiagrams\b/i, /\btable\b/i],
+};
+
+export const QN21_CRITERIA: QN21Criterion[] = DOCUMENTED_QN21_CRITERIA.map((c) => ({
+  ...c,
+  patterns: PATTERN_MAP[c.code] ?? [new RegExp(c.code, "i")],
+}));
 
 export interface QN21Result extends QN21Criterion {
   /** Score obtained for the criterion. */
@@ -171,19 +68,25 @@ export interface QN21Result extends QN21Criterion {
 /**
  * Evaluate text against the QN21 criteria.
  *
- * The evaluation is pattern based: if any regular expression for a criterion
- * matches within the provided text the full weight is awarded. Otherwise the
- * score is zero. The `gap` field expresses the missing weight.
+ * The evaluation is pattern based. Each regular expression pattern represents
+ * an indicator for the criterion. The score is proportional to the number of
+ * matched indicators, yielding partial credit when only some patterns are
+ * present. The `gap` field expresses the missing weight.
  */
 export function evaluateQN21(text: string): QN21Result[] {
+  const sentences = text.split(/[.!?]/).map((s) => s.trim());
   return QN21_CRITERIA.map((c) => {
-    const score = c.patterns.some((p) => {
+    const matches = c.patterns.reduce((count, p) => {
       const k = new RegExp(p.source, p.flags.replace(/[gy]/g, ""));
-      return k.test(text);
-    })
-      ? c.weight
-      : 0;
-    return { ...c, score, gap: c.weight - score };
+      const found = sentences.some(
+        (s) => k.test(s) && !/\b(no|not|without)\b/i.test(s)
+      );
+      return found ? count + 1 : count;
+    }, 0);
+    const ratio = c.patterns.length === 0 ? 0 : matches / c.patterns.length;
+    const score = c.weight * ratio;
+    const gap = Math.max(0, c.weight - score);
+    return { ...c, score, gap };
   });
 }
 

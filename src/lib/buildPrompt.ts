@@ -51,10 +51,12 @@ export function buildPrompt(
   const frozen = freezeText(userText);
   const gloss =
     glossary && Object.keys(glossary).length
-      ? "\nGlossary:\n" +
-        Object.entries(glossary)
-          .map(([k, v]) => `${k} = ${v}`)
-          .join("\n")
+      ? (() => {
+          const entries = Object.entries(glossary)
+            .map(([k, v]) => `${k} = ${v}`)
+            .join("\n");
+          return "\nGlossary:\n" + freezeText(entries).text;
+        })()
       : "";
 
   if (target === "wide") {
