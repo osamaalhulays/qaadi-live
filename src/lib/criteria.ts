@@ -84,10 +84,11 @@ export function evaluateCriteria(
 ): CriterionResult[] {
   const lower = text.toLowerCase();
   return criteria.map((c) => {
-    const score =
-      c.enabled && c.keywords.some((k) => lower.includes(k.toLowerCase()))
-        ? c.weight
-        : 0;
+    if (!c.enabled) return { ...c, score: 0, gap: c.weight };
+
+    const matches = c.keywords.filter((k) => lower.includes(k.toLowerCase())).length;
+    const ratio = c.keywords.length === 0 ? 0 : matches / c.keywords.length;
+    const score = c.weight * ratio;
     return { ...c, score, gap: c.weight - score };
   });
 }

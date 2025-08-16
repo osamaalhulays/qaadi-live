@@ -171,18 +171,19 @@ export interface QN21Result extends QN21Criterion {
 /**
  * Evaluate text against the QN21 criteria.
  *
- * The evaluation is pattern based: if any regular expression for a criterion
- * matches within the provided text the full weight is awarded. Otherwise the
- * score is zero. The `gap` field expresses the missing weight.
+ * The evaluation is pattern based. Each regular expression pattern represents
+ * an indicator for the criterion. The score is proportional to the number of
+ * matched indicators, yielding partial credit when only some patterns are
+ * present. The `gap` field expresses the missing weight.
  */
 export function evaluateQN21(text: string): QN21Result[] {
   return QN21_CRITERIA.map((c) => {
-    const score = c.patterns.some((p) => {
+    const matches = c.patterns.reduce((count, p) => {
       const k = new RegExp(p.source, p.flags.replace(/[gy]/g, ""));
-      return k.test(text);
-    })
-      ? c.weight
-      : 0;
+      return k.test(text) ? count + 1 : count;
+    }, 0);
+    const ratio = c.patterns.length === 0 ? 0 : matches / c.patterns.length;
+    const score = c.weight * ratio;
     return { ...c, score, gap: c.weight - score };
   });
 }
