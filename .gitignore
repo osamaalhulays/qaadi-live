@@ -9,4 +9,4 @@ dist
 snapshots
 
 # macOS artifacts
-.DS_Store
+**/.DS_Store
