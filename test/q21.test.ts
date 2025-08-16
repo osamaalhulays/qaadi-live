@@ -2,7 +2,7 @@ import assert from 'node:assert';
 
 import { evaluateQN21, QN21_CRITERIA, summarizeQN21 } from '../src/lib/q21';
 
-test('evaluateQN21 returns scores and gaps based on keywords', () => {
+test('evaluateQN21 returns scores and gaps based on patterns', () => {
   const text =
     'The equation F = ma was derived with rigorous analysis and ethical oversight.';
   const result = evaluateQN21(text);
@@ -28,6 +28,24 @@ test('evaluateQN21 returns scores and gaps based on keywords', () => {
   assert.ok(safety);
   assert.strictEqual(safety?.score, 0);
   assert.strictEqual(safety?.gap, 5);
+});
+
+test('evaluateQN21 detects uppercase and mixed-case indicators', () => {
+  const text =
+    'The EQUATION F = ma was DErIvEd with eThIcAL oversight.';
+  const result = evaluateQN21(text);
+
+  const equations = result.find((r) => r.code === 'equations');
+  assert.ok(equations);
+  assert.strictEqual(equations?.score, 8);
+
+  const rigor = result.find((r) => r.code === 'rigor');
+  assert.ok(rigor);
+  assert.strictEqual(rigor?.score, 6);
+
+  const ethics = result.find((r) => r.code === 'ethics');
+  assert.ok(ethics);
+  assert.strictEqual(ethics?.score, 8);
 });
 
 test('evaluateQN21 handles partial criteria in text', () => {
