@@ -161,6 +161,12 @@ export const QN21_CRITERIA: QN21Criterion[] = [
   },
 ];
 
+/** Total possible weight across all QN21 criteria. */
+export const QN21_MAX_WEIGHT = QN21_CRITERIA.reduce(
+  (sum, c) => sum + c.weight,
+  0,
+);
+
 export interface QN21Result extends QN21Criterion {
   /** Score obtained for the criterion. */
   score: number;
@@ -205,7 +211,7 @@ export interface QN21Summary {
  */
 export function summarizeQN21(results: QN21Result[]): QN21Summary {
   const total = results.reduce((sum, r) => sum + r.score, 0);
-  const max = results.reduce((sum, r) => sum + r.weight, 0);
+  const max = QN21_MAX_WEIGHT;
   const percentage = max === 0 ? 0 : (total / max) * 100;
   let classification: QN21Summary["classification"] = "weak";
   if (percentage >= 80) classification = "accepted";

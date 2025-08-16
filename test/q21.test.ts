@@ -1,6 +1,11 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { evaluateQN21, QN21_CRITERIA, summarizeQN21 } from '../src/lib/q21';
+import {
+  evaluateQN21,
+  QN21_CRITERIA,
+  QN21_MAX_WEIGHT,
+  summarizeQN21,
+} from '../src/lib/q21';
 
 describe('QN21 utilities', () => {
   it('evaluateQN21 returns scores and gaps based on keywords', () => {
@@ -49,14 +54,12 @@ describe('QN21 utilities', () => {
   });
 
   it('summarizeQN21 computes percentage and classification', () => {
-    const text = QN21_CRITERIA.slice(0, 17)
-      .map((c) => c.keywords[0])
-      .join(' ');
+    const text = QN21_CRITERIA.map((c) => c.keywords[0]).join(' ');
     const result = evaluateQN21(text);
     const summary = summarizeQN21(result);
-    assert.strictEqual(summary.total, 17);
-    assert.strictEqual(summary.max, QN21_CRITERIA.length);
-    assert.ok(summary.percentage > 80);
+    assert.strictEqual(summary.total, QN21_MAX_WEIGHT);
+    assert.strictEqual(summary.max, QN21_MAX_WEIGHT);
+    assert.strictEqual(summary.percentage, 100);
     assert.strictEqual(summary.classification, 'accepted');
   });
 });
