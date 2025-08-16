@@ -1,5 +1,7 @@
 // Tests run in the default Node environment; no DOM APIs are required.
 
+import React from 'react';
+import { renderToStaticMarkup } from 'react-dom/server';
 import { test, jest } from '@jest/globals';
 import assert from 'node:assert';
 
@@ -10,12 +12,9 @@ test('export and generate buttons require target and lang', async () => {
   // @ts-ignore
   global.TextDecoder ??= TextDecoder;
 
-  const React = await import('react');
-  const { renderToStaticMarkup } = await import('react-dom/server');
-
   // initial render without target/lang -> buttons disabled
-  let Editor = (await import('../src/components/Editor')).default;
-  let initial = renderToStaticMarkup(React.createElement(Editor));
+  let { default: Editor } = await import('../src/components/Editor');
+  const initial = renderToStaticMarkup(<Editor />);
   assert.match(initial, /<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
   assert.match(initial, /<button class="btn btn-primary"[^>]*disabled[^>]*>Export ZIP<\/button>/);
   assert.match(initial, /<button class="btn"[^>]*disabled[^>]*>Generate<\/button>/);
@@ -30,8 +29,8 @@ test('export and generate buttons require target and lang', async () => {
     return origUseState(init);
   });
   jest.resetModules();
-  Editor = (await import('../src/components/Editor')).default;
-  const withValues = renderToStaticMarkup(React.createElement(Editor));
+  ({ default: Editor } = await import('../src/components/Editor'));
+  const withValues = renderToStaticMarkup(<Editor />);
   (React.useState as any).mockRestore();
 
   assert.doesNotMatch(withValues, /<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
