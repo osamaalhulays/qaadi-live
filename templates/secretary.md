@@ -1,4 +1,4 @@
-<!-- mandatory fields: ready_percent, issues[].type, issues[].note -->
+<!-- mandatory fields: ready_percent, issues[].type, issues[].note, keywords, tokens, boundary, post_analysis, risks, predictions, testability -->
 
 Ready%: 100
 
@@ -17,11 +17,6 @@ Ready%: 100
 | \(m\) | الكتلة |
 | \(E\) | الطاقة |
 
-## معادلات
-\[
-E = mc^2
-\]
-
 ## شروط حدية
 - \(t = 0\) : الحالة الابتدائية للنظام.
 - \(x \to \infty\) : تبديد الطاقة يقترب من الصفر.
@@ -39,8 +34,6 @@ E = mc^2
 ## قابلية الاختبار
 توضح الشروط أو التجارب اللازمة للتحقق من صحة الفرضيات.
 
-## المراجع
-- [1] اسم المؤلف، "عنوان المرجع"، سنة النشر.
 
 ## Issues
 - type: none

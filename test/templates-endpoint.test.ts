@@ -13,17 +13,21 @@ const snippets: Record<(typeof files)[number], string> = {
   'comparison.md': '# مقارنة مع الأطر المرجعية',
 };
 
-for (const name of files) {
-  test(`serves ${name} with no-store header`, async () => {
-    const req = new NextRequest(`${base}?name=${encodeURIComponent(name)}`);
-    const res = await GET(req);
-    assert.strictEqual(res.status, 200);
-    assert.strictEqual(res.headers.get('Cache-Control'), 'no-store');
-    const body = await res.text();
-    assert.ok(body.length > 0);
-    assert.ok(body.includes(snippets[name]));
-  });
-}
+  for (const name of files) {
+    test(`serves ${name} with no-store header`, async () => {
+      const req = new NextRequest(`${base}?name=${encodeURIComponent(name)}`);
+      const res = await GET(req);
+      assert.strictEqual(res.status, 200);
+      assert.strictEqual(res.headers.get('Cache-Control'), 'no-store');
+      const body = await res.text();
+      assert.ok(body.length > 0);
+      assert.ok(body.includes(snippets[name]));
+      if (name === 'plan.md') {
+        assert.ok(body.includes('الأولوية (P0/P1/P2)'));
+        assert.ok(body.includes('example.com/qn-21#'));
+      }
+    });
+  }
 
 test('missing template returns 404', async () => {
   const req = new NextRequest(`${base}?name=missing.md`);

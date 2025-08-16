@@ -7,13 +7,11 @@ export interface SecretaryData {
   summary: string;
   keywords: string[];
   tokens: string[];
-  equations: string[];
   boundary: string[];
   post_analysis: string;
   risks: string[];
   predictions: string[];
   testability: string;
-  references: string[];
 }
 
 /**
@@ -25,13 +23,11 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
   let summary: string;
   let keywords: string[];
   let tokens: string[];
-  let equations: string[];
   let boundary: string[];
   let post_analysis: string;
   let risks: string[];
   let predictions: string[];
   let testability: string;
-  let references: string[];
 
   if (!data) {
     const rl = createInterface({ input, output });
@@ -51,14 +47,9 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean);
-      const eqInput = await rl.question("Equations (comma separated): ");
-      equations = eqInput
-        .split(",")
-        .map((e) => e.trim())
-        .filter(Boolean);
-      const boundInput = await rl.question(
-        "Boundary conditions (comma separated): "
-      );
+        const boundInput = await rl.question(
+          "Boundary conditions (comma separated): "
+        );
       boundary = boundInput
         .split(",")
         .map((b) => b.trim())
@@ -74,42 +65,32 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
         .split(",")
         .map((p) => p.trim())
         .filter(Boolean);
-      testability = await rl.question("Testability: ");
-      const refInput = await rl.question("References (comma separated): ");
-      references = refInput
-        .split(",")
-        .map((r) => r.trim())
-        .filter(Boolean);
-    } finally {
-      rl.close();
+        testability = await rl.question("Testability: ");
+      } finally {
+        rl.close();
+      }
+    } else {
+      ({
+        summary = "",
+        keywords = [],
+        tokens = [],
+        boundary = [],
+        post_analysis = "",
+        risks = [],
+        predictions = [],
+        testability = "",
+      } = data);
     }
-  } else {
-    ({
-      summary = "",
-      keywords = [],
-      tokens = [],
-      equations = [],
-      boundary = [],
-      post_analysis = "",
-      risks = [],
-      predictions = [],
-      testability = "",
-      references = [],
-    } = data);
-  }
 
-  const fields = {
-    summary,
-    keywords,
-    tokens,
-    equations,
-    boundary,
-    post_analysis,
-    risks,
-    predictions,
-    testability,
-    references,
-  };
+    const fields = {
+      keywords,
+      tokens,
+      boundary,
+      post_analysis,
+      risks,
+      predictions,
+      testability,
+    };
   const missing = Object.entries(fields)
     .filter(([, v]) =>
       v === undefined ||
@@ -138,9 +119,6 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     "## Tokens and Definitions",
     ...tokens.map((t) => `- ${t}`),
     "",
-    "## Equations",
-    ...equations.map((e) => `- ${e}`),
-    "",
     "## Boundary Conditions",
     ...boundary.map((b) => `- ${b}`),
     "",
@@ -155,9 +133,6 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     "",
     "## Testability",
     testability,
-    "",
-    "## References",
-    ...references.map((r) => `- ${r}`),
     "",
     "## Issues",
     ...missing.map((m) => `- type: missing_field\n  note: ${m}`),
