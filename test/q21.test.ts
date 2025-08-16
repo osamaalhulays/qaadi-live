@@ -3,7 +3,8 @@ import assert from 'node:assert';
 import { evaluateQN21, QN21_CRITERIA, summarizeQN21 } from '../src/lib/q21';
 
 test('evaluateQN21 returns scores and gaps based on patterns', () => {
-  const text = 'Equations ensure rigor and ethics in research.';
+  const text =
+    'Equations and formulas ensure rigor and rigorous ethics and ethical behavior.';
   const result = evaluateQN21(text);
 
   assert.strictEqual(result.length, QN21_CRITERIA.length);
@@ -20,17 +21,18 @@ test('evaluateQN21 returns scores and gaps based on patterns', () => {
 
   const ethics = result.find((r) => r.code === 'ethics');
   assert.ok(ethics);
-  assert.strictEqual(ethics?.score, 8 * (1 / 3));
-  assert.strictEqual(ethics?.gap, 8 - 8 * (1 / 3));
+  assert.strictEqual(ethics?.score, 8 * (2 / 3));
+  assert.strictEqual(ethics?.gap, 8 - 8 * (2 / 3));
 
-  const safety = result.find((r) => r.code === 'safety');
-  assert.ok(safety);
-  assert.strictEqual(safety?.score, 0);
-  assert.strictEqual(safety?.gap, 5);
+  const privacy = result.find((r) => r.code === 'privacy');
+  assert.ok(privacy);
+  assert.strictEqual(privacy?.score, 0);
+  assert.strictEqual(privacy?.gap, 3);
 });
 
 test('evaluateQN21 detects uppercase and mixed-case indicators', () => {
-  const text = 'The EQUATIONS were derived with RIGOR and ETHICS.';
+  const text =
+    'EQUATIONS and FORMULAS ensure RIGOR and RIGOROUS ETHICS and ETHICAL behavior.';
   const result = evaluateQN21(text);
 
   const equations = result.find((r) => r.code === 'equations');
@@ -43,25 +45,25 @@ test('evaluateQN21 detects uppercase and mixed-case indicators', () => {
 
   const ethics = result.find((r) => r.code === 'ethics');
   assert.ok(ethics);
-  assert.strictEqual(ethics?.score, 8 * (1 / 3));
+  assert.strictEqual(ethics?.score, 8 * (2 / 3));
 });
 
 test('evaluateQN21 handles partial criteria in text', () => {
   const text =
-    'Calibration ensures precision, but reproducibility was not discussed. Community engagement was strong.';
+    'Experiment design was robust, but reproducibility was ignored. Calibration was performed.';
   const result = evaluateQN21(text);
 
-  const calibration = result.find((r) => r.code === 'calibration');
-  assert.ok(calibration);
-  assert.strictEqual(calibration?.score, 3 * (1 / 3));
+  const experiment = result.find((r) => r.code === 'experiment');
+  assert.ok(experiment);
+  assert.strictEqual(experiment?.score, 6 * (1 / 3));
 
   const reproducibility = result.find((r) => r.code === 'reproducibility');
   assert.ok(reproducibility);
   assert.strictEqual(reproducibility?.score, 0);
 
-  const engagement = result.find((r) => r.code === 'engagement');
-  assert.ok(engagement);
-  assert.strictEqual(engagement?.score, 5 * (2 / 3));
+  const calibration = result.find((r) => r.code === 'calibration');
+  assert.ok(calibration);
+  assert.strictEqual(calibration?.score, 3 * (1 / 3));
 });
 
 test('summarizeQN21 computes totals, max, percentage, and classification', () => {
