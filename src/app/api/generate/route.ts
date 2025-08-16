@@ -4,7 +4,7 @@ import { runWithFallback } from "../../../lib/providers/router";
 import { freezeText, restoreText, countEquations, FrozenText } from "../../../lib/utils/freeze";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { saveSnapshot } from "../../../lib/saveSnapshot";
-import { buildPrompt } from "../../../lib/buildPrompt";
+import { buildPrompt, buildTranslationPrompts } from "../../../lib/buildPrompt";
 import fs from "fs/promises";
 import path from "path";
 import {
@@ -102,6 +102,41 @@ export async function POST(req: NextRequest) {
     );
 
     return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  }
+
+  if (url.searchParams.get("translate") === "1") {
+    const body: any = await req.json().catch(() => ({}));
+    const text = typeof body.text === "string" ? body.text : "";
+    const langs = Array.isArray(body.langs) ? body.langs : [];
+    const model =
+      body.model === "openai" || body.model === "deepseek" ? body.model : "auto";
+    const maxTokens =
+      typeof body.max_tokens === "number" ? body.max_tokens : 2048;
+    if (!text || !langs.length) {
+      return new Response(JSON.stringify({ error: "bad_input" }), { status: 400 });
+    }
+    const openaiKey = req.headers.get("x-openai-key") ?? "";
+    const deepseekKey = req.headers.get("x-deepseek-key") ?? "";
+    if (!openaiKey && !deepseekKey) {
+      return new Response(JSON.stringify({ error: "no_keys_provided" }), { status: 400 });
+    }
+    const { prompts, frozen } = buildTranslationPrompts(langs, text);
+    const translations: Record<string, string> = {};
+    for (const l of langs) {
+      const out = await runWithFallback(
+        model,
+        { openai: openaiKey || undefined, deepseek: deepseekKey || undefined },
+        prompts[l],
+        maxTokens
+      );
+      translations[l] = restoreText(
+        out.text,
+        frozen.equations,
+        frozen.dois,
+        frozen.codes
+      );
+    }
+    return new Response(JSON.stringify({ translations }), { status: 200 });
   }
 
   let input;

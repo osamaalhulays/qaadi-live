@@ -8,4 +8,5 @@ dist
 *.pem
 snapshots
 
+# macOS artifacts
 .DS_Store

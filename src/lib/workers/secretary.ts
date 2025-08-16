@@ -5,8 +5,14 @@ import { stdin as input, stdout as output } from "node:process";
 
 export interface SecretaryData {
   summary: string;
-  conditions: string[];
+  keywords: string[];
+  tokens: string[];
   equations: string[];
+  boundary: string[];
+  post_analysis: string;
+  risks: string[];
+  predictions: string[];
+  testability: string;
   references: string[];
 }
 
@@ -15,31 +21,61 @@ export interface SecretaryData {
  * describing the gathered requirements. When no data is supplied the
  * function falls back to interactive prompts on the command line.
  */
-export async function runSecretary(data?: SecretaryData) {
+export async function runSecretary(data?: Partial<SecretaryData>) {
   let summary: string;
-  let conditions: string[];
+  let keywords: string[];
+  let tokens: string[];
   let equations: string[];
+  let boundary: string[];
+  let post_analysis: string;
+  let risks: string[];
+  let predictions: string[];
+  let testability: string;
   let references: string[];
 
   if (!data) {
     const rl = createInterface({ input, output });
     try {
       summary = await rl.question("Summary: ");
-      const condInput = await rl.question(
-        "Conditions (comma separated): "
+      const keyInput = await rl.question(
+        "Keywords (comma separated): "
       );
-      conditions = condInput
+      keywords = keyInput
         .split(",")
-        .map((c) => c.trim())
+        .map((k) => k.trim())
+        .filter(Boolean);
+      const tokInput = await rl.question(
+        "Tokens and definitions (symbol=definition, comma separated): "
+      );
+      tokens = tokInput
+        .split(",")
+        .map((t) => t.trim())
         .filter(Boolean);
       const eqInput = await rl.question("Equations (comma separated): ");
       equations = eqInput
         .split(",")
         .map((e) => e.trim())
         .filter(Boolean);
-      const refInput = await rl.question(
-        "References (comma separated): "
+      const boundInput = await rl.question(
+        "Boundary conditions (comma separated): "
       );
+      boundary = boundInput
+        .split(",")
+        .map((b) => b.trim())
+        .filter(Boolean);
+      post_analysis = await rl.question("Post-analysis: ");
+      const riskInput = await rl.question("Risks (comma separated): ");
+      risks = riskInput
+        .split(",")
+        .map((r) => r.trim())
+        .filter(Boolean);
+      const predInput = await rl.question("Predictions (comma separated): ");
+      predictions = predInput
+        .split(",")
+        .map((p) => p.trim())
+        .filter(Boolean);
+      testability = await rl.question("Testability: ");
+      const refInput = await rl.question("References (comma separated): ");
       references = refInput
         .split(",")
         .map((r) => r.trim())
@@ -48,23 +84,83 @@ export async function runSecretary(data?: SecretaryData) {
       rl.close();
     }
   } else {
-    ({ summary, conditions, equations, references } = data);
+    ({
+      summary = "",
+      keywords = [],
+      tokens = [],
+      equations = [],
+      boundary = [],
+      post_analysis = "",
+      risks = [],
+      predictions = [],
+      testability = "",
+      references = [],
+    } = data);
   }
 
+  const fields = {
+    summary,
+    keywords,
+    tokens,
+    equations,
+    boundary,
+    post_analysis,
+    risks,
+    predictions,
+    testability,
+    references,
+  };
+  const missing = Object.entries(fields)
+    .filter(([, v]) =>
+      v === undefined ||
+      v === null ||
+      (typeof v === "string" && !v.trim()) ||
+      (Array.isArray(v) && v.length === 0)
+    )
+    .map(([k]) => k);
+  const ready_percent = Math.round(
+    ((Object.keys(fields).length - missing.length) /
+      Object.keys(fields).length) *
+      100
+  );
+
   const content = [
+    `Ready%: ${ready_percent}`,
+    "",
     "# Secretary",
     "",
     "## Summary",
     summary,
     "",
-    "## Conditions",
-    ...conditions.map((c) => `- ${c}`),
+    "## Keywords",
+    ...keywords.map((k) => `- ${k}`),
+    "",
+    "## Tokens and Definitions",
+    ...tokens.map((t) => `- ${t}`),
     "",
     "## Equations",
     ...equations.map((e) => `- ${e}`),
     "",
+    "## Boundary Conditions",
+    ...boundary.map((b) => `- ${b}`),
+    "",
+    "## Post-Analysis",
+    post_analysis,
+    "",
+    "## Risks",
+    ...risks.map((r) => `- ${r}`),
+    "",
+    "## Predictions",
+    ...predictions.map((p) => `- ${p}`),
+    "",
+    "## Testability",
+    testability,
+    "",
     "## References",
     ...references.map((r) => `- ${r}`),
+    "",
+    "## Issues",
+    ...missing.map((m) => `- type: missing_field\n  note: ${m}`),
     "",
   ].join("\n");
 
