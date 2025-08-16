@@ -65,7 +65,9 @@ export async function loadCriteria(): Promise<Criterion[]> {
 
 async function archive(criteria: Criterion[]) {
   const { archive } = getPaths();
-  const ts = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
+  // Include milliseconds in the archive filename to avoid collisions when
+  // multiple snapshots are saved within the same second.
+  const ts = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 17);
   await writeFile(path.join(archive, `${ts}.json`), JSON.stringify(criteria, null, 2));
 }
 

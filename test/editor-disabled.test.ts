@@ -1,4 +1,4 @@
-/** @jest-environment jsdom */
+// Tests run in the default Node environment; no DOM APIs are required.
 
 import { test } from '@jest/globals';
 import assert from 'node:assert';
