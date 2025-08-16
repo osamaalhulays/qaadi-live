@@ -1,4 +1,4 @@
-import test from 'node:test';
+import { test, afterAll } from '@jest/globals';
 import assert from 'node:assert';
 import { GET } from '../src/app/api/download/zip/route.ts';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
@@ -23,7 +23,7 @@ async function ensureTheory(slug: string, v: string) {
   );
 }
 
-test.after(async () => {
+afterAll(async () => {
   await rm(path.join(root, 'QaadiDB'), { recursive: true, force: true });
 });
 
