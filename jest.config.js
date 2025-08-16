@@ -19,9 +19,8 @@ const config = {
     ],
   },
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  testMatch: [
-    '**/test/(q21|judge|customCriteria|evaluateCriteriaPartial|health).test.ts',
-  ],
+  // Match all test files within any `test` directory
+  testMatch: ['**/test/**/*.test.ts'],
 };
 
 export default createJestConfig(config);
