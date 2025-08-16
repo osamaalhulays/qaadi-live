@@ -33,27 +33,23 @@ export async function runJudge(text?: string) {
   if (debug) console.log("runJudge: qn21Results", qn21Results);
   if (debug) console.log("runJudge: customResults", customResults);
 
-  const combined: ChartCriterion[] = [];
-  qn21Results.forEach((c, i) => {
-    combined.push({
-      id: i + 1,
-      name: c.description,
-      score: c.score,
-      gap: Math.max(0, c.weight - c.score),
-      type: c.type,
-      covered: c.score === c.weight,
-    });
-  });
-  customResults.forEach((c, i) => {
-    combined.push({
-      id: qn21Results.length + i + 1,
-      name: c.description,
-      score: c.score,
-      gap: Math.max(0, c.weight - c.score),
-      type: c.category,
-      covered: c.score === c.weight,
-    });
-  });
+  const qn21Criteria: ChartCriterion[] = qn21Results.map((c, i) => ({
+    id: i + 1,
+    name: c.description || c.code,
+    score: c.score,
+    gap: Math.max(0, c.weight - c.score),
+    type: c.type,
+    covered: c.score === c.weight,
+  }));
+  const customCriteria: ChartCriterion[] = customResults.map((c, i) => ({
+    id: qn21Results.length + i + 1,
+    name: c.description || c.id,
+    score: c.score,
+    gap: Math.max(0, c.weight - c.score),
+    type: c.category,
+    covered: c.score === c.weight,
+  }));
+  const combined: ChartCriterion[] = [...qn21Criteria, ...customCriteria];
 
   if (debug) console.log("runJudge: combined criteria", combined);
 

@@ -1,11 +1,9 @@
-import { TextEncoder, TextDecoder } from 'util';
+const { TextEncoder, TextDecoder } = require('util');
 
 if (!globalThis.TextEncoder) {
-  // @ts-ignore
   globalThis.TextEncoder = TextEncoder;
 }
 
 if (!globalThis.TextDecoder) {
-  // @ts-ignore
   globalThis.TextDecoder = TextDecoder;
 }
