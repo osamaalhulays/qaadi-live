@@ -7,6 +7,18 @@ const createJestConfig = nextJest({
 /** @type {import('jest').Config} */
 const config = {
   testEnvironment: 'jsdom',
+  transform: {
+    '^.+\\.(ts|tsx)$': [
+      'ts-jest',
+      {
+        tsconfig: {
+          jsx: 'react-jsx',
+        },
+        useESM: true,
+      },
+    ],
+  },
+  extensionsToTreatAsEsm: ['.ts', '.tsx'],
 };
 
 export default createJestConfig(config);
