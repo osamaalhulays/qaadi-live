@@ -3,9 +3,10 @@ import path from "path";
 import { createInterface } from "readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 
-export interface CriterionPlan {
-  criterion: string;
-  plan: string;
+export interface QN21PlanItem {
+  item: string;
+  priority: string;
+  qn: string;
 }
 
 /**
@@ -15,30 +16,41 @@ export interface CriterionPlan {
  */
 export async function runResearchSecretary(
   name: string,
-  criteria?: CriterionPlan[]
+  items?: QN21PlanItem[]
 ) {
   const safeName = name.replace(/[^a-z0-9_-]/gi, "_");
 
-  let plans: CriterionPlan[] = criteria ?? [];
-  if (!criteria) {
+  let plans: QN21PlanItem[] = items ?? [];
+  if (!items) {
     const rl = createInterface({ input, output });
     try {
-      const countStr = await rl.question("Number of criteria: ");
+      const countStr = await rl.question("Number of items: ");
       const count = Math.max(0, parseInt(countStr, 10) || 0);
       for (let i = 0; i < count; i++) {
-        const criterion = await rl.question(`Criterion ${i + 1}: `);
-        const plan = await rl.question(`Plan for ${criterion}: `);
-        plans.push({ criterion, plan });
+        const item = await rl.question(`Item ${i + 1}: `);
+        const priority = await rl.question(`Priority for ${item}: `);
+        const qn = await rl.question(`QN-21 criterion for ${item}: `);
+        plans.push({ item, priority, qn });
       }
     } finally {
       rl.close();
     }
   }
 
-  const sections = plans
-    .map((p) => [`## ${p.criterion}`, p.plan])
-    .flat();
-  const content = ["# Plan for " + safeName, "", ...sections, ""].join("\n");
+  const header = [
+    "| Item | Priority | QN-21 Criterion |",
+    "|------|----------|-----------------|",
+  ];
+  const rows = plans.map(
+    (p) => `| ${p.item} | ${p.priority} | ${p.qn} |`
+  );
+  const content = [
+    "# Plan for " + safeName,
+    "",
+    ...header,
+    ...rows,
+    "",
+  ].join("\n");
 
   const filePath = path.join(process.cwd(), "paper", `plan-${safeName}.md`);
   await mkdir(path.dirname(filePath), { recursive: true });
