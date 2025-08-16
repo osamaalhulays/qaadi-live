@@ -1,5 +1,4 @@
-import assert from 'node:assert';
-
+import { test, expect } from '@jest/globals';
 import { evaluateQN21, QN21_CRITERIA, summarizeQN21 } from '../src/lib/q21';
 
 test('evaluateQN21 returns partial scores based on indicator coverage', () => {
@@ -8,24 +7,24 @@ test('evaluateQN21 returns partial scores based on indicator coverage', () => {
   const result = evaluateQN21(text);
 
   const sigma = result.find((r) => r.code === 'Σ');
-  assert.ok(sigma);
-  assert.ok(Math.abs((sigma?.score ?? 0) - 6.4) < 1e-6);
-  assert.ok(Math.abs((sigma?.gap ?? 0) - 1.6) < 1e-6);
+  expect(sigma).toBeDefined();
+  expect(sigma?.score).toBeCloseTo(6.4);
+  expect(sigma?.gap).toBeCloseTo(1.6);
 
   const delta = result.find((r) => r.code === 'Δ');
-  assert.ok(delta);
-  assert.ok(Math.abs((delta?.score ?? 0) - 4) < 1e-6);
-  assert.ok(Math.abs((delta?.gap ?? 0) - 2) < 1e-6);
+  expect(delta).toBeDefined();
+  expect(delta?.score).toBeCloseTo(4);
+  expect(delta?.gap).toBeCloseTo(2);
 
   const theta = result.find((r) => r.code === 'Θ');
-  assert.ok(theta);
-  assert.ok(Math.abs((theta?.score ?? 0) - 8 / 3) < 1e-6);
-  assert.ok(Math.abs((theta?.gap ?? 0) - (16 / 3)) < 1e-6);
+  expect(theta).toBeDefined();
+  expect(theta?.score).toBeCloseTo(8 / 3);
+  expect(theta?.gap).toBeCloseTo(16 / 3);
 
   const phi = result.find((r) => r.code === 'Φ');
-  assert.ok(phi);
-  assert.strictEqual(phi?.score, 0);
-  assert.strictEqual(phi?.gap, 5);
+  expect(phi).toBeDefined();
+  expect(phi?.score).toBe(0);
+  expect(phi?.gap).toBe(5);
 });
 
 test('evaluateQN21 handles partial coverage and mismatches', () => {
@@ -34,18 +33,18 @@ test('evaluateQN21 handles partial coverage and mismatches', () => {
   const result = evaluateQN21(text);
 
   const kappa = result.find((r) => r.code === 'Κ');
-  assert.ok(kappa);
-  assert.ok(Math.abs((kappa?.score ?? 0) - 1) < 1e-6);
-  assert.ok(Math.abs((kappa?.gap ?? 0) - 2) < 1e-6);
+  expect(kappa).toBeDefined();
+  expect(kappa?.score).toBeCloseTo(1);
+  expect(kappa?.gap).toBeCloseTo(2);
 
   const rho = result.find((r) => r.code === 'Ρ');
-  assert.ok(rho);
-  assert.strictEqual(rho?.score, 0);
-  assert.strictEqual(rho?.gap, 5);
+  expect(rho).toBeDefined();
+  expect(rho?.score).toBe(0);
+  expect(rho?.gap).toBe(5);
 
   const beta = result.find((r) => r.code === 'Β');
-  assert.ok(beta);
-  assert.ok(Math.abs((beta?.score ?? 0) - (5 * (2 / 3))) < 1e-6);
+  expect(beta).toBeDefined();
+  expect(beta?.score).toBeCloseTo(5 * (2 / 3));
 });
 
 test('summarizeQN21 computes percentage and classification', () => {
@@ -56,9 +55,9 @@ test('summarizeQN21 computes percentage and classification', () => {
     { ...c2, score: 5, gap: 1 },
   ];
   const summary = summarizeQN21(results);
-  assert.strictEqual(summary.total, 13);
-  assert.strictEqual(summary.max, 14);
-  assert.ok(Math.abs(summary.percentage - (13 / 14) * 100) < 1e-6);
-  assert.strictEqual(summary.classification, 'accepted');
+  expect(summary.total).toBe(13);
+  expect(summary.max).toBe(14);
+  expect(summary.percentage).toBeCloseTo((13 / 14) * 100);
+  expect(summary.classification).toBe('accepted');
 });
 
