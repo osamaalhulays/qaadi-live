@@ -1,6 +1,6 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
-import { buildPrompt } from '../src/app/api/generate/route';
+import { buildPrompt } from '../src/lib/buildPrompt';
 
 describe('buildPrompt', () => {
   it('handles inquiry in English', () => {

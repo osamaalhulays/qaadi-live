@@ -9,25 +9,25 @@ describe('QN21 utilities', () => {
 
     assert.strictEqual(result.length, QN21_CRITERIA.length);
 
-    const sigma = result.find((r) => r.code === 'Σ');
-    assert.ok(sigma);
-    assert.strictEqual(sigma?.score, 8);
-    assert.strictEqual(sigma?.gap, 0);
+    const equations = result.find((r) => r.code === 'equations');
+    assert.ok(equations);
+    assert.strictEqual(equations?.score, 8);
+    assert.strictEqual(equations?.gap, 0);
 
-    const delta = result.find((r) => r.code === 'Δ');
-    assert.ok(delta);
-    assert.strictEqual(delta?.score, 6);
-    assert.strictEqual(delta?.gap, 0);
+    const rigor = result.find((r) => r.code === 'rigor');
+    assert.ok(rigor);
+    assert.strictEqual(rigor?.score, 6);
+    assert.strictEqual(rigor?.gap, 0);
 
-    const theta = result.find((r) => r.code === 'Θ');
-    assert.ok(theta);
-    assert.strictEqual(theta?.score, 8);
-    assert.strictEqual(theta?.gap, 0);
+    const ethics = result.find((r) => r.code === 'ethics');
+    assert.ok(ethics);
+    assert.strictEqual(ethics?.score, 8);
+    assert.strictEqual(ethics?.gap, 0);
 
-    const phi = result.find((r) => r.code === 'Φ');
-    assert.ok(phi);
-    assert.strictEqual(phi?.score, 0);
-    assert.strictEqual(phi?.gap, 5);
+    const safety = result.find((r) => r.code === 'safety');
+    assert.ok(safety);
+    assert.strictEqual(safety?.score, 0);
+    assert.strictEqual(safety?.gap, 5);
   });
 
   it('evaluateQN21 handles partial criteria in text', () => {
@@ -35,17 +35,17 @@ describe('QN21 utilities', () => {
       'Calibration ensures precision, but reproducibility was not discussed. Community engagement was strong.';
     const result = evaluateQN21(text);
 
-    const kappa = result.find((r) => r.code === 'Κ');
-    assert.ok(kappa);
-    assert.strictEqual(kappa?.score, 3);
+    const calibration = result.find((r) => r.code === 'calibration');
+    assert.ok(calibration);
+    assert.strictEqual(calibration?.score, 3);
 
-    const rho = result.find((r) => r.code === 'Ρ');
-    assert.ok(rho);
-    assert.strictEqual(rho?.score, 0);
+    const reproducibility = result.find((r) => r.code === 'reproducibility');
+    assert.ok(reproducibility);
+    assert.strictEqual(reproducibility?.score, 0);
 
-    const beta = result.find((r) => r.code === 'Β');
-    assert.ok(beta);
-    assert.strictEqual(beta?.score, 5);
+    const engagement = result.find((r) => r.code === 'engagement');
+    assert.ok(engagement);
+    assert.strictEqual(engagement?.score, 5);
   });
 
   it('summarizeQN21 computes percentage and classification', () => {

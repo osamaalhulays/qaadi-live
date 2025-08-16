@@ -5,8 +5,9 @@ import { stdin as input, stdout as output } from "node:process";
 
 export interface SecretaryData {
   summary: string;
-  conditions: string;
+  conditions: string[];
   equations: string[];
+  references: string[];
 }
 
 /**
@@ -16,24 +17,38 @@ export interface SecretaryData {
  */
 export async function runSecretary(data?: SecretaryData) {
   let summary: string;
-  let conditions: string;
+  let conditions: string[];
   let equations: string[];
+  let references: string[];
 
   if (!data) {
     const rl = createInterface({ input, output });
     try {
       summary = await rl.question("Summary: ");
-      conditions = await rl.question("Conditions: ");
+      const condInput = await rl.question(
+        "Conditions (comma separated): "
+      );
+      conditions = condInput
+        .split(",")
+        .map((c) => c.trim())
+        .filter(Boolean);
       const eqInput = await rl.question("Equations (comma separated): ");
       equations = eqInput
         .split(",")
         .map((e) => e.trim())
         .filter(Boolean);
+      const refInput = await rl.question(
+        "References (comma separated): "
+      );
+      references = refInput
+        .split(",")
+        .map((r) => r.trim())
+        .filter(Boolean);
     } finally {
       rl.close();
     }
   } else {
-    ({ summary, conditions, equations } = data);
+    ({ summary, conditions, equations, references } = data);
   }
 
   const content = [
@@ -43,10 +58,13 @@ export async function runSecretary(data?: SecretaryData) {
     summary,
     "",
     "## Conditions",
-    conditions,
+    ...conditions.map((c) => `- ${c}`),
     "",
     "## Equations",
     ...equations.map((e) => `- ${e}`),
+    "",
+    "## References",
+    ...references.map((r) => `- ${r}`),
     "",
   ].join("\n");
 
