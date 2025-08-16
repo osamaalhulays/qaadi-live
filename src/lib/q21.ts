@@ -11,155 +11,41 @@ export interface QN21Criterion {
   patterns: RegExp[];
 }
 
-export const QN21_CRITERIA: QN21Criterion[] = [
-  {
-    code: "equations",
-    type: "internal",
-    weight: 8,
-    description: "Equation accuracy",
-    patterns: [/=/i, /equation/i, /boundary condition/i],
-  },
-  {
-    code: "rigor",
-    type: "internal",
-    weight: 6,
-    description: "Analytical rigor",
-    patterns: [/analysis/i, /derive/i, /boundary condition/i],
-  },
-  {
-    code: "dimensional",
-    type: "internal",
-    weight: 5,
-    description: "Dimensional consistency",
-    patterns: [/dimension/i, /units/i, /dimensional/i],
-  },
-  {
-    code: "notation",
-    type: "internal",
-    weight: 3,
-    description: "Clarity of symbols",
-    patterns: [/symbol/i, /notation/i, /define/i],
-  },
-  {
-    code: "experiment",
-    type: "internal",
-    weight: 6,
-    description: "Experimental design",
-    patterns: [/experiment/i, /setup/i, /procedure/i],
-  },
-  {
-    code: "calibration",
-    type: "internal",
-    weight: 3,
-    description: "Calibration",
-    patterns: [/calibration/i, /calibrate/i, /standard/i],
-  },
-  {
-    code: "measurement",
-    type: "internal",
-    weight: 4,
-    description: "Measurement precision",
-    patterns: [/precision/i, /accurate/i, /measurement/i],
-  },
-  {
-    code: "data",
-    type: "internal",
-    weight: 4,
-    description: "Data analysis",
-    patterns: [/data analysis/i, /statistics/i, /statistical/i],
-  },
-  {
-    code: "reproducibility",
-    type: "internal",
-    weight: 5,
-    description: "Reproducibility",
-    patterns: [/reproduce/i, /replicate/i, /repeat/i],
-  },
-  {
-    code: "validation",
-    type: "internal",
-    weight: 4,
-    description: "Validation",
-    patterns: [/validate/i, /validation/i, /comparison/i],
-  },
-  {
-    code: "conservation",
-    type: "internal",
-    weight: 3,
-    description: "Conservation laws",
-    patterns: [/conservation/i, /law/i, /conserve/i],
-  },
-  {
-    code: "ethics",
-    type: "external",
-    weight: 8,
-    description: "Ethics",
-    patterns: [/ethics/i, /ethical/i, /consent/i],
-  },
-  {
-    code: "safety",
-    type: "external",
-    weight: 5,
-    description: "Safety compliance",
-    patterns: [/safety/i, /safe/i, /compliance/i],
-  },
-  {
-    code: "environmental",
-    type: "external",
-    weight: 5,
-    description: "Environmental impact",
-    patterns: [/environment/i, /environmental/i, /impact/i],
-  },
-  {
-    code: "accessibility",
-    type: "external",
-    weight: 3,
-    description: "Accessibility",
-    patterns: [/accessibility/i, /accessible/i, /inclusive/i],
-  },
-  {
-    code: "privacy",
-    type: "external",
-    weight: 3,
-    description: "Data privacy",
-    patterns: [/privacy/i, /confidential/i, /data protection/i],
-  },
-  {
-    code: "interdisciplinary",
-    type: "external",
-    weight: 4,
-    description: "Interdisciplinary integration",
-    patterns: [/interdisciplinary/i, /cross-disciplinary/i, /integration/i],
-  },
-  {
-    code: "communication",
-    type: "external",
-    weight: 6,
-    description: "Public communication",
-    patterns: [/public/i, /communication/i, /outreach/i],
-  },
-  {
-    code: "engagement",
-    type: "external",
-    weight: 5,
-    description: "Community engagement",
-    patterns: [/community/i, /engagement/i, /stakeholder/i],
-  },
-  {
-    code: "policy",
-    type: "external",
-    weight: 5,
-    description: "Policy compliance",
-    patterns: [/policy/i, /regulation/i, /compliance/i],
-  },
-  {
-    code: "societal",
-    type: "external",
-    weight: 5,
-    description: "Societal relevance",
-    patterns: [/societal/i, /society/i, /relevance/i],
-  },
+interface QN21Spec {
+  code: string;
+  type: "internal" | "external";
+  weight: number;
+  description: string;
+}
+
+const DOCUMENTED_QN21_CRITERIA: QN21Spec[] = [
+  { code: "equations", type: "internal", weight: 8, description: "Equation accuracy" },
+  { code: "rigor", type: "internal", weight: 6, description: "Analytical rigor" },
+  { code: "dimensional", type: "internal", weight: 5, description: "Dimensional consistency" },
+  { code: "notation", type: "internal", weight: 3, description: "Clarity of symbols" },
+  { code: "experiment", type: "internal", weight: 6, description: "Experimental design" },
+  { code: "calibration", type: "internal", weight: 3, description: "Calibration" },
+  { code: "measurement", type: "internal", weight: 4, description: "Measurement precision" },
+  { code: "data", type: "internal", weight: 4, description: "Data analysis" },
+  { code: "reproducibility", type: "internal", weight: 5, description: "Reproducibility" },
+  { code: "validation", type: "internal", weight: 4, description: "Validation" },
+  { code: "conservation", type: "internal", weight: 3, description: "Conservation laws" },
+  { code: "ethics", type: "external", weight: 8, description: "Ethics" },
+  { code: "safety", type: "external", weight: 5, description: "Safety compliance" },
+  { code: "environmental", type: "external", weight: 5, description: "Environmental impact" },
+  { code: "accessibility", type: "external", weight: 3, description: "Accessibility" },
+  { code: "privacy", type: "external", weight: 3, description: "Data privacy" },
+  { code: "interdisciplinary", type: "external", weight: 4, description: "Interdisciplinary integration" },
+  { code: "communication", type: "external", weight: 6, description: "Public communication" },
+  { code: "engagement", type: "external", weight: 5, description: "Community engagement" },
+  { code: "policy", type: "external", weight: 5, description: "Policy compliance" },
+  { code: "societal", type: "external", weight: 5, description: "Societal relevance" },
 ];
+
+export const QN21_CRITERIA: QN21Criterion[] = DOCUMENTED_QN21_CRITERIA.map((c) => ({
+  ...c,
+  patterns: [new RegExp(c.code, "i")],
+}));
 
 export interface QN21Result extends QN21Criterion {
   /** Score obtained for the criterion. */
@@ -171,18 +57,19 @@ export interface QN21Result extends QN21Criterion {
 /**
  * Evaluate text against the QN21 criteria.
  *
- * The evaluation is pattern based: if any regular expression for a criterion
- * matches within the provided text the full weight is awarded. Otherwise the
- * score is zero. The `gap` field expresses the missing weight.
+ * The evaluation is pattern based. Each regular expression pattern represents
+ * an indicator for the criterion. The score is proportional to the number of
+ * matched indicators, yielding partial credit when only some patterns are
+ * present. The `gap` field expresses the missing weight.
  */
 export function evaluateQN21(text: string): QN21Result[] {
   return QN21_CRITERIA.map((c) => {
-    const score = c.patterns.some((p) => {
+    const matches = c.patterns.reduce((count, p) => {
       const k = new RegExp(p.source, p.flags.replace(/[gy]/g, ""));
-      return k.test(text);
-    })
-      ? c.weight
-      : 0;
+      return k.test(text) ? count + 1 : count;
+    }, 0);
+    const ratio = c.patterns.length === 0 ? 0 : matches / c.patterns.length;
+    const score = c.weight * ratio;
     return { ...c, score, gap: c.weight - score };
   });
 }

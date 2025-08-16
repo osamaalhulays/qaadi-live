@@ -10,8 +10,14 @@ export interface GateResult {
 const REQUIRED_FIELDS = [
   "summary",
   "equations",
-  "boundary",
   "references",
+  "keywords",
+  "tokens",
+  "boundary",
+  "post_analysis",
+  "risks",
+  "predictions",
+  "testability",
 ];
 
 // Check mandatory fields inside secretary report and return missing ones
