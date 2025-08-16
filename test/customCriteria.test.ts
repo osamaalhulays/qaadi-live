@@ -15,6 +15,7 @@ test('CRUD and evaluation for custom criteria', async () => {
     description: 'Test criterion',
     weight: 2,
     keywords: ['foo'],
+    category: 'advisory',
     enabled: true
   });
   let criteria = await loadCriteria();
@@ -22,11 +23,13 @@ test('CRUD and evaluation for custom criteria', async () => {
   let crit = result.find((c) => c.id === 'TST');
   assert.ok(crit);
   assert.strictEqual(crit?.score, 2);
+  assert.strictEqual(crit?.category, 'advisory');
 
   const judge = await runJudge('foo equation');
   const jCrit = judge.criteria.find((c: any) => c.name === 'Test criterion');
   assert.ok(jCrit);
   assert.strictEqual(jCrit.score, 2);
+  assert.strictEqual(jCrit.type, 'advisory');
   const qn = judge.criteria.find((c: any) => c.name === 'Equation accuracy');
   assert.ok(qn && qn.score > 0);
 

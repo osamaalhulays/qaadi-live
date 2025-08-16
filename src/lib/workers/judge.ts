@@ -8,7 +8,7 @@ interface ChartCriterion {
   name: string;
   score: number;
   gap: number;
-  type?: "internal" | "external";
+  type?: "internal" | "external" | "advisory";
   covered?: boolean;
 }
 
@@ -49,6 +49,7 @@ export async function runJudge(text?: string) {
       name: c.description,
       score: c.score,
       gap: Math.max(0, c.weight - c.score),
+      type: c.category,
       covered: c.score === c.weight,
     });
   });

@@ -12,6 +12,8 @@ export interface Criterion {
   keywords: string[];
   /** Whether the criterion is active */
   enabled: boolean;
+  /** Classification for the criterion */
+  category: "internal" | "external" | "advisory";
   /** Version number for this criterion */
   version: number;
 }

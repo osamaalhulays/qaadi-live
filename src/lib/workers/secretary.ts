@@ -83,6 +83,7 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     }
 
     const fields = {
+      summary,
       keywords,
       tokens,
       boundary,

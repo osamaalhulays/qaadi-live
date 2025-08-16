@@ -9,6 +9,7 @@ test('evaluateCriteria returns partial scores and handles mismatches', () => {
       weight: 9,
       keywords: ['alpha', 'beta', 'gamma'],
       enabled: true,
+      category: 'advisory',
       version: 1,
     },
     {
@@ -17,6 +18,7 @@ test('evaluateCriteria returns partial scores and handles mismatches', () => {
       weight: 4,
       keywords: ['delta'],
       enabled: true,
+      category: 'advisory',
       version: 1,
     },
   ];

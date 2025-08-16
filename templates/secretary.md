@@ -1,4 +1,4 @@
-<!-- mandatory fields: ready_percent, issues[].type, issues[].note, keywords, tokens, boundary, post_analysis, risks, predictions, testability -->
+<!-- mandatory fields: ready_percent, issues[].type, issues[].note, summary, keywords, tokens, boundary, post_analysis, risks, predictions, testability -->
 
 Ready%: 100
 

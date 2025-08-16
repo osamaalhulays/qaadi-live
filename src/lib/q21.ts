@@ -51,6 +51,21 @@ const PATTERN_MAP: Record<string, RegExp[]> = {
   reproducibility: [/\breproducibility\b/i, /\breproducible\b/i, /\breproduce\b/i],
   predictions: [/\bprediction\b/i, /\bpredictions\b/i, /\bpredict\b/i],
   diagrams: [/\bdiagram\b/i, /\bdiagrams\b/i, /\btable\b/i],
+  dimensional: [/\bdimensional\b/i, /\bunits?\b/i, /\bsi\b/i],
+  symmetry: [/\bsymmetry\b/i, /\bnoether\b/i, /\bsymmetric\b/i],
+  conservation: [/\bconservation\b/i, /\bconserve\b/i, /\bpreservation\b/i],
+  boundary: [/\bboundary\b/i, /\bboundaries\b/i, /initial\s+conditions?/i],
+  consistency: [/\bconsistency\b/i, /\bconsistent\b/i, /\bcoherence\b/i],
+  scope: [/\bscope\b/i, /\brange\b/i, /\bapplicability\b/i],
+  novelty: [/\bnovel\b/i, /\binnovation\b/i, /\boriginal\b/i],
+  falsifiability: [/\bfalsifiabl\w*/i, /\bfalsify\b/i, /\brefut\w*/i],
+  methodology: [/\bmethodolog\w*/i, /\bprotocol\b/i, /\bprocedure\b/i],
+  definitions: [/\bdefinition\b/i, /\bdefine\b/i, /\bdefin\w*/i],
+  terminology: [/\bterminology\b/i, /\bterms?\b/i, /\bvocabulary\b/i],
+  clarity: [/\bclarity\b/i, /\bclear\b/i, /\btransparent\b/i],
+  limitations: [/\blimitations?\b/i, /\brisk\b/i, /\bconstraint\b/i],
+  expAlignment: [/\bexperiment\w*/i, /\bdata\b/i, /\bmeasurement\b/i],
+  references: [/\breference\b/i, /\bcitation\b/i, /\bbibliograph\w*/i],
 };
 
 export const QN21_CRITERIA: QN21Criterion[] = DOCUMENTED_QN21_CRITERIA.map((c) => ({
