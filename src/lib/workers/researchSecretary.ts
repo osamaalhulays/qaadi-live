@@ -5,9 +5,11 @@ import { stdin as input, stdout as output } from "node:process";
 
 export interface QN21PlanItem {
   item: string;
-  priority: string;
+  priority: "P0" | "P1" | "P2";
   qn: string;
 }
+
+const QN21_BASE_URL = "https://example.com/qn-21#";
 
 /**
  * Generates a development plan for the given name. Plans are grouped by
@@ -28,9 +30,16 @@ export async function runResearchSecretary(
       const count = Math.max(0, parseInt(countStr, 10) || 0);
       for (let i = 0; i < count; i++) {
         const item = await rl.question(`Item ${i + 1}: `);
-        const priority = await rl.question(`Priority for ${item}: `);
+        let priority = await rl.question(
+          `Priority for ${item} (P0/P1/P2): `,
+        );
+        while (!["P0", "P1", "P2"].includes(priority)) {
+          priority = await rl.question(
+            `Priority for ${item} (P0/P1/P2): `,
+          );
+        }
         const qn = await rl.question(`QN-21 criterion for ${item}: `);
-        plans.push({ item, priority, qn });
+        plans.push({ item, priority: priority as "P0" | "P1" | "P2", qn });
       }
     } finally {
       rl.close();
@@ -41,9 +50,11 @@ export async function runResearchSecretary(
     "| Item | Priority | QN-21 Criterion |",
     "|------|----------|-----------------|",
   ];
-  const rows = plans.map(
-    (p) => `| ${p.item} | ${p.priority} | ${p.qn} |`
-  );
+  const rows = plans.map((p) => {
+    const id = p.qn.replace(/QN-21-/, "");
+    const link = `[${p.qn}](${QN21_BASE_URL}${id})`;
+    return `| ${p.item} | ${p.priority} | ${link} |`;
+  });
   const content = [
     "# Plan for " + safeName,
     "",

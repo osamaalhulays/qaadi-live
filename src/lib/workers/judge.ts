@@ -13,25 +13,34 @@ function summarize(results: { score: number; weight: number }[]) {
   return { total, max, percentage, classification };
 }
 
-export async function runJudge() {
-  let text = "";
-  const draftPath = path.join(process.cwd(), "paper", "draft.md");
-  try {
-    text = await readFile(draftPath, "utf8");
-  } catch {
-    /* ignore missing draft */
+export async function runJudge(text?: string) {
+  let content = text;
+  if (content === undefined) {
+    try {
+      content = await readFile(path.join(process.cwd(), "paper", "draft.md"), "utf8");
+    } catch {
+      try {
+        content = await readFile(path.join(process.cwd(), "paper", "bundle.md"), "utf8");
+      } catch {
+        try {
+          content = await readFile(path.join(process.cwd(), "paper", "draft.tex"), "utf8");
+        } catch {
+          content = "";
+        }
+      }
+    }
   }
 
-  const qn21Results = evaluateQN21(text);
+  const qn21Results = evaluateQN21(content);
   const qn21Summary = summarizeQN21(qn21Results);
 
   const criteria = await loadCriteria();
-  const criteriaResults = evaluateCriteria(text, criteria);
+  const criteriaResults = evaluateCriteria(content, criteria);
   const criteriaSummary = summarize(criteriaResults);
 
   const result = {
     qn21: { results: qn21Results, summary: qn21Summary },
-    criteria: { results: criteriaResults, summary: criteriaSummary }
+    criteria: { results: criteriaResults, summary: criteriaSummary },
   };
 
   const filePath = path.join(process.cwd(), "paper", "judge.json");

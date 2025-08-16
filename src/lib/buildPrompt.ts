@@ -1,5 +1,29 @@
 import { freezeText, FrozenText } from "./utils/freeze";
 
+export function buildTranslationPrompts(
+  langs: string[],
+  userText: string
+): { prompts: Record<string, string>; frozen: FrozenText } {
+  const frozen = freezeText(userText);
+  const langNames: Record<string, string> = {
+    ar: "Arabic",
+    en: "English",
+    tr: "Turkish",
+    fr: "French",
+    es: "Spanish",
+    de: "German",
+    ru: "Russian",
+    "zh-Hans": "Chinese (Simplified)",
+    ja: "Japanese"
+  };
+  const prompts: Record<string, string> = {};
+  for (const l of langs) {
+    const name = langNames[l] || l;
+    prompts[l] = `TRANSLATE/${l.toUpperCase()}: Translate the following text to ${name}. Input:\n${frozen.text}`;
+  }
+  return { prompts, frozen };
+}
+
 export function buildPrompt(
   target:
     | "wide"

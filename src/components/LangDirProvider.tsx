@@ -4,29 +4,26 @@ import { useEffect, useState } from "react";
 
 export default function LangDirProvider() {
   const [lang, setLang] = useState(
-    typeof navigator !== "undefined" ? navigator.language.split("-")[0] : ""
+    typeof navigator !== "undefined" ? navigator.language.split("-")[0] : "en"
   );
-  const [dir, setDir] = useState<"ltr" | "rtl" | "">(
-    typeof navigator !== "undefined"
-      ? navigator.language.startsWith("ar")
-        ? "rtl"
-        : "ltr"
-      : ""
-  );
+  const [dir, setDir] = useState<"ltr" | "rtl">("ltr");
 
   useEffect(() => {
     try {
       const l = localStorage.getItem("lang");
-      const d = localStorage.getItem("dir");
       if (l) setLang(l);
-      else setLang("en");
-      if (d === "rtl" || d === "ltr") setDir(d as "rtl" | "ltr");
-      else setDir("ltr");
-    } catch {
-      setLang("en");
-      setDir("ltr");
-    }
+    } catch {}
   }, []);
+
+  useEffect(() => {
+    const rtlLangs = new Set(["ar", "he", "fa", "ur"]);
+    const newDir: "ltr" | "rtl" = rtlLangs.has(lang) ? "rtl" : "ltr";
+    setDir(newDir);
+    try {
+      localStorage.setItem("lang", lang);
+      localStorage.setItem("dir", newDir);
+    } catch {}
+  }, [lang]);
 
   useEffect(() => {
     document.documentElement.lang = lang;

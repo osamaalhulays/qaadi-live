@@ -8,12 +8,28 @@ import crypto from 'node:crypto';
 
 const root = process.cwd();
 
+async function ensureTheory(slug: string, v: string) {
+  const theoryDir = path.join(root, 'QaadiDB', `theory-${slug}`);
+  const canonDir = path.join(theoryDir, 'canonical', v);
+  await mkdir(canonDir, { recursive: true });
+  await writeFile(
+    path.join(theoryDir, 'registry.json'),
+    JSON.stringify({ slug, latest: v }),
+    'utf-8'
+  );
+  await writeFile(
+    path.join(canonDir, 'canonical.json'),
+    JSON.stringify({ slug, version: v }),
+    'utf-8'
+  );
+}
+
 test.before(async () => {
-  const srcDB = path.join(root, 'test', 'data', 'QaadiDB');
+  const srcDB = path.join(root, 'docs', 'examples', 'QaadiDB');
   const destDB = path.join(root, 'QaadiDB');
   await cp(srcDB, destDB, { recursive: true });
 
-  const srcVault = path.join(root, 'test', 'data', 'QaadiVault');
+  const srcVault = path.join(root, 'docs', 'examples', 'QaadiVault');
   const destVault = path.join(root, 'QaadiVault');
   await cp(srcVault, destVault, { recursive: true });
 });
@@ -42,6 +58,7 @@ function unzipStore(u8: Uint8Array): Record<string, Uint8Array> {
 }
 
 test('determinism and provenance non-empty', async () => {
+  await ensureTheory('demo', 'v1.0');
   const req = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
   const res = await GET(req);
   assert.strictEqual(res.status, 200);
@@ -63,6 +80,9 @@ test('reads snapshots manifest, filters by slug/version and uses v6 archive name
     { slug: 'other', v: 'v1.0', timestamp: '20240101T000000', path: 'file', sha256: 'ddd' }
   ];
   await writeFile(path.join(dir, 'manifest.json'), JSON.stringify(manifest), 'utf-8');
+
+  await ensureTheory('demo', 'v1.0');
+  await ensureTheory('demo', 'v2.0');
 
   const req1 = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
   const res1 = await GET(req1);
@@ -118,6 +138,8 @@ test('includes latest snapshot files in archive', async () => {
     }
   ];
   await writeFile(path.join(root, 'public', 'snapshots', 'manifest.json'), JSON.stringify(manifest), 'utf-8');
+
+  await ensureTheory('demo', 'v1.0');
 
   const req = new NextRequest('http://localhost/api/download/zip?slug=demo&v=v1.0');
   const res = await GET(req);
