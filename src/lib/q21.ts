@@ -42,10 +42,12 @@ const DOCUMENTED_QN21_CRITERIA: QN21Spec[] = [
   { code: "societal", type: "external", weight: 5, description: "Societal relevance" },
 ];
 
-export const QN21_CRITERIA: QN21Criterion[] = DOCUMENTED_QN21_CRITERIA.map((c) => ({
-  ...c,
-  patterns: [new RegExp(c.code, "i")],
-}));
+export const QN21_CRITERIA: QN21Criterion[] = DOCUMENTED_QN21_CRITERIA.map((c) => {
+  const base = c.code.endsWith("s") ? c.code.slice(0, -1) : c.code;
+  // Match the code in singular or plural form, ignoring case.
+  const pattern = new RegExp(`\\b${base}s?\\b`, "i");
+  return { ...c, patterns: [pattern] };
+});
 
 export interface QN21Result extends QN21Criterion {
   /** Score obtained for the criterion. */

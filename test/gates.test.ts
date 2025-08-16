@@ -1,4 +1,3 @@
-import test from 'node:test';
 import assert from 'node:assert';
 import { runGates } from '../src/lib/workflow';
 

@@ -38,12 +38,12 @@ export async function runLead(cards: string[]) {
     ([item, sources]) => `- ${item} (${Array.from(sources).join(", ")})`
   );
 
-  const content = [
-    "# Comparison",
+  const bestBlock = [
     "## Best Items",
     bestLines.length ? bestLines.join("\n") : "- None",
-    ...sections,
-  ].join("\n\n");
+  ].join("\n");
+
+  const content = ["# Comparison", bestBlock, ...sections].join("\n\n");
 
   const filePath = path.join(dir, "comparison.md");
   await mkdir(path.dirname(filePath), { recursive: true });
