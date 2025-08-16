@@ -9,13 +9,11 @@ const sampleSecretary = {
   summary: 'Project overview',
   keywords: ['analysis', 'physics'],
   tokens: ['c: speed of light', 'm: mass'],
-  equations: ['E=mc^2', 'a^2 + b^2 = c^2'],
   boundary: ['t=0', 'x->∞'],
   post_analysis: 'dimensionless',
   risks: ['oversimplification'],
   predictions: ['growth'],
   testability: 'lab experiments',
-  references: ['Einstein 1905', 'Pythagoras'],
 };
 
 const samplePlan = [
@@ -44,10 +42,6 @@ test('runSecretary generates a complete secretary.md', async () => {
     );
     assert.match(
       fileContent,
-      /## Equations\n- E=mc\^2\n- a\^2 \+ b\^2 = c\^2/
-    );
-    assert.match(
-      fileContent,
       /## Boundary Conditions\n- t=0\n- x->∞/
     );
     assert.match(fileContent, /## Post-Analysis\ndimensionless/);
@@ -60,10 +54,6 @@ test('runSecretary generates a complete secretary.md', async () => {
       /## Predictions\n- growth/
     );
     assert.match(fileContent, /## Testability\nlab experiments/);
-    assert.match(
-      fileContent,
-      /## References\n- Einstein 1905\n- Pythagoras/
-    );
     assert.match(fileContent, /## Issues\n\s*$/);
   } finally {
     process.chdir(prev);
@@ -92,6 +82,22 @@ test('runResearchSecretary writes plan files with QN-21 table', async () => {
       fileContent,
       /\| تحسين الواجهة \| P2 \| \[QN-21-8\]\(https:\/\/example.com\/qn-21#8\) \|/
     );
+  } finally {
+    process.chdir(prev);
+  }
+});
+
+test('runResearchSecretary outputs rows with priority and QN-21 links', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
+  const prev = process.cwd();
+  process.chdir(dir);
+  try {
+    const { content } = await runResearchSecretary('beta', samplePlan);
+    const lines = content.trim().split('\n');
+    const rowPattern = /^\| .+ \| P[012] \| \[QN-21-\d+\]\(https:\/\/example.com\/qn-21#\d+\) \|$/;
+    for (const line of lines.slice(4)) {
+      assert.match(line, rowPattern);
+    }
   } finally {
     process.chdir(prev);
   }
