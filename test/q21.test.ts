@@ -66,3 +66,20 @@ test('summarizeQN21 computes totals, max, percentage, and classification', () =>
   assert.strictEqual(summary.classification, 'needs_improvement');
 });
 
+test('evaluateQN21 handles regex with global flag consistently', () => {
+  const criteria = [
+    {
+      code: 'global',
+      type: 'internal' as const,
+      weight: 2,
+      description: 'Global regex pattern',
+      keywords: [/analysis/g],
+    },
+  ];
+  const text = 'analysis';
+  const first = evaluateQN21(text, criteria);
+  const second = evaluateQN21(text, criteria);
+  assert.strictEqual(first[0].score, 2);
+  assert.strictEqual(second[0].score, 2);
+});
+

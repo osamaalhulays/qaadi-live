@@ -7,8 +7,8 @@ export interface QN21Criterion {
   weight: number;
   /** Human readable description of the criterion. */
   description: string;
-  /** Keywords that indicate the presence of the criterion in text. */
-  keywords: string[];
+  /** Keywords or regex patterns that indicate the presence of the criterion in text. */
+  keywords: (string | RegExp)[];
 }
 
 export const QN21_CRITERIA: QN21Criterion[] = [
@@ -175,10 +175,20 @@ export interface QN21Result extends QN21Criterion {
  * within the provided text (case insensitive) the full weight is awarded.
  * Otherwise the score is zero. The `gap` field expresses the missing weight.
  */
-export function evaluateQN21(text: string): QN21Result[] {
+export function evaluateQN21(
+  text: string,
+  criteria: QN21Criterion[] = QN21_CRITERIA
+): QN21Result[] {
   const lower = text.toLowerCase();
-  return QN21_CRITERIA.map((c) => {
-    const score = c.keywords.some((k) => lower.includes(k.toLowerCase()))
+  return criteria.map((c) => {
+    const score = c.keywords.some((k) => {
+      if (typeof k === "string") {
+        return lower.includes(k.toLowerCase());
+      }
+      // Use a fresh regex instance to avoid statefulness from the global flag.
+      const p = RegExp(k.source, k.flags.replace("g", ""));
+      return p.test(text);
+    })
       ? c.weight
       : 0;
     return { ...c, score, gap: c.weight - score };
