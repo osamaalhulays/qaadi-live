@@ -85,7 +85,11 @@ export function evaluateQN21(text: string): QN21Result[] {
     }, 0);
     const ratio = c.patterns.length === 0 ? 0 : matches / c.patterns.length;
     const score = c.weight * ratio;
-    return { ...c, score, gap: c.weight - score };
+    const gap = Math.max(0, c.weight - score);
+    console.log(
+      `evaluateQN21: ${c.code} matches=${matches}, score=${score}, gap=${gap}`
+    );
+    return { ...c, score, gap };
   });
 }
 
