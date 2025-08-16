@@ -1,4 +1,3 @@
-import test from 'node:test';
 import assert from 'node:assert';
 import { GET } from '../src/app/api/download/zip/route.ts';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
