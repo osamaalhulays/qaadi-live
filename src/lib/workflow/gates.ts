@@ -3,14 +3,14 @@ export interface GateResult {
   missing: string[];
 }
 
-// Required fields for a complete secretary report
-// These map directly to sections in templates/secretary.md
+// Required fields for a complete secretary report.
+// The workflow must not proceed to the judge step until all of these
+// sections are provided.
 const REQUIRED_FIELDS = [
   "summary",
-  "keywords",
   "equations",
-  "boundary",
   "references",
+  "boundary",
 ];
 
 // Check mandatory fields inside secretary report and return missing ones

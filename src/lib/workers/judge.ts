@@ -7,6 +7,7 @@ interface ChartCriterion {
   id: number;
   name: string;
   score: number;
+  gap: number;
   type?: "internal" | "external";
   covered?: boolean;
 }
@@ -28,6 +29,8 @@ export async function runJudge(text?: string) {
   const qn21Results = evaluateQN21(content);
   const custom = await loadCriteria();
   const customResults = evaluateCriteria(content, custom);
+  console.log("runJudge: qn21Results", qn21Results);
+  console.log("runJudge: customResults", customResults);
 
   const combined: ChartCriterion[] = [];
   qn21Results.forEach((c, i) => {
@@ -35,6 +38,7 @@ export async function runJudge(text?: string) {
       id: i + 1,
       name: c.description,
       score: c.score,
+      gap: c.gap,
       type: c.type,
       covered: c.score === c.weight,
     });
@@ -44,9 +48,12 @@ export async function runJudge(text?: string) {
       id: qn21Results.length + i + 1,
       name: c.description,
       score: c.score,
+      gap: c.gap,
       covered: c.score === c.weight,
     });
   });
+
+  console.log("runJudge: combined criteria", combined);
 
   const total = [...qn21Results, ...customResults].reduce((s, c) => s + c.score, 0);
   const max = [...qn21Results, ...customResults].reduce((s, c) => s + c.weight, 0);
@@ -54,11 +61,16 @@ export async function runJudge(text?: string) {
   let classification: "accepted" | "needs_improvement" | "weak" = "weak";
   if (percentage >= 80) classification = "accepted";
   else if (percentage >= 60) classification = "needs_improvement";
+  const gaps = combined
+    .filter((c) => c.gap > 0)
+    .map((c) => ({ id: c.id, name: c.name, gap: c.gap }));
 
   const result = {
     verdict: "approved",
     criteria: combined,
+    score: { total, max, percentage },
     percentage,
+    gaps,
     classification,
   };
 
