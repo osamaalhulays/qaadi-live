@@ -9,6 +9,8 @@ export interface QN21Criterion {
   description: string;
   /** Keywords that indicate the presence of the criterion in text. */
   keywords: string[];
+  /** Optional regex patterns that act as additional indicators. */
+  patterns?: RegExp[];
 }
 
 export const QN21_CRITERIA: QN21Criterion[] = [
@@ -18,6 +20,7 @@ export const QN21_CRITERIA: QN21Criterion[] = [
     weight: 8,
     description: "Equation accuracy",
     keywords: ["=", "equation", "boundary condition"],
+    patterns: [/\b\w+\s*=\s*[-+*/\w\d]+/],
   },
   {
     code: "rigor",
@@ -81,6 +84,7 @@ export const QN21_CRITERIA: QN21Criterion[] = [
     weight: 4,
     description: "Validation",
     keywords: ["validate", "validation", "comparison"],
+    patterns: [/\[[0-9]+\]/],
   },
   {
     code: "conservation",
@@ -171,16 +175,23 @@ export interface QN21Result extends QN21Criterion {
 /**
  * Evaluate text against the QN21 criteria.
  *
- * The evaluation is keyword based: if any keyword for a criterion appears
- * within the provided text (case insensitive) the full weight is awarded.
- * Otherwise the score is zero. The `gap` field expresses the missing weight.
+ * Each criterion may define several indicators (keywords and regex patterns).
+ * The score awarded is proportional to the fraction of indicators present in
+ * the supplied text. For example, if a criterion defines three keywords and one
+ * pattern and only two of them are detected, the criterion receives 50% of its
+ * weight. The `gap` field expresses the remaining points to reach the full
+ * weight.
  */
 export function evaluateQN21(text: string): QN21Result[] {
   const lower = text.toLowerCase();
   return QN21_CRITERIA.map((c) => {
-    const score = c.keywords.some((k) => lower.includes(k.toLowerCase()))
-      ? c.weight
-      : 0;
+    const keywordMatches = c.keywords.filter((k) =>
+      lower.includes(k.toLowerCase())
+    ).length;
+    const patternMatches = (c.patterns ?? []).filter((p) => p.test(text)).length;
+    const indicators = c.keywords.length + (c.patterns?.length ?? 0);
+    const matched = keywordMatches + patternMatches;
+    const score = indicators === 0 ? 0 : (matched / indicators) * c.weight;
     return { ...c, score, gap: c.weight - score };
   });
 }
