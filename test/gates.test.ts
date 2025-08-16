@@ -4,8 +4,8 @@ import { runGates } from '../src/lib/workflow';
 
 test('runGates detects multiple missing fields', () => {
   const result = runGates({ secretary: { audit: { summary: 'A', equations: ['E=mc^2'] } } });
-  assert.strictEqual(result.ready_percent, 40);
-  assert.deepStrictEqual(result.missing, ['keywords', 'boundary', 'references']);
+  assert.strictEqual(result.ready_percent, 50);
+  assert.deepStrictEqual(result.missing, ['boundary', 'references']);
 });
 
 test('runGates passes when all required fields are present', () => {
@@ -13,7 +13,6 @@ test('runGates passes when all required fields are present', () => {
     secretary: {
       audit: {
         summary: 'A',
-        keywords: ['physics'],
         equations: ['E=mc^2'],
         boundary: ['t=0'],
         references: ['Ref']

@@ -5,9 +5,10 @@ export interface GateResult {
 
 // Required fields for a complete secretary report
 // These map directly to sections in templates/secretary.md
+// Only when all of these fields are present should the workflow
+// proceed to the judge step.
 const REQUIRED_FIELDS = [
   "summary",
-  "keywords",
   "equations",
   "boundary",
   "references",
