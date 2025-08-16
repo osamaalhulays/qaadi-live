@@ -7,6 +7,7 @@ const createJestConfig = nextJest({
 /** @type {import('jest').Config} */
 const config = {
   testEnvironment: 'node',
+  setupFiles: ['<rootDir>/test/setup.ts'],
   transform: {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',
@@ -19,9 +20,7 @@ const config = {
     ],
   },
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
-  testMatch: [
-    '**/test/(q21|judge|customCriteria|evaluateCriteriaPartial|health).test.ts',
-  ],
+  testMatch: ['**/test/**/*.test.ts'],
 };
 
 export default createJestConfig(config);

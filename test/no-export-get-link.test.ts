@@ -1,12 +1,13 @@
 /** @jest-environment jsdom */
 
-import test from 'node:test';
+import { test } from '@jest/globals';
 import assert from 'node:assert';
-import * as React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import Editor from '../src/components/Editor';
 
-test('editor has no direct GET export link', () => {
+test('editor has no direct GET export link', async () => {
+  const React = await import('react');
+  const { renderToStaticMarkup } = await import('react-dom/server');
+  const Editor = (await import('../src/components/Editor')).default;
+
   const markup = renderToStaticMarkup(React.createElement(Editor));
   assert.doesNotMatch(markup, /<a[^>]+href="\/api\/export"/);
 });
