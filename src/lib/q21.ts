@@ -41,10 +41,21 @@ const DOCUMENTED_QN21_CRITERIA: QN21Spec[] = [
   { code: "policy", type: "external", weight: 5, description: "Policy compliance" },
   { code: "societal", type: "external", weight: 5, description: "Societal relevance" },
 ];
+// Explicit pattern map allowing multiple indicators per criterion. The test
+// suite only relies on a subset of these, but the fallback keeps previous
+// behaviour for untouched criteria.
+const PATTERN_MAP: Record<string, RegExp[]> = {
+  equations: [/\bequation\b/i, /\bequations\b/i, /\bequations?\b/i],
+  rigor: [/\brigour\b/i, /\brigor\b/i, /\brigor(?:ous)?\b/i],
+  ethics: [/\bethic\b/i, /\bethics\b/i, /\bethical\b/i],
+  calibration: [/\bcalibration\b/i, /\bcalibrate\b/i, /\bcalibrated\b/i],
+  reproducibility: [/\breproducibility\b/i, /\breproducible\b/i, /\breproduce\b/i],
+  engagement: [/\bcommunity\b/i, /\bengagement\b/i, /\boutreach\b/i],
+};
 
 export const QN21_CRITERIA: QN21Criterion[] = DOCUMENTED_QN21_CRITERIA.map((c) => ({
   ...c,
-  patterns: [new RegExp(c.code, "i")],
+  patterns: PATTERN_MAP[c.code] ?? [new RegExp(c.code, "i")],
 }));
 
 export interface QN21Result extends QN21Criterion {
@@ -63,10 +74,14 @@ export interface QN21Result extends QN21Criterion {
  * present. The `gap` field expresses the missing weight.
  */
 export function evaluateQN21(text: string): QN21Result[] {
+  const sentences = text.split(/[.!?]/).map((s) => s.trim());
   return QN21_CRITERIA.map((c) => {
     const matches = c.patterns.reduce((count, p) => {
       const k = new RegExp(p.source, p.flags.replace(/[gy]/g, ""));
-      return k.test(text) ? count + 1 : count;
+      const found = sentences.some(
+        (s) => k.test(s) && !/\b(no|not|without)\b/i.test(s)
+      );
+      return found ? count + 1 : count;
     }, 0);
     const ratio = c.patterns.length === 0 ? 0 : matches / c.patterns.length;
     const score = c.weight * ratio;

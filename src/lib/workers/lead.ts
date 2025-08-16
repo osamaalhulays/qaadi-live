@@ -6,8 +6,8 @@ import path from "path";
  * comprehensive comparison document. Items with priority P0 or P1 are
  * considered "best" and are highlighted at the beginning of the file.
  */
-export async function runLead(cards: string[]) {
-  const dir = path.join(process.cwd(), "paper");
+export async function runLead(cards: string[], root = process.cwd()) {
+  const dir = path.join(root, "paper");
   const sections: string[] = [];
   const bestMap = new Map<string, Set<string>>(); // item -> sources
 
@@ -38,12 +38,13 @@ export async function runLead(cards: string[]) {
     ([item, sources]) => `- ${item} (${Array.from(sources).join(", ")})`
   );
 
-  const content = [
+  const header = [
     "# Comparison",
+    "",
     "## Best Items",
     bestLines.length ? bestLines.join("\n") : "- None",
-    ...sections,
-  ].join("\n\n");
+  ].join("\n");
+  const content = [header, ...sections].join("\n\n");
 
   const filePath = path.join(dir, "comparison.md");
   await mkdir(path.dirname(filePath), { recursive: true });
