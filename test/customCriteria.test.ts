@@ -1,4 +1,4 @@
-import assert from 'node:assert';
+import { test, expect } from '@jest/globals';
 import {
   loadCriteria,
   addCriterion,
@@ -19,17 +19,17 @@ test('CRUD and evaluation for custom criteria', async () => {
   let criteria = await loadCriteria();
   let result = evaluateCriteria('foo', criteria);
   let crit = result.find((c) => c.id === 'TST');
-  assert.ok(crit);
-  assert.strictEqual(crit?.score, 2);
+  expect(crit).toBeTruthy();
+  expect(crit?.score).toBe(2);
 
   await updateCriterion('TST', { enabled: false });
   criteria = await loadCriteria();
   result = evaluateCriteria('foo', criteria);
   crit = result.find((c) => c.id === 'TST');
-  assert.ok(crit);
-  assert.strictEqual(crit?.score, 0);
+  expect(crit).toBeTruthy();
+  expect(crit?.score).toBe(0);
 
   await deleteCriterion('TST');
   const end = await loadCriteria();
-  assert.deepStrictEqual(end, start);
+  expect(end).toEqual(start);
 });

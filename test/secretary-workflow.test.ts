@@ -1,5 +1,4 @@
-import test from 'node:test';
-import assert from 'node:assert';
+import { test, expect } from '@jest/globals';
 import { mkdtemp, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
@@ -25,20 +24,17 @@ test('runSecretary generates a complete secretary.md', async () => {
     const content = await runSecretary(sampleSecretary);
     const filePath = path.join(dir, 'paper', 'secretary.md');
     const fileContent = await readFile(filePath, 'utf8');
-    assert.strictEqual(fileContent, content);
-    assert.match(fileContent, /## Summary\nProject overview/);
-    assert.match(
-      fileContent,
-      /## Conditions\n- All prerequisites must be met\n- Environment ready/
-    );
-    assert.match(
-      fileContent,
-      /## Equations\n- E=mc\^2\n- a\^2 \+ b\^2 = c\^2/
-    );
-    assert.match(
-      fileContent,
-      /## References\n- Einstein 1905\n- Pythagoras/
-    );
+    expect(fileContent).toBe(content);
+    expect(fileContent).toMatch(/## Summary\nProject overview/);
+    expect(
+      fileContent
+    ).toMatch(/## Conditions\n- All prerequisites must be met\n- Environment ready/);
+    expect(
+      fileContent
+    ).toMatch(/## Equations\n- E=mc\^2\n- a\^2 \+ b\^2 = c\^2/);
+    expect(
+      fileContent
+    ).toMatch(/## References\n- Einstein 1905\n- Pythagoras/);
   } finally {
     process.chdir(prev);
   }
@@ -52,20 +48,13 @@ test('runResearchSecretary writes plan files with QN-21 table', async () => {
     const { name, content } = await runResearchSecretary('alpha', samplePlan);
     const filePath = path.join(dir, 'paper', `plan-${name}.md`);
     const fileContent = await readFile(filePath, 'utf8');
-    assert.strictEqual(fileContent, content);
-    assert.match(fileContent, /# Plan for alpha/);
-    assert.match(
-      fileContent,
-      /\| Item \| Priority \| QN-21 Criterion \|\n\|------\|----------\|-----------------\|/
-    );
-    assert.match(
-      fileContent,
-      /\| استكمال الاشتقاق \| P0 \| QN-21-1 \|/
-    );
-    assert.match(
-      fileContent,
-      /\| تحسين الواجهة \| P2 \| QN-21-8 \|/
-    );
+    expect(fileContent).toBe(content);
+    expect(fileContent).toMatch(/# Plan for alpha/);
+    expect(
+      fileContent
+    ).toMatch(/\| Item \| Priority \| QN-21 Criterion \|\n\|------\|----------\|-----------------\|/);
+    expect(fileContent).toMatch(/\| استكمال الاشتقاق \| P0 \| QN-21-1 \|/);
+    expect(fileContent).toMatch(/\| تحسين الواجهة \| P2 \| QN-21-8 \|/);
   } finally {
     process.chdir(prev);
   }

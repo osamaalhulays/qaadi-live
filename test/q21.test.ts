@@ -1,4 +1,4 @@
-import assert from 'node:assert';
+import { test, expect } from '@jest/globals';
 
 import { evaluateQN21, QN21_CRITERIA, summarizeQN21 } from '../src/lib/q21';
 
@@ -7,27 +7,27 @@ test('evaluateQN21 returns scores and gaps based on keywords', () => {
     'The equation F = ma was derived with rigorous analysis and ethical oversight.';
   const result = evaluateQN21(text);
 
-  assert.strictEqual(result.length, QN21_CRITERIA.length);
+  expect(result.length).toBe(QN21_CRITERIA.length);
 
   const equations = result.find((r) => r.code === 'equations');
-  assert.ok(equations);
-  assert.strictEqual(equations?.score, 8);
-  assert.strictEqual(equations?.gap, 0);
+  expect(equations).toBeTruthy();
+  expect(equations?.score).toBe(8);
+  expect(equations?.gap).toBe(0);
 
   const rigor = result.find((r) => r.code === 'rigor');
-  assert.ok(rigor);
-  assert.strictEqual(rigor?.score, 6);
-  assert.strictEqual(rigor?.gap, 0);
+  expect(rigor).toBeTruthy();
+  expect(rigor?.score).toBe(6);
+  expect(rigor?.gap).toBe(0);
 
   const ethics = result.find((r) => r.code === 'ethics');
-  assert.ok(ethics);
-  assert.strictEqual(ethics?.score, 8);
-  assert.strictEqual(ethics?.gap, 0);
+  expect(ethics).toBeTruthy();
+  expect(ethics?.score).toBe(8);
+  expect(ethics?.gap).toBe(0);
 
   const safety = result.find((r) => r.code === 'safety');
-  assert.ok(safety);
-  assert.strictEqual(safety?.score, 0);
-  assert.strictEqual(safety?.gap, 5);
+  expect(safety).toBeTruthy();
+  expect(safety?.score).toBe(0);
+  expect(safety?.gap).toBe(5);
 });
 
 test('evaluateQN21 handles partial criteria in text', () => {
@@ -36,16 +36,16 @@ test('evaluateQN21 handles partial criteria in text', () => {
   const result = evaluateQN21(text);
 
   const calibration = result.find((r) => r.code === 'calibration');
-  assert.ok(calibration);
-  assert.strictEqual(calibration?.score, 3);
+  expect(calibration).toBeTruthy();
+  expect(calibration?.score).toBe(3);
 
   const reproducibility = result.find((r) => r.code === 'reproducibility');
-  assert.ok(reproducibility);
-  assert.strictEqual(reproducibility?.score, 0);
+  expect(reproducibility).toBeTruthy();
+  expect(reproducibility?.score).toBe(0);
 
   const engagement = result.find((r) => r.code === 'engagement');
-  assert.ok(engagement);
-  assert.strictEqual(engagement?.score, 5);
+  expect(engagement).toBeTruthy();
+  expect(engagement?.score).toBe(5);
 });
 
 test('summarizeQN21 computes percentage and classification', () => {
@@ -54,9 +54,9 @@ test('summarizeQN21 computes percentage and classification', () => {
     .join(' ');
   const result = evaluateQN21(text);
   const summary = summarizeQN21(result);
-  assert.strictEqual(summary.total, 17);
-  assert.strictEqual(summary.max, QN21_CRITERIA.length);
-  assert.ok(summary.percentage > 80);
-  assert.strictEqual(summary.classification, 'accepted');
+  expect(summary.total).toBe(17);
+  expect(summary.max).toBe(QN21_CRITERIA.length);
+  expect(summary.percentage > 80).toBeTruthy();
+  expect(summary.classification).toBe('accepted');
 });
 
