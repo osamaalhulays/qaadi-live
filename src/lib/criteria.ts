@@ -1,4 +1,4 @@
-import { readFile, writeFile, mkdir, readdir } from "fs/promises";
+import { readFile, writeFile, mkdir } from "fs/promises";
 import path from "path";
 
 export interface Criterion {
@@ -25,54 +25,31 @@ export interface CriterionResult extends Criterion {
   gap: number;
 }
 
-function getPaths() {
-  const base = path.join(process.cwd(), "QaadiVault", "criteria");
-  return {
-    base,
-    latest: path.join(base, "latest.json"),
-    archive: path.join(base, "archive"),
-  };
-}
+const BASE = path.join(process.cwd(), "QaadiVault", "criteria");
+const LATEST = path.join(BASE, "latest.json");
+const ARCHIVE = path.join(BASE, "archive");
 
 async function ensureDirs() {
-  const { archive } = getPaths();
-  await mkdir(archive, { recursive: true });
+  await mkdir(ARCHIVE, { recursive: true });
 }
 
-const DEFAULT_CRITERIA: Criterion[] = [
-  {
-    id: "SAFE",
-    description: "Safety compliance",
-    weight: 5,
-    keywords: ["safety", "compliance"],
-    enabled: true,
-    category: "internal",
-    version: 1,
-  },
-];
-
 export async function loadCriteria(): Promise<Criterion[]> {
-  const { latest } = getPaths();
   try {
-    const raw = await readFile(latest, "utf-8");
-    const parsed = JSON.parse(raw) as Criterion[];
-    const ids = new Set(parsed.map((c) => c.id));
-    return [...parsed, ...DEFAULT_CRITERIA.filter((c) => !ids.has(c.id))];
+    const raw = await readFile(LATEST, "utf-8");
+    return JSON.parse(raw) as Criterion[];
   } catch {
-    return [...DEFAULT_CRITERIA];
+    return [];
   }
 }
 
 async function archive(criteria: Criterion[]) {
-  const { archive } = getPaths();
   const ts = new Date().toISOString().replace(/[-:.TZ]/g, "").slice(0, 14);
-  await writeFile(path.join(archive, `${ts}.json`), JSON.stringify(criteria, null, 2));
+  await writeFile(path.join(ARCHIVE, `${ts}.json`), JSON.stringify(criteria, null, 2));
 }
 
 export async function saveCriteria(criteria: Criterion[]): Promise<void> {
-  const { latest } = getPaths();
   await ensureDirs();
-  await writeFile(latest, JSON.stringify(criteria, null, 2));
+  await writeFile(LATEST, JSON.stringify(criteria, null, 2));
   await archive(criteria);
 }
 
@@ -101,26 +78,6 @@ export async function deleteCriterion(id: string): Promise<Criterion[]> {
   const next = criteria.filter((c) => c.id !== id);
   await saveCriteria(next);
   return next;
-}
-
-export async function listArchivedCriteria(): Promise<string[]> {
-  await ensureDirs();
-  const { archive } = getPaths();
-  const files = await readdir(archive);
-  return files
-    .filter((f) => f.endsWith(".json"))
-    .map((f) => f.replace(/\.json$/i, ""))
-    .sort();
-}
-
-export async function restoreCriteria(timestamp: string): Promise<Criterion[]> {
-  await ensureDirs();
-  const { archive } = getPaths();
-  const file = path.join(archive, `${timestamp.replace(/\.json$/i, "")}.json`);
-  const raw = await readFile(file, "utf-8");
-  const criteria = JSON.parse(raw) as Criterion[];
-  await saveCriteria(criteria);
-  return criteria;
 }
 
 export function evaluateCriteria(

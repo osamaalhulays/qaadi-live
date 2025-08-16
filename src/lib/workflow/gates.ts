@@ -3,17 +3,6 @@ export interface GateResult {
   missing: string[];
 }
 
-export interface SecretaryReport {
-  summary?: string;
-  keywords?: string[];
-  tokens?: string[];
-  boundary?: string[];
-  post_analysis?: string;
-  risks?: string[];
-  predictions?: string[];
-  testability?: string;
-}
-
 // Required fields for a complete secretary report
 // These map directly to sections in templates/secretary.md
 const REQUIRED_FIELDS = [
@@ -28,8 +17,8 @@ const REQUIRED_FIELDS = [
 ];
 
 // Check mandatory fields inside secretary report and return missing ones
-export function runGates(data: { secretary?: { audit?: SecretaryReport } }): GateResult {
-  const report = data.secretary?.audit;
+export function runGates(data: any): GateResult {
+  const report = data?.secretary?.audit ?? data;
   const missing: string[] = [];
 
   if (!report || typeof report !== "object") {
@@ -37,7 +26,7 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
   }
 
   for (const field of REQUIRED_FIELDS) {
-    const value = report[field as keyof SecretaryReport];
+    const value = (report as any)[field];
     const isMissing =
       value === undefined ||
       value === null ||

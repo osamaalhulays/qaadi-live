@@ -45,27 +45,22 @@ const DOCUMENTED_QN21_CRITERIA: QN21Spec[] = [
 // suite only relies on a subset of these, but the fallback keeps previous
 // behaviour for untouched criteria.
 const PATTERN_MAP: Record<string, RegExp[]> = {
-  // singular/plural forms consolidated with optional groups
-  equations: [/\bequations?\b/i],
-  // support British and American spellings and adjective form
-  rigor: [/\brigou?r\b/i, /\brigou?rous\b/i],
-  // handle ethic, ethics, ethical
-  ethics: [/\bethic(?:s|al)?\b/i],
+  equations: [/\bequation\b/i, /\bequations\b/i, /\bequations?\b/i],
+  rigor: [/\brigour\b/i, /\brigor\b/i, /\brigor(?:ous)?\b/i],
+  ethics: [/\bethic\b/i, /\bethics\b/i, /\bethical\b/i],
   reproducibility: [/\breproducibility\b/i, /\breproducible\b/i, /\breproduce\b/i],
-  // noun and verb forms without duplication
-  predictions: [/\bpredictions?\b/i, /\bpredict\b/i],
-  diagrams: [/\bdiagrams?\b/i, /\btable\b/i],
+  predictions: [/\bprediction\b/i, /\bpredictions\b/i, /\bpredict\b/i],
+  diagrams: [/\bdiagram\b/i, /\bdiagrams\b/i, /\btable\b/i],
   dimensional: [/\bdimensional\b/i, /\bunits?\b/i, /\bsi\b/i],
   symmetry: [/\bsymmetry\b/i, /\bnoether\b/i, /\bsymmetric\b/i],
   conservation: [/\bconservation\b/i, /\bconserve\b/i, /\bpreservation\b/i],
-  boundary: [/\bboundar(?:y|ies)\b/i, /initial\s+conditions?/i],
+  boundary: [/\bboundary\b/i, /\bboundaries\b/i, /initial\s+conditions?/i],
   consistency: [/\bconsistency\b/i, /\bconsistent\b/i, /\bcoherence\b/i],
   scope: [/\bscope\b/i, /\brange\b/i, /\bapplicability\b/i],
   novelty: [/\bnovel\b/i, /\binnovation\b/i, /\boriginal\b/i],
   falsifiability: [/\bfalsifiabl\w*/i, /\bfalsify\b/i, /\brefut\w*/i],
   methodology: [/\bmethodolog\w*/i, /\bprotocol\b/i, /\bprocedure\b/i],
-  // single pattern covers define/definition/defining
-  definitions: [/\bdefin\w*/i],
+  definitions: [/\bdefinition\b/i, /\bdefine\b/i, /\bdefin\w*/i],
   terminology: [/\bterminology\b/i, /\bterms?\b/i, /\bvocabulary\b/i],
   clarity: [/\bclarity\b/i, /\bclear\b/i, /\btransparent\b/i],
   limitations: [/\blimitations?\b/i, /\brisk\b/i, /\bconstraint\b/i],

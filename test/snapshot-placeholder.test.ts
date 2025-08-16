@@ -1,4 +1,4 @@
-import { test } from '@jest/globals';
+import test from 'node:test';
 import assert from 'node:assert';
 import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';

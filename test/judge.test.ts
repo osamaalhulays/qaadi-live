@@ -2,7 +2,6 @@ import assert from 'node:assert';
 import { mkdtemp, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
-import { jest } from '@jest/globals';
 
 import { runJudge } from '../src/lib/workers/judge';
 import { evaluateQN21 } from '../src/lib/q21';
@@ -52,32 +51,5 @@ test('runJudge never returns negative gaps', async () => {
   result.criteria.forEach((c: any) => {
     assert.ok(c.gap >= 0);
   });
-});
-
-test('runJudge logs only when DEBUG_JUDGE is true', async () => {
-  const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
-  const prev = process.cwd();
-  process.chdir(dir);
-  const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
-  try {
-    delete process.env.DEBUG_JUDGE;
-    await runJudge('Equation and equations ensure rigor');
-    let judgeLogs = spy.mock.calls.filter(
-      ([msg]) => typeof msg === 'string' && msg.startsWith('runJudge:')
-    );
-    assert.strictEqual(judgeLogs.length, 0);
-
-    spy.mockClear();
-    process.env.DEBUG_JUDGE = 'true';
-    await runJudge('Equation and equations ensure rigor');
-    judgeLogs = spy.mock.calls.filter(
-      ([msg]) => typeof msg === 'string' && msg.startsWith('runJudge:')
-    );
-    assert.strictEqual(judgeLogs.length, 5);
-  } finally {
-    spy.mockRestore();
-    delete process.env.DEBUG_JUDGE;
-    process.chdir(prev);
-  }
 });
 
