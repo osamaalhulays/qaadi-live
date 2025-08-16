@@ -7,30 +7,158 @@ export interface QN21Criterion {
   weight: number;
   /** Human readable description of the criterion. */
   description: string;
+  /** Keywords that indicate the presence of the criterion in text. */
+  keywords: string[];
 }
 
 export const QN21_CRITERIA: QN21Criterion[] = [
-  { code: "Σ", type: "internal", weight: 8, description: "Equation accuracy" },
-  { code: "Δ", type: "internal", weight: 6, description: "Analytical rigor" },
-  { code: "∇", type: "internal", weight: 5, description: "Dimensional consistency" },
-  { code: "Λ", type: "internal", weight: 3, description: "Clarity of symbols" },
-  { code: "Τ", type: "internal", weight: 6, description: "Experimental design" },
-  { code: "Κ", type: "internal", weight: 3, description: "Calibration" },
-  { code: "Μ", type: "internal", weight: 4, description: "Measurement precision" },
-  { code: "Χ", type: "internal", weight: 4, description: "Data analysis" },
-  { code: "Ρ", type: "internal", weight: 5, description: "Reproducibility" },
-  { code: "Ν", type: "internal", weight: 4, description: "Validation" },
-  { code: "Ξ", type: "internal", weight: 3, description: "Conservation laws" },
-  { code: "Θ", type: "external", weight: 8, description: "Ethics" },
-  { code: "Φ", type: "external", weight: 5, description: "Safety compliance" },
-  { code: "Ψ", type: "external", weight: 5, description: "Environmental impact" },
-  { code: "Ω", type: "external", weight: 3, description: "Accessibility" },
-  { code: "Π", type: "external", weight: 3, description: "Data privacy" },
-  { code: "Γ", type: "external", weight: 4, description: "Interdisciplinary integration" },
-  { code: "Η", type: "external", weight: 6, description: "Public communication" },
-  { code: "Β", type: "external", weight: 5, description: "Community engagement" },
-  { code: "Υ", type: "external", weight: 5, description: "Policy compliance" },
-  { code: "Ζ", type: "external", weight: 5, description: "Societal relevance" },
+  {
+    code: "Σ",
+    type: "internal",
+    weight: 8,
+    description: "Equation accuracy",
+    keywords: ["=", "equation", "boundary condition"],
+  },
+  {
+    code: "Δ",
+    type: "internal",
+    weight: 6,
+    description: "Analytical rigor",
+    keywords: ["analysis", "derive", "boundary condition"],
+  },
+  {
+    code: "∇",
+    type: "internal",
+    weight: 5,
+    description: "Dimensional consistency",
+    keywords: ["dimension", "units", "dimensional"],
+  },
+  {
+    code: "Λ",
+    type: "internal",
+    weight: 3,
+    description: "Clarity of symbols",
+    keywords: ["symbol", "notation", "define"],
+  },
+  {
+    code: "Τ",
+    type: "internal",
+    weight: 6,
+    description: "Experimental design",
+    keywords: ["experiment", "setup", "procedure"],
+  },
+  {
+    code: "Κ",
+    type: "internal",
+    weight: 3,
+    description: "Calibration",
+    keywords: ["calibration", "calibrate", "standard"],
+  },
+  {
+    code: "Μ",
+    type: "internal",
+    weight: 4,
+    description: "Measurement precision",
+    keywords: ["precision", "accurate", "measurement"],
+  },
+  {
+    code: "Χ",
+    type: "internal",
+    weight: 4,
+    description: "Data analysis",
+    keywords: ["data analysis", "statistics", "statistical"],
+  },
+  {
+    code: "Ρ",
+    type: "internal",
+    weight: 5,
+    description: "Reproducibility",
+    keywords: ["reproduce", "replicate", "repeat"],
+  },
+  {
+    code: "Ν",
+    type: "internal",
+    weight: 4,
+    description: "Validation",
+    keywords: ["validate", "validation", "comparison"],
+  },
+  {
+    code: "Ξ",
+    type: "internal",
+    weight: 3,
+    description: "Conservation laws",
+    keywords: ["conservation", "law", "conserve"],
+  },
+  {
+    code: "Θ",
+    type: "external",
+    weight: 8,
+    description: "Ethics",
+    keywords: ["ethics", "ethical", "consent"],
+  },
+  {
+    code: "Φ",
+    type: "external",
+    weight: 5,
+    description: "Safety compliance",
+    keywords: ["safety", "safe", "compliance"],
+  },
+  {
+    code: "Ψ",
+    type: "external",
+    weight: 5,
+    description: "Environmental impact",
+    keywords: ["environment", "environmental", "impact"],
+  },
+  {
+    code: "Ω",
+    type: "external",
+    weight: 3,
+    description: "Accessibility",
+    keywords: ["accessibility", "accessible", "inclusive"],
+  },
+  {
+    code: "Π",
+    type: "external",
+    weight: 3,
+    description: "Data privacy",
+    keywords: ["privacy", "confidential", "data protection"],
+  },
+  {
+    code: "Γ",
+    type: "external",
+    weight: 4,
+    description: "Interdisciplinary integration",
+    keywords: ["interdisciplinary", "cross-disciplinary", "integration"],
+  },
+  {
+    code: "Η",
+    type: "external",
+    weight: 6,
+    description: "Public communication",
+    keywords: ["public", "communication", "outreach"],
+  },
+  {
+    code: "Β",
+    type: "external",
+    weight: 5,
+    description: "Community engagement",
+    keywords: ["community", "engagement", "stakeholder"],
+  },
+  {
+    code: "Υ",
+    type: "external",
+    weight: 5,
+    description: "Policy compliance",
+    keywords: ["policy", "regulation", "compliance"],
+  },
+  {
+    code: "Ζ",
+    type: "external",
+    weight: 5,
+    description: "Societal relevance",
+    keywords: ["societal", "society", "relevance"],
+  },
 ];
 
 export interface QN21Result extends QN21Criterion {
@@ -43,14 +171,16 @@ export interface QN21Result extends QN21Criterion {
 /**
  * Evaluate text against the QN21 criteria.
  *
- * The evaluation is keyword based: if a criterion code appears within the
- * provided text (case insensitive) the full weight is awarded. Otherwise the
- * score is zero. The `gap` field expresses the missing weight.
+ * The evaluation is keyword based: if any keyword for a criterion appears
+ * within the provided text (case insensitive) the full weight is awarded.
+ * Otherwise the score is zero. The `gap` field expresses the missing weight.
  */
 export function evaluateQN21(text: string): QN21Result[] {
   const lower = text.toLowerCase();
   return QN21_CRITERIA.map((c) => {
-    const score = lower.includes(c.code.toLowerCase()) ? c.weight : 0;
+    const score = c.keywords.some((k) => lower.includes(k.toLowerCase()))
+      ? c.weight
+      : 0;
     return { ...c, score, gap: c.weight - score };
   });
 }
