@@ -58,6 +58,7 @@ export async function runJudge(text?: string) {
   const result = {
     verdict: "approved",
     criteria: combined,
+    custom: customResults,
     percentage,
     classification,
   };

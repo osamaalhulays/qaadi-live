@@ -281,6 +281,7 @@ export default function Editor() {
         const c = await res.json();
         setCriteria(prev => [...prev, c]);
         setNewId(""); setNewDesc(""); setNewWeight(1); setNewKeywords("");
+        await refreshCriteriaList();
       }
     } catch {}
   }
@@ -297,6 +298,7 @@ export default function Editor() {
       if (res.ok) {
         const upd = await res.json();
         setCriteria(prev => prev.map(x => x.id === id ? upd : x));
+        await refreshCriteriaList();
       }
     } catch {}
   }
