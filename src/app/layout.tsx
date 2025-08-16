@@ -1,47 +1,15 @@
-"use client";
-
 import "./globals.css";
 import type { Metadata } from "next";
 import Script from "next/script";
-import { useEffect, useState } from "react";
+import LangDirProvider from "../components/LangDirProvider";
 
 export const metadata: Metadata = {
   title: "Qaadi Live",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
-  const [lang, setLang] = useState(
-    typeof navigator !== "undefined" ? navigator.language.split("-")[0] : ""
-  );
-  const [dir, setDir] = useState<"ltr" | "rtl" | "">(
-    typeof navigator !== "undefined"
-      ? navigator.language.startsWith("ar")
-        ? "rtl"
-        : "ltr"
-      : ""
-  );
-
-  useEffect(() => {
-    try {
-      const l = localStorage.getItem("lang");
-      const d = localStorage.getItem("dir");
-      if (l) setLang(l);
-      else setLang("en");
-      if (d === "rtl" || d === "ltr") setDir(d as "rtl" | "ltr");
-      else setDir("ltr");
-    } catch {
-      setLang("en");
-      setDir("ltr");
-    }
-  }, []);
-
-  useEffect(() => {
-    document.documentElement.lang = lang;
-    document.documentElement.dir = dir;
-  }, [lang, dir]);
-
   return (
-    <html lang={lang} dir={dir}>
+    <html lang="en" dir="ltr">
       <head>
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta name="theme-color" content="#0f1115" />
@@ -69,6 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body>
+        <LangDirProvider />
         <div className="wrapper">{children}</div>
       </body>
     </html>
