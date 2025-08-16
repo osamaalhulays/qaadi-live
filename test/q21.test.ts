@@ -2,7 +2,7 @@ import assert from 'node:assert';
 
 import { evaluateQN21, QN21_CRITERIA, summarizeQN21 } from '../src/lib/q21';
 
-test('evaluateQN21 returns full weight when code is present', () => {
+test('evaluateQN21 returns scores and gaps based on patterns', () => {
   const text = 'Equations ensure rigor and ethics in research.';
   const result = evaluateQN21(text);
 
@@ -10,55 +10,58 @@ test('evaluateQN21 returns full weight when code is present', () => {
 
   const equations = result.find((r) => r.code === 'equations');
   assert.ok(equations);
-  assert.strictEqual(equations?.score, 8);
-  assert.strictEqual(equations?.gap, 0);
+  assert.strictEqual(equations?.score, 5 * (2 / 3));
+  assert.strictEqual(equations?.gap, 5 - 5 * (2 / 3));
 
   const rigor = result.find((r) => r.code === 'rigor');
   assert.ok(rigor);
-  assert.strictEqual(rigor?.score, 6);
+  assert.strictEqual(rigor?.score, 5 * (2 / 3));
+  assert.strictEqual(rigor?.gap, 5 - 5 * (2 / 3));
 
   const ethics = result.find((r) => r.code === 'ethics');
   assert.ok(ethics);
-  assert.strictEqual(ethics?.score, 8);
+  assert.strictEqual(ethics?.score, 2 * (2 / 3));
+  assert.strictEqual(ethics?.gap, 2 - 2 * (2 / 3));
 
-  const safety = result.find((r) => r.code === 'safety');
-  assert.ok(safety);
-  assert.strictEqual(safety?.score, 0);
+  const references = result.find((r) => r.code === 'references');
+  assert.ok(references);
+  assert.strictEqual(references?.score, 0);
+  assert.strictEqual(references?.gap, 3);
 });
 
-test('evaluateQN21 is case-insensitive and matches singular forms', () => {
-  const text = 'The EQUATION was derived with RIGOR and ETHICS.';
+test('evaluateQN21 detects uppercase and mixed-case indicators', () => {
+  const text = 'The EQUATIONS were derived with RIGOR and ETHICS.';
   const result = evaluateQN21(text);
 
   const equations = result.find((r) => r.code === 'equations');
   assert.ok(equations);
-  assert.strictEqual(equations?.score, 8);
+  assert.strictEqual(equations?.score, 5 * (2 / 3));
 
   const rigor = result.find((r) => r.code === 'rigor');
   assert.ok(rigor);
-  assert.strictEqual(rigor?.score, 6);
+  assert.strictEqual(rigor?.score, 5 * (2 / 3));
 
   const ethics = result.find((r) => r.code === 'ethics');
   assert.ok(ethics);
-  assert.strictEqual(ethics?.score, 8);
+  assert.strictEqual(ethics?.score, 2 * (1 / 3));
 });
 
-test('evaluateQN21 handles missing criteria', () => {
+test('evaluateQN21 handles partial criteria in text', () => {
   const text =
-    'Calibration ensures precision, but reproducibility was not discussed. Community engagement was strong.';
+    'Predictions were promising, but reproducibility was not discussed. Diagrams were provided.';
   const result = evaluateQN21(text);
 
-  const calibration = result.find((r) => r.code === 'calibration');
-  assert.ok(calibration);
-  assert.strictEqual(calibration?.score, 3);
+  const predictions = result.find((r) => r.code === 'predictions');
+  assert.ok(predictions);
+  assert.strictEqual(predictions?.score, 6 * (2 / 3));
 
   const reproducibility = result.find((r) => r.code === 'reproducibility');
   assert.ok(reproducibility);
   assert.strictEqual(reproducibility?.score, 0);
 
-  const engagement = result.find((r) => r.code === 'engagement');
-  assert.ok(engagement);
-  assert.strictEqual(engagement?.score, 5);
+  const diagrams = result.find((r) => r.code === 'diagrams');
+  assert.ok(diagrams);
+  assert.strictEqual(diagrams?.score, 2 * (1 / 3));
 });
 
 test('summarizeQN21 computes totals, max, percentage, and classification', () => {
@@ -97,31 +100,31 @@ test('summarizeQN21 computes totals, max, percentage, and classification', () =>
   assert.strictEqual(summary.classification, 'needs_improvement');
 });
 
-test('QN21_CRITERIA exposes documented codes, types and weights', () => {
-  const expected = [
-    { code: 'equations', type: 'internal', weight: 8 },
-    { code: 'rigor', type: 'internal', weight: 6 },
-    { code: 'dimensional', type: 'internal', weight: 5 },
-    { code: 'notation', type: 'internal', weight: 3 },
-    { code: 'experiment', type: 'internal', weight: 6 },
-    { code: 'calibration', type: 'internal', weight: 3 },
-    { code: 'measurement', type: 'internal', weight: 4 },
-    { code: 'data', type: 'internal', weight: 4 },
-    { code: 'reproducibility', type: 'internal', weight: 5 },
-    { code: 'validation', type: 'internal', weight: 4 },
-    { code: 'conservation', type: 'internal', weight: 3 },
-    { code: 'ethics', type: 'external', weight: 8 },
-    { code: 'safety', type: 'external', weight: 5 },
-    { code: 'environmental', type: 'external', weight: 5 },
-    { code: 'accessibility', type: 'external', weight: 3 },
-    { code: 'privacy', type: 'external', weight: 3 },
-    { code: 'interdisciplinary', type: 'external', weight: 4 },
-    { code: 'communication', type: 'external', weight: 6 },
-    { code: 'engagement', type: 'external', weight: 5 },
-    { code: 'policy', type: 'external', weight: 5 },
-    { code: 'societal', type: 'external', weight: 5 },
-  ];
-  const actual = QN21_CRITERIA.map(({ code, type, weight }) => ({ code, type, weight }));
-  assert.deepStrictEqual(actual, expected);
-});
+  test('QN21_CRITERIA exposes documented codes, types and weights', () => {
+    const expected = [
+      { code: 'equations', type: 'internal', weight: 5 },
+      { code: 'rigor', type: 'internal', weight: 5 },
+      { code: 'dimensional', type: 'internal', weight: 5 },
+      { code: 'symmetry', type: 'internal', weight: 4 },
+      { code: 'conservation', type: 'internal', weight: 4 },
+      { code: 'boundary', type: 'internal', weight: 4 },
+      { code: 'consistency', type: 'internal', weight: 5 },
+      { code: 'scope', type: 'internal', weight: 4 },
+      { code: 'novelty', type: 'internal', weight: 4 },
+      { code: 'predictions', type: 'internal', weight: 6 },
+      { code: 'falsifiability', type: 'internal', weight: 6 },
+      { code: 'methodology', type: 'internal', weight: 4 },
+      { code: 'definitions', type: 'internal', weight: 3 },
+      { code: 'terminology', type: 'internal', weight: 3 },
+      { code: 'clarity', type: 'internal', weight: 3 },
+      { code: 'diagrams', type: 'internal', weight: 2 },
+      { code: 'limitations', type: 'internal', weight: 3 },
+      { code: 'expAlignment', type: 'external', weight: 6 },
+      { code: 'reproducibility', type: 'external', weight: 5 },
+      { code: 'references', type: 'external', weight: 3 },
+      { code: 'ethics', type: 'external', weight: 2 },
+    ];
+    const actual = QN21_CRITERIA.map(({ code, type, weight }) => ({ code, type, weight }));
+    assert.deepStrictEqual(actual, expected);
+  });
 

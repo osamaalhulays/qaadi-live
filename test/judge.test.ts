@@ -33,14 +33,14 @@ test('runJudge computes scores, gaps, and classification', async () => {
     assert.strictEqual(result.classification, expectedClassification);
     const safety = result.criteria.find((c: any) => c.name === 'Safety compliance');
     assert.ok(safety);
-    assert.strictEqual(safety.gap, 0);
+    assert.ok(safety.gap > 0);
 
     const raw = await readFile(path.join(dir, 'paper', 'judge.json'), 'utf8');
     const saved = JSON.parse(raw);
     assert.strictEqual(saved.classification, expectedClassification);
     assert.deepStrictEqual(saved.score, result.score);
     assert.ok(Array.isArray(saved.gaps));
-    assert.ok(!saved.gaps.some((g: any) => g.name === 'Safety compliance'));
+    assert.ok(saved.gaps.some((g: any) => g.name === 'Safety compliance'));
   } finally {
     process.chdir(prev);
   }
