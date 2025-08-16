@@ -102,3 +102,27 @@ test('summarizeQN21 computes totals, max, percentage, and classification', () =>
   assert.strictEqual(summary.classification, 'needs_improvement');
 });
 
+test('evaluateQN21 handles sticky regex patterns consistently', () => {
+  const stickyCriterion = {
+    code: 'sticky',
+    type: 'internal',
+    weight: 1,
+    description: '',
+    patterns: [/ma/y],
+  } as const;
+  QN21_CRITERIA.push(stickyCriterion as any);
+  try {
+    const text = 'ma';
+    const run = () => {
+      const result = evaluateQN21(text);
+      const sticky = result.find((r) => r.code === 'sticky');
+      assert.ok(sticky);
+      assert.strictEqual(sticky?.score, 1);
+    };
+    run();
+    run();
+  } finally {
+    QN21_CRITERIA.pop();
+  }
+});
+

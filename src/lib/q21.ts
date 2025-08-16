@@ -174,12 +174,12 @@ export interface QN21Result extends QN21Criterion {
  * The evaluation is pattern based: if any regular expression for a criterion
  * matches within the provided text the full weight is awarded. Otherwise the
  * score is zero. The `gap` field expresses the missing weight.
- */
+  */
 export function evaluateQN21(text: string): QN21Result[] {
   return QN21_CRITERIA.map((c) => {
     const score = c.patterns.some((p) => {
-      const k = new RegExp(p.source, p.flags.replace(/[gy]/g, ""));
-      return k.test(text);
+      p.lastIndex = 0;
+      return p.test(text);
     })
       ? c.weight
       : 0;
