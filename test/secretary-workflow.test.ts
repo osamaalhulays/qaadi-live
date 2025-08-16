@@ -86,11 +86,11 @@ test('runResearchSecretary writes plan files with QN-21 table', async () => {
     );
     assert.match(
       fileContent,
-      /\| استكمال الاشتقاق \| P0 \| QN-21-1 \|/
+      /\| استكمال الاشتقاق \| P0 \| \[QN-21-1\]\(https:\/\/example.com\/qn-21#1\) \|/
     );
     assert.match(
       fileContent,
-      /\| تحسين الواجهة \| P2 \| QN-21-8 \|/
+      /\| تحسين الواجهة \| P2 \| \[QN-21-8\]\(https:\/\/example.com\/qn-21#8\) \|/
     );
   } finally {
     process.chdir(prev);
