@@ -9,6 +9,10 @@ export interface QN21Criterion {
   description: string;
   /** Keywords that indicate the presence of the criterion in text. */
   keywords: string[];
+  /** Regular expressions that match equation-like patterns. */
+  equations?: RegExp[];
+  /** Regular expressions that match reference or citation patterns. */
+  references?: RegExp[];
 }
 
 export const QN21_CRITERIA: QN21Criterion[] = [
@@ -18,6 +22,8 @@ export const QN21_CRITERIA: QN21Criterion[] = [
     weight: 8,
     description: "Equation accuracy",
     keywords: ["=", "equation", "boundary condition"],
+    equations: [/\w+\s*=\s*[^\s]+/],
+    references: [/\[[0-9]+\]/],
   },
   {
     code: "Δ",
@@ -171,16 +177,30 @@ export interface QN21Result extends QN21Criterion {
 /**
  * Evaluate text against the QN21 criteria.
  *
- * The evaluation is keyword based: if any keyword for a criterion appears
- * within the provided text (case insensitive) the full weight is awarded.
- * Otherwise the score is zero. The `gap` field expresses the missing weight.
+ * Each criterion may define multiple indicators such as keywords, equation
+ * patterns, and reference patterns. The score is proportional to the coverage
+ * of these indicators within the provided text. The `gap` field expresses the
+ * remaining weight to reach the maximum for the criterion.
  */
 export function evaluateQN21(text: string): QN21Result[] {
   const lower = text.toLowerCase();
   return QN21_CRITERIA.map((c) => {
-    const score = c.keywords.some((k) => lower.includes(k.toLowerCase()))
-      ? c.weight
-      : 0;
+    let matches = 0;
+    c.keywords.forEach((k) => {
+      if (lower.includes(k.toLowerCase())) matches++;
+    });
+    c.equations?.forEach((r) => {
+      if (r.test(text)) matches++;
+    });
+    c.references?.forEach((r) => {
+      if (r.test(text)) matches++;
+    });
+    const totalIndicators =
+      c.keywords.length +
+      (c.equations ? c.equations.length : 0) +
+      (c.references ? c.references.length : 0);
+    const coverage = totalIndicators === 0 ? 0 : matches / totalIndicators;
+    const score = c.weight * coverage;
     return { ...c, score, gap: c.weight - score };
   });
 }
