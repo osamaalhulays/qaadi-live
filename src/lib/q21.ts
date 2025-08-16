@@ -1,15 +1,4 @@
-export interface QN21Criterion {
-  /** Short identifier for the criterion. */
-  code: string;
-  /** Whether the criterion is internal or external to the organization. */
-  type: "internal" | "external";
-  /** Weight of the criterion when calculating the total score. */
-  weight: number;
-  /** Human readable description of the criterion. */
-  description: string;
-}
-
-export const QN21_CRITERIA = [
+export const QN21_CRITERIA = Object.freeze([
   { code: "equations", type: "internal", weight: 8, description: "Equation accuracy" },
   { code: "rigor", type: "internal", weight: 6, description: "Analytical rigor" },
   { code: "dimensional", type: "internal", weight: 5, description: "Dimensional consistency" },
@@ -31,9 +20,10 @@ export const QN21_CRITERIA = [
   { code: "community", type: "external", weight: 5, description: "Community engagement" },
   { code: "policy", type: "external", weight: 5, description: "Policy compliance" },
   { code: "relevance", type: "external", weight: 5, description: "Societal relevance" },
-] as const satisfies readonly QN21Criterion[];
+] as const);
 
-export type QN21Code = (typeof QN21_CRITERIA)[number]["code"];
+export type QN21Criterion = (typeof QN21_CRITERIA)[number];
+export type QN21Code = QN21Criterion["code"];
 
 export interface QN21Result extends QN21Criterion {
   /** Score obtained for the criterion. */
