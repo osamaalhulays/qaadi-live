@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdtemp, mkdir, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { readFile } from 'node:fs/promises';
@@ -41,4 +41,21 @@ test('placeholder files have stable fingerprints on regeneration', async () => {
   assert.strictEqual(figs.length, 2);
   assert.strictEqual(new Set(biblio.map((e: any) => e.sha256)).size, 1);
   assert.strictEqual(new Set(figs.map((e: any) => e.sha256)).size, 1);
+});
+
+test('saves role files with type role', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
+  const prev = process.cwd();
+  process.chdir(dir);
+  await mkdir('paper', { recursive: true });
+  await writeFile('paper/secretary.md', 'sec');
+  try {
+    await saveSnapshot([{ path: 'paper/draft.tex', content: 'x' }], 'revtex', 'en', 'demo', 'v1');
+  } finally {
+    process.chdir(prev);
+  }
+  const manifestPath = path.join(dir, 'public', 'snapshots', 'manifest.json');
+  const manifest = JSON.parse(await readFile(manifestPath, 'utf-8'));
+  const role = manifest.find((e: any) => e.path.endsWith('secretary.md'));
+  assert.ok(role && role.type === 'role');
 });
