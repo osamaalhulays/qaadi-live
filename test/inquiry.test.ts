@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert';
-import { buildPrompt } from '../src/app/api/generate/route';
+import { buildPrompt } from '../src/lib/buildPrompt';
 
 test('buildPrompt handles inquiry in English', () => {
   const { prompt } = buildPrompt('inquiry', 'en', 'What is the role of Qaadi?', null);
