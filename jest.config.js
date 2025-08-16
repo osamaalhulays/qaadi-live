@@ -7,6 +7,7 @@ const createJestConfig = nextJest({
 /** @type {import('jest').Config} */
 const config = {
   testEnvironment: 'node',
+  setupFiles: ['<rootDir>/test/setup.ts'],
   transform: {
     '^.+\\.(ts|tsx)$': [
       'ts-jest',
