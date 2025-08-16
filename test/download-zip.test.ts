@@ -2,9 +2,26 @@ import test from 'node:test';
 import assert from 'node:assert';
 import { GET } from '../src/app/api/download/zip/route';
 import { NextRequest } from 'next/server';
-import { mkdir, writeFile, rm } from 'node:fs/promises';
+import { mkdir, writeFile, rm, cp } from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
+
+const root = process.cwd();
+
+test.before(async () => {
+  const srcDB = path.join(root, 'test', 'data', 'QaadiDB');
+  const destDB = path.join(root, 'QaadiDB');
+  await cp(srcDB, destDB, { recursive: true });
+
+  const srcVault = path.join(root, 'test', 'data', 'QaadiVault');
+  const destVault = path.join(root, 'QaadiVault');
+  await cp(srcVault, destVault, { recursive: true });
+});
+
+test.after(async () => {
+  await rm(path.join(root, 'QaadiDB'), { recursive: true, force: true });
+  await rm(path.join(root, 'QaadiVault'), { recursive: true, force: true });
+});
 
 function unzipStore(u8: Uint8Array): Record<string, Uint8Array> {
   const view32 = (i: number) => new DataView(u8.buffer, u8.byteOffset + i, 4).getUint32(0, true);
@@ -37,7 +54,7 @@ test('determinism and provenance non-empty', async () => {
 });
 
 test('reads snapshots manifest, filters by slug/version and uses v6 archive name', async () => {
-  const dir = path.join(process.cwd(), 'public', 'snapshots');
+  const dir = path.join(root, 'public', 'snapshots');
   await mkdir(dir, { recursive: true });
   const manifest = [
     { slug: 'demo', v: 'v1.0', timestamp: '20240101T000000', path: 'file', sha256: 'aaa' },
@@ -72,7 +89,6 @@ test('reads snapshots manifest, filters by slug/version and uses v6 archive name
 });
 
 test('includes latest snapshot files in archive', async () => {
-  const root = process.cwd();
   const snapDir = path.join(root, 'public', 'snapshots', 'demo', '2024-01-01_0000', 'paper', 'revtex', 'en');
   await mkdir(snapDir, { recursive: true });
   const draft = Buffer.from('draft');
