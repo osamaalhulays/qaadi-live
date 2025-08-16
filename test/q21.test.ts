@@ -30,7 +30,22 @@ test('summarizeQN21 computes percentage and classification', () => {
   const expectedMax = QN21_CRITERIA.reduce((sum, c) => sum + c.weight, 0);
   expect(summary.total).toBe(expectedTotal);
   expect(summary.max).toBe(expectedMax);
-  expect(summary.percentage).toBeGreaterThan(80);
+  expect(summary.percentage).toBeGreaterThanOrEqual(80);
   expect(summary.classification).toBe('accepted');
+});
+
+test('summarizeQN21 marks mid-range scores as needs_improvement', () => {
+  const text = QN21_CRITERIA.slice(0, 14).map((c) => c.code).join(' ');
+  const summary = summarizeQN21(evaluateQN21(text));
+  expect(summary.percentage).toBeGreaterThanOrEqual(60);
+  expect(summary.percentage).toBeLessThan(80);
+  expect(summary.classification).toBe('needs_improvement');
+});
+
+test('summarizeQN21 marks low scores as weak', () => {
+  const text = QN21_CRITERIA.slice(0, 12).map((c) => c.code).join(' ');
+  const summary = summarizeQN21(evaluateQN21(text));
+  expect(summary.percentage).toBeLessThan(60);
+  expect(summary.classification).toBe('weak');
 });
 

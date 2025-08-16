@@ -1,4 +1,4 @@
-export const QN21_CRITERIA = [
+export const QN21_CRITERIA = Object.freeze([
   { code: "equations", type: "internal", weight: 8, name: "Equation accuracy" },
   { code: "rigor", type: "internal", weight: 6, name: "Analytical rigor" },
   { code: "dimensional", type: "internal", weight: 5, name: "Dimensional consistency" },
@@ -20,7 +20,7 @@ export const QN21_CRITERIA = [
   { code: "community", type: "external", weight: 5, name: "Community engagement" },
   { code: "policy", type: "external", weight: 5, name: "Policy compliance" },
   { code: "relevance", type: "external", weight: 5, name: "Societal relevance" },
-] as const;
+] as const);
 
 export type QN21Criterion = (typeof QN21_CRITERIA)[number];
 export type QN21Code = QN21Criterion["code"];
