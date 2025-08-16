@@ -261,7 +261,6 @@ export default function Editor() {
         setJudge(jj);
       } else setJudge(null);
     } catch { setJudge(null); }
-    await refreshCriteriaList();
   }
 
   async function addCustomCriterion() {
