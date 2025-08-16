@@ -102,3 +102,20 @@ test('summarizeQN21 computes totals, max, percentage, and classification', () =>
   assert.strictEqual(summary.classification, 'needs_improvement');
 });
 
+test('evaluateQN21 maintains scores for sticky regex patterns across calls', () => {
+  const rigor = QN21_CRITERIA.find((c) => c.code === 'rigor');
+  assert.ok(rigor);
+  const originalPatterns = rigor.patterns;
+  try {
+    rigor.patterns = [/analysis/y];
+    const text = 'analysis and more analysis';
+    const firstScore = evaluateQN21(text).find((r) => r.code === 'rigor')?.score;
+    const secondScore = evaluateQN21(text).find((r) => r.code === 'rigor')?.score;
+    assert.strictEqual(firstScore, rigor.weight);
+    assert.strictEqual(secondScore, rigor.weight);
+    assert.strictEqual(firstScore, secondScore);
+  } finally {
+    rigor.patterns = originalPatterns;
+  }
+});
+
