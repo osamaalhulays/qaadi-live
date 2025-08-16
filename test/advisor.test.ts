@@ -1,4 +1,4 @@
-import test from 'node:test';
+import { test } from '@jest/globals';
 import assert from 'node:assert';
 import { generateInquiryFromPlan } from '../src/lib/utils/inquiry';
 
