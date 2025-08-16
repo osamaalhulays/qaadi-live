@@ -177,12 +177,14 @@ export interface QN21Result extends QN21Criterion {
   */
 export function evaluateQN21(text: string): QN21Result[] {
   return QN21_CRITERIA.map((c) => {
-    const score = c.patterns.some((p) => {
+    let score = 0;
+    for (const p of c.patterns) {
       p.lastIndex = 0;
-      return p.test(text);
-    })
-      ? c.weight
-      : 0;
+      if (p.test(text)) {
+        score = c.weight;
+        break;
+      }
+    }
     return { ...c, score, gap: c.weight - score };
   });
 }
