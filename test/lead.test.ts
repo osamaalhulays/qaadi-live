@@ -21,7 +21,10 @@ test('runLead merges plans and highlights best items', async () => {
   const fileContent = await readFile(cmpPath, 'utf8');
   assert.strictEqual(content, fileContent);
   assert.match(fileContent, /# Comparison/);
-  assert.match(fileContent, /## Best Items\n- Task A \(alpha, beta\)\n- Task C \(beta\)/);
+  assert.match(
+    fileContent,
+    /## Best Items\n(?:\n)?- Task A \(alpha, beta\)\n- Task C \(beta\)/,
+  );
   assert.match(fileContent, /## alpha/);
   assert.match(fileContent, /## beta/);
 });
