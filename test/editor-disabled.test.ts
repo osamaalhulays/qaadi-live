@@ -2,11 +2,18 @@
 
 import { test } from '@jest/globals';
 import assert from 'node:assert';
-import * as React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
-import Editor from '../src/components/Editor';
 
-test('export and generate buttons require target and lang', () => {
+test('export and generate buttons require target and lang', async () => {
+  const { TextEncoder, TextDecoder } = await import('util');
+  // @ts-ignore
+  global.TextEncoder ??= TextEncoder;
+  // @ts-ignore
+  global.TextDecoder ??= TextDecoder;
+
+  const React = await import('react');
+  const { renderToStaticMarkup } = await import('react-dom/server');
+  const Editor = (await import('../src/components/Editor')).default;
+
   // initial render without target/lang -> buttons disabled
   const initial = renderToStaticMarkup(React.createElement(Editor));
   assert.match(initial, /<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
