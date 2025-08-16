@@ -278,10 +278,8 @@ export default function Editor() {
         body: JSON.stringify(payload),
       });
       if (res.ok) {
-        const c = await res.json();
-        setCriteria(prev => [...prev, c]);
-        setNewId(""); setNewDesc(""); setNewWeight(1); setNewKeywords("");
         await refreshCriteriaList();
+        setNewId(""); setNewDesc(""); setNewWeight(1); setNewKeywords("");
       }
     } catch {}
   }
@@ -296,8 +294,6 @@ export default function Editor() {
         body: JSON.stringify({ id, enabled: !c.enabled }),
       });
       if (res.ok) {
-        const upd = await res.json();
-        setCriteria(prev => prev.map(x => x.id === id ? upd : x));
         await refreshCriteriaList();
       }
     } catch {}
