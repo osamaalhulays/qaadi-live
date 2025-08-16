@@ -86,3 +86,19 @@ test('runResearchSecretary writes plan files with QN-21 table', async () => {
     process.chdir(prev);
   }
 });
+
+test('runResearchSecretary outputs rows with priority and QN-21 links', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
+  const prev = process.cwd();
+  process.chdir(dir);
+  try {
+    const { content } = await runResearchSecretary('beta', samplePlan);
+    const lines = content.trim().split('\n');
+    const rowPattern = /^\| .+ \| P[012] \| \[QN-21-\d+\]\(https:\/\/example.com\/qn-21#\d+\) \|$/;
+    for (const line of lines.slice(4)) {
+      assert.match(line, rowPattern);
+    }
+  } finally {
+    process.chdir(prev);
+  }
+});
