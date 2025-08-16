@@ -9,7 +9,7 @@ export interface QN21Criterion {
   description: string;
 }
 
-export const QN21_CRITERIA: QN21Criterion[] = [
+export const QN21_CRITERIA = [
   { code: "equations", type: "internal", weight: 8, description: "Equation accuracy" },
   { code: "rigor", type: "internal", weight: 6, description: "Analytical rigor" },
   { code: "dimensional", type: "internal", weight: 5, description: "Dimensional consistency" },
@@ -31,7 +31,9 @@ export const QN21_CRITERIA: QN21Criterion[] = [
   { code: "community", type: "external", weight: 5, description: "Community engagement" },
   { code: "policy", type: "external", weight: 5, description: "Policy compliance" },
   { code: "relevance", type: "external", weight: 5, description: "Societal relevance" },
-];
+] as const satisfies readonly QN21Criterion[];
+
+export type QN21Code = (typeof QN21_CRITERIA)[number]["code"];
 
 export interface QN21Result extends QN21Criterion {
   /** Score obtained for the criterion. */
