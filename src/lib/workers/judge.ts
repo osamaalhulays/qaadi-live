@@ -29,6 +29,8 @@ export async function runJudge(text?: string) {
   const qn21Results = evaluateQN21(content);
   const custom = await loadCriteria();
   const customResults = evaluateCriteria(content, custom);
+  console.log("runJudge: qn21Results", qn21Results);
+  console.log("runJudge: customResults", customResults);
 
   const combined: ChartCriterion[] = [];
   qn21Results.forEach((c, i) => {
@@ -50,6 +52,8 @@ export async function runJudge(text?: string) {
       covered: c.score === c.weight,
     });
   });
+
+  console.log("runJudge: combined criteria", combined);
 
   const total = [...qn21Results, ...customResults].reduce((s, c) => s + c.score, 0);
   const max = [...qn21Results, ...customResults].reduce((s, c) => s + c.weight, 0);
