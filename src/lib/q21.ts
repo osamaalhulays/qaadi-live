@@ -106,9 +106,11 @@ export function evaluateQN21(text: string): QN21Result[] {
     const ratio = c.patterns.length === 0 ? 0 : matches / c.patterns.length;
     const score = c.weight * ratio;
     const gap = Math.max(0, c.weight - score);
-    console.log(
-      `evaluateQN21: ${c.code} matches=${matches}, score=${score}, gap=${gap}`
-    );
+    if (process.env.DEBUG_QN21) {
+      console.log(
+        `evaluateQN21: ${c.code} matches=${matches}, score=${score}, gap=${gap}`
+      );
+    }
     return { ...c, score, gap };
   });
 }
