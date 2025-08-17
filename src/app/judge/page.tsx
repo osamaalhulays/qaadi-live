@@ -2,6 +2,7 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import QN21Radar from "../../components/QN21Radar";
 import QN21Timeline from "../../components/QN21Timeline";
+import Judge from "../../components/Judge";
 
 export default function Page() {
   const radar = [
@@ -26,6 +27,7 @@ export default function Page() {
         <div style={{ marginTop: 16 }}>
           <QN21Timeline data={timeline} />
         </div>
+        <Judge />
       </div>
       <Footer />
     </>
