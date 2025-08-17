@@ -1,8 +1,14 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { latestFilesFor } from "../lib/utils/manifest";
 import ScoreCharts from "./ScoreCharts";
 import type { Criterion } from "../lib/criteria";
+import { organizeDraft } from "./Secretary/Organizer";
+import { evaluateDraft } from "./Judge/Evaluate";
+import { analyzeDraft } from "./Consultant/Analyze";
+import {
+  exportOrchestrate as journalistExportOrchestrate,
+  exportCompose as journalistExportCompose,
+} from "./Journalist/Export";
 
 type Target =
   | "wide"
@@ -118,122 +124,31 @@ export default function Editor() {
   }), [openaiKey, deepseekKey]);
 
   async function doGenerate() {
-    setBusy(true); setMsg("");
+    setBusy(true);
+    setMsg("");
     try {
-      if (!target || !lang) throw new Error("missing_target_lang");
-      const url = target === "inquiry" ? "/api/inquiry" : "/api/generate";
-      const payload =
-        target === "inquiry"
-          ? { lang, plan: text, slug, v }
-          : { target, lang, model, max_tokens: maxTokens, text, slug, v };
-      const res = await fetch(url, {
-        method: "POST",
+      await analyzeDraft({
+        target,
+        lang,
+        model,
+        maxTokens,
+        text,
+        slug,
+        v,
         headers,
-        body: JSON.stringify(payload)
+        setOut,
+        setVerify,
+        setMsg,
+        setFiles,
+        refreshFiles,
       });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j?.error || "generate_failed");
-      setOut(j?.text || "");
-      if (target !== "inquiry") setVerify(j?.checks || null);
-      else setVerify(null);
-      if (target !== "inquiry")
-        setMsg(`OK • model=${j?.model_used} • in=${j?.tokens_in} • out=${j?.tokens_out} • ${j?.latency_ms}ms`);
-      else setMsg("OK");
-      if (Array.isArray(j?.files)) setFiles(j.files);
-      else await refreshFiles();
-    } catch (e:any) {
-      setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `ERROR: ${e?.message || e}`);
-      setVerify(null);
-    } finally { setBusy(false); }
+    } finally {
+      setBusy(false);
+    }
   }
 
-  async function runSelfTest() {
-    setSelfBusy(true); setMsg("");
-    try {
-      const res = await fetch("/api/selftest", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ slug, sample: text })
-      });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j?.error || "selftest_failed");
-      setSelfTest(j);
-      setMsg(`Self-Test ${(j.ratio * 100).toFixed(0)}%`);
-    } catch (e:any) {
-      setMsg(`Self-Test ERROR: ${e?.message || e}`);
-    } finally { setSelfBusy(false); }
-  }
-
-  async function exportOrchestrate() {
-    setZipBusy(true); setMsg("");
-    try {
-      if (!target || !lang) throw new Error("missing_target_lang");
-      const res = await fetch("/api/export", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          mode: "orchestrate",
-          model,
-          max_tokens: maxTokens,
-          name: "qaadi_export.zip",
-          target,
-          lang,
-          slug,
-          v,
-          input: { text }
-        })
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || `status_${res.status}`);
-      }
-      const blob = await res.blob();
-      downloadBlob(blob, "qaadi_export.zip");
-      setMsg("ZIP جاهز (orchestrate).");
-      await refreshFiles();
-    } catch (e:any) {
-      setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `EXPORT ERROR: ${e?.message || e}`);
-    } finally { setZipBusy(false); }
-  }
-
-  async function exportCompose() {
-    setZipBusy(true); setMsg("");
-    try {
-      if (!target || !lang) throw new Error("missing_target_lang");
-      const res = await fetch("/api/export", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({
-          mode: "compose",
-          name: "qaadi_export.zip",
-          slug,
-          v,
-          input: { text },
-          secretary: { audit: { ready_percent: 50, issues: [{ type: "demo", note: "example only" }] } },
-          judge: { report: { score_total: 110, criteria: [], notes: "demo" } },
-          consultant: { plan: out || "plan(demo)" },
-          journalist: { summary: (out && out.slice(0, 400)) || "summary(demo)" },
-          meta: { target, lang, model, max_tokens: maxTokens }
-        })
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || `status_${res.status}`);
-      }
-      const blob = await res.blob();
-      downloadBlob(blob, "qaadi_export.zip");
-      setMsg("ZIP جاهز (compose).");
-      await refreshFiles();
-    } catch (e:any) {
-      setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `EXPORT ERROR: ${e?.message || e}`);
-    } finally { setZipBusy(false); }
-  }
-
-  function downloadBlob(blob: Blob, name: string) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = name; a.click();
-    URL.revokeObjectURL(url);
+  function runSelfTest() {
+    evaluateDraft(text, slug, headers, setSelfTest, setMsg, setSelfBusy);
   }
 
   async function refreshCriteriaList() {
@@ -246,24 +161,41 @@ export default function Editor() {
     } catch { setCriteria([]); }
   }
 
+  function exportOrchestrate() {
+    journalistExportOrchestrate({
+      target,
+      lang,
+      model,
+      maxTokens,
+      text,
+      slug,
+      v,
+      headers,
+      setMsg,
+      setZipBusy,
+      refreshFiles,
+    });
+  }
+
+  function exportCompose() {
+    journalistExportCompose({
+      target,
+      lang,
+      model,
+      maxTokens,
+      text,
+      slug,
+      v,
+      out,
+      headers,
+      setMsg,
+      setZipBusy,
+      refreshFiles,
+    });
+  }
+
   async function refreshFiles() {
-    try {
-      const res = await fetch("/snapshots/manifest.json");
-      if (!res.ok) { setFiles([]); return; }
-      const list = await res.json();
-      if (Array.isArray(list) && list.length) {
-        const fl = latestFilesFor(list, slug, v);
-        setFiles(fl);
-      } else setFiles([]);
-    } catch { setFiles([]); }
-    try {
-      const jr = await fetch("/paper/judge.json");
-      if (jr.ok) {
-        const jj = await jr.json();
-        setJudge(jj);
-      } else setJudge(null);
-    } catch { setJudge(null); }
-    await refreshCriteriaList();
+    await organizeDraft(slug, v, setFiles, setJudge, refreshCriteriaList);
   }
 
   async function addCustomCriterion() {
