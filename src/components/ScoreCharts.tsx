@@ -22,19 +22,7 @@ export default function ScoreCharts({ criteria }: Props) {
     let radar: any;
 
     const load = async () => {
-      if (typeof window === "undefined") return;
-      const w = window as any;
-      if (!w.Chart) {
-        await new Promise((resolve, reject) => {
-          const s = document.createElement("script");
-          s.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js";
-          s.onload = resolve;
-          s.onerror = reject;
-          document.head.appendChild(s);
-        }).catch(() => {});
-      }
-      const Chart = (window as any).Chart;
-      if (!Chart) return;
+      const { Chart } = await import("chart.js/auto");
 
       const labels = criteria.map(c => c.name);
       const scores = criteria.map(c => c.score);
