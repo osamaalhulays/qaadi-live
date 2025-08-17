@@ -2,6 +2,10 @@
 
 This repository hosts the core modules for the **Qaadi** workflow: secretary, judge, consultant and related utilities.
 
+## Workflow Guide
+
+For an overview of all stages from the secretary to the journalist, including required fields and visual indicators, see the [roles workflow](docs/roles-workflow.md).
+
 ## Quick Start
 
 ```bash
