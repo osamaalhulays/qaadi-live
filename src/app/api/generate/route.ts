@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { InputSchema, OutputSchema } from "../../../lib/schema/io";
-import { runWithFallback } from "../../../lib/providers/router";
+import { generateText } from "../../../lib/generationService";
 import { freezeText, restoreText, countEquations, FrozenText } from "../../../lib/utils/freeze";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { saveSnapshot } from "../../../lib/saveSnapshot";
@@ -126,7 +126,7 @@ export async function POST(req: NextRequest) {
       { text: string; dir: "rtl" | "ltr" | "mixed" }
     > = {};
     for (const l of langs) {
-      const out = await runWithFallback(
+      const out = await generateText(
         model,
         { openai: openaiKey || undefined, deepseek: deepseekKey || undefined },
         prompts[l],
@@ -186,7 +186,7 @@ export async function POST(req: NextRequest) {
   const eqBefore = frozen.equations.length;
 
   try {
-    const out = await runWithFallback(
+    const out = await generateText(
       input.model === "auto" ? "auto" : (input.model as any),
       { openai: openaiKey || undefined, deepseek: deepseekKey || undefined },
       prompt,
