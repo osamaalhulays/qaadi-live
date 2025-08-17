@@ -1,4 +1,5 @@
 import assert from 'node:assert';
+import { jest } from '@jest/globals';
 
 import { evaluateQN21, QN21_CRITERIA, summarizeQN21 } from '../src/lib/q21';
 
@@ -107,6 +108,29 @@ test('summarizeQN21 computes totals, max, percentage, and classification', () =>
   assert.strictEqual(summary.max, expectedMax);
   assert.strictEqual(summary.percentage, (expectedTotal / expectedMax) * 100);
   assert.strictEqual(summary.classification, 'needs_improvement');
+});
+
+test('evaluateQN21 logs only when DEBUG_QN21 is true', () => {
+  const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  try {
+    delete process.env.DEBUG_QN21;
+    evaluateQN21('Equation ensures rigor');
+    let logs = spy.mock.calls.filter(
+      ([msg]) => typeof msg === 'string' && msg.startsWith('evaluateQN21:')
+    );
+    assert.strictEqual(logs.length, 0);
+
+    spy.mockClear();
+    process.env.DEBUG_QN21 = 'true';
+    evaluateQN21('Equation ensures rigor');
+    logs = spy.mock.calls.filter(
+      ([msg]) => typeof msg === 'string' && msg.startsWith('evaluateQN21:')
+    );
+    assert.strictEqual(logs.length, QN21_CRITERIA.length);
+  } finally {
+    spy.mockRestore();
+    delete process.env.DEBUG_QN21;
+  }
 });
 
 test('QN21_CRITERIA exposes documented codes, types and weights', () => {
