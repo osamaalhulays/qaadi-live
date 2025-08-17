@@ -1,16 +1,6 @@
 import { writeFile, mkdir, readFile } from "fs/promises";
 import path from "path";
-import { evaluateQN21 } from "../q21";
-import { loadCriteria, evaluateCriteria } from "../criteria";
-
-interface ChartCriterion {
-  id: number;
-  name: string;
-  score: number;
-  gap: number;
-  type?: "internal" | "external" | "advisory";
-  covered?: boolean;
-}
+import { evaluateText } from "../evaluationService";
 
 export async function runJudge(text?: string) {
   let content = text;
@@ -26,57 +16,7 @@ export async function runJudge(text?: string) {
     }
   }
 
-  const qn21Results = evaluateQN21(content);
-  const custom = await loadCriteria();
-  const customResults = evaluateCriteria(content, custom);
-  const debug = process.env.DEBUG_JUDGE === "true";
-  if (debug) console.log("runJudge: qn21Results", qn21Results);
-  if (debug) console.log("runJudge: customResults", customResults);
-
-  const qn21Criteria: ChartCriterion[] = qn21Results.map((c, i) => ({
-    id: i + 1,
-    name: c.description || c.code,
-    score: c.score,
-    gap: Math.max(0, c.weight - c.score),
-    type: c.type,
-    covered: c.score === c.weight,
-  }));
-  const customCriteria: ChartCriterion[] = customResults.map((c, i) => ({
-    id: qn21Results.length + i + 1,
-    name: c.description || c.id,
-    score: c.score,
-    gap: Math.max(0, c.weight - c.score),
-    type: c.category,
-    covered: c.score === c.weight,
-  }));
-  const combined: ChartCriterion[] = [...qn21Criteria, ...customCriteria];
-
-  if (debug) console.log("runJudge: combined criteria", combined);
-
-  const total = [...qn21Results, ...customResults].reduce((s, c) => s + c.score, 0);
-  const max = [...qn21Results, ...customResults].reduce((s, c) => s + c.weight, 0);
-  const percentage = max === 0 ? 0 : (total / max) * 100;
-  let classification: "accepted" | "needs_improvement" | "weak" = "weak";
-  if (percentage >= 80) classification = "accepted";
-  else if (percentage >= 60) classification = "needs_improvement";
-  const gaps = combined
-    .filter((c) => c.gap > 0)
-    .map((c) => ({ id: c.id, name: c.name, gap: c.gap }));
-
-  if (debug)
-    console.log(
-      `runJudge: total=${total}, max=${max}, percentage=${percentage}, classification=${classification}`
-    );
-  if (debug) console.log("runJudge: gaps", gaps);
-
-  const result = {
-    verdict: "approved",
-    criteria: combined,
-    score: { total, max, percentage },
-    percentage,
-    gaps,
-    classification,
-  };
+  const result = await evaluateText(content);
 
   const filePath = path.join(process.cwd(), "paper", "judge.json");
   await mkdir(path.dirname(filePath), { recursive: true });

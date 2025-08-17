@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { makeZip, type ZipFile } from "../../../lib/utils/zip";
-import { runWithFallback } from "../../../lib/providers/router";
+import { generateText } from "../../../lib/generationService";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
@@ -274,7 +274,7 @@ export async function POST(req: NextRequest) {
     const providerOpts = { openai: openaiKey || undefined, deepseek: deepseekKey || undefined };
 
     // Secretary first
-    const sec = await runWithFallback(selection, providerOpts, prompts.secretary, max_tokens).catch(() => ({ text: "" }));
+    const sec = await generateText(selection, providerOpts, prompts.secretary, max_tokens).catch(() => ({ text: "" }));
     const secretaryText = sec?.text ?? "";
     const tryJSON = (s: string) => { try { return JSON.parse(s); } catch { return s; } };
     const secretaryAudit = tryJSON(secretaryText);
@@ -294,7 +294,7 @@ export async function POST(req: NextRequest) {
     // Judge: run only if gates pass
     let judgeReport: any;
     if (gate.missing.length === 0) {
-      const jud = await runWithFallback(selection, providerOpts, prompts.judge, max_tokens).catch(() => ({ text: "" }));
+      const jud = await generateText(selection, providerOpts, prompts.judge, max_tokens).catch(() => ({ text: "" }));
       const judgeText = jud?.text ?? "";
       judgeReport = tryJSON(judgeText);
     } else {
@@ -307,8 +307,8 @@ export async function POST(req: NextRequest) {
 
     // Consultant and journalist can run in parallel
     const [con, jour] = await Promise.allSettled([
-      runWithFallback(selection, providerOpts, prompts.consultant, max_tokens),
-      runWithFallback(selection, providerOpts, prompts.journalist, max_tokens)
+      generateText(selection, providerOpts, prompts.consultant, max_tokens),
+      generateText(selection, providerOpts, prompts.journalist, max_tokens)
     ]);
     const getText = (r: PromiseSettledResult<any>) => (r.status === "fulfilled" ? (r.value?.text ?? "") : "");
     const consultantText = getText(con);
