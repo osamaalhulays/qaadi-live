@@ -28,9 +28,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="manifest" href="/manifest.webmanifest" />
       </head>
       <body>
-        <LangDirProvider />
-        <ServiceWorkerRegister />
-        <div className="wrapper">{children}</div>
+        <LangDirProvider>
+          <ServiceWorkerRegister />
+          <div className="wrapper">{children}</div>
+        </LangDirProvider>
       </body>
     </html>
   );
