@@ -55,18 +55,20 @@ export default function Editor() {
   const [slug, setSlug] = useState("default");
   const [v, setV] = useState("default");
 
+  const slugRe = /^[A-Za-z0-9_-]*$/;
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const parts = window.location.pathname.split("/").filter(Boolean);
       const params = new URLSearchParams(window.location.search);
-      const s = parts[0] || params.get("slug") || "default";
-      const ver = parts[1] || params.get("v") || "default";
+      const sCandidate = parts[0] || params.get("slug") || "default";
+      const verCandidate = parts[1] || params.get("v") || "default";
+      const s = slugRe.test(sCandidate) ? sCandidate : "default";
+      const ver = slugRe.test(verCandidate) ? verCandidate : "default";
       setSlug(s);
       setV(ver);
     }
   }, []);
-
-  const slugRe = /^[A-Za-z0-9_-]*$/;
 
   const snapshotPath = useMemo(() => {
     if (!files.length) return null;
