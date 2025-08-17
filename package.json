@@ -12,6 +12,7 @@
     "migrate-registry": "ts-node scripts/migrate-registry.ts"
   },
   "dependencies": {
+    "chart.js": "^4.4.3",
     "next": "14.2.5",
     "react": "18.2.0",
     "react-dom": "18.2.0",
