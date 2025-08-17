@@ -21,7 +21,7 @@ const config = {
   },
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   // Match all test files within any `test` directory
-  testMatch: ['**/test/**/*.test.ts'],
+  testMatch: ['**/test/**/*.test.ts?(x)'],
 };
 
 export default createJestConfig(config);
