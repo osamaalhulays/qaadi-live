@@ -45,6 +45,7 @@ export default function Editor() {
   const [judge, setJudge] = useState<any>(null);
   const [selfTest, setSelfTest] = useState<null | { ratio:number; deviations:{role:string; expected:string; found:string}[] }>(null);
   const [selfBusy, setSelfBusy] = useState(false);
+  const [errors, setErrors] = useState<{[key:string]: string}>({});
 
   const [criteria, setCriteria] = useState<Criterion[]>([]);
   const [newId, setNewId] = useState("");
@@ -117,7 +118,18 @@ export default function Editor() {
     "X-DeepSeek-Key": deepseekKey || ""
   }), [openaiKey, deepseekKey]);
 
+  function validate() {
+    const errs: {[key:string]: string} = {};
+    if (!openaiKey && !deepseekKey) errs.openaiKey = "يرجى إدخال مفتاح API";
+    if (!target) errs.target = "يرجى اختيار الهدف";
+    if (!lang) errs.lang = "يرجى اختيار اللغة";
+    if (!text) errs.text = "يرجى إدخال النص";
+    setErrors(errs);
+    return Object.keys(errs).length === 0;
+  }
+
   async function doGenerate() {
+    if (!validate()) return;
     setBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
@@ -165,6 +177,7 @@ export default function Editor() {
   }
 
   async function exportOrchestrate() {
+    if (!validate()) return;
     setZipBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
@@ -197,6 +210,7 @@ export default function Editor() {
   }
 
   async function exportCompose() {
+    if (!validate()) return;
     setZipBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
@@ -303,16 +317,24 @@ export default function Editor() {
     } catch {}
   }
 
+  const hasApiKey = Boolean(openaiKey.trim() || deepseekKey.trim());
+  const requiredFilled = [hasApiKey, target, lang, text].filter(Boolean).length;
+  const progress = (requiredFilled / 4) * 100;
+  const ready = requiredFilled === 4;
+
   return (
     <>
       <div className="card grid grid-2" style={{marginBottom:12}}>
         <div>
           <label>DeepSeek Key</label>
-          <input value={deepseekKey} onChange={e=>setDeepseekKey(e.target.value)} placeholder="...ds" />
+          <input value={deepseekKey} onChange={e=>{setDeepseekKey(e.target.value); if(errors.openaiKey) setErrors(prev=>({...prev, openaiKey:""}));}} placeholder="...ds" title="مفتاح DeepSeek API (اختياري)" />
+          <small className="hint">اختياري</small>
         </div>
         <div>
           <label>OpenAI Key</label>
-          <input value={openaiKey} onChange={e=>setOpenaiKey(e.target.value)} placeholder="...sk" />
+          <input value={openaiKey} onChange={e=>{setOpenaiKey(e.target.value); if(errors.openaiKey) setErrors(prev=>({...prev, openaiKey:""}));}} placeholder="...sk" title="مفتاح OpenAI API" />
+          <small className="hint">مطلوب إذا لم تستخدم DeepSeek</small>
+          {errors.openaiKey && <div className="error" style={{color:'red'}}>{errors.openaiKey}</div>}
         </div>
       </div>
 
@@ -326,7 +348,9 @@ export default function Editor() {
               if (slugRe.test(val)) setSlug(val);
             }}
             placeholder="demo"
+            title="معرف المشروع"
           />
+          <small className="hint">أحرف وأرقام فقط</small>
         </div>
         <div>
           <label>Version</label>
@@ -337,26 +361,30 @@ export default function Editor() {
               if (slugRe.test(val)) setV(val);
             }}
             placeholder="v1"
+            title="إصدار المستند"
           />
+          <small className="hint">مثال: v1</small>
         </div>
       </div>
 
       <div className="card grid grid-4" style={{marginBottom:12}}>
         <div>
           <label>max_tokens</label>
-          <input type="number" value={maxTokens} min={256} max={8192} onChange={e=>setMaxTokens(parseInt(e.target.value||"2048"))} />
+          <input type="number" value={maxTokens} min={256} max={8192} onChange={e=>setMaxTokens(parseInt(e.target.value||"2048"))} title="الحد الأقصى لطول الاستجابة" />
+          <small className="hint">الحد الأعلى للرموز</small>
         </div>
         <div>
           <label>Model</label>
-          <select value={model} onChange={e=>setModel(e.target.value as ModelSel)}>
+          <select value={model} onChange={e=>setModel(e.target.value as ModelSel)} title="النموذج المستخدم">
             <option value="auto">auto (OpenAI→DeepSeek)</option>
             <option value="openai">openai</option>
             <option value="deepseek">deepseek</option>
           </select>
+          <small className="hint">اختر النموذج</small>
         </div>
         <div>
           <label>Target</label>
-          <select value={target} onChange={e=>setTarget(e.target.value as Target)}>
+          <select value={target} onChange={e=>{setTarget(e.target.value as Target); if(errors.target) setErrors(prev=>({...prev, target:""}));}} title="قالب الإخراج">
             <option value="">--</option>
             <option value="revtex">ReVTeX</option>
             <option value="iop">IOP</option>
@@ -367,10 +395,12 @@ export default function Editor() {
             <option value="wide">Wide</option>
             <option value="inquiry">Inquiry</option>
           </select>
+          {errors.target && <div className="error" style={{color:'red'}}>{errors.target}</div>}
+          <small className="hint">اختر قالب التهيئة</small>
         </div>
         <div>
           <label>Language</label>
-          <select value={lang} onChange={e=>setLang(e.target.value as Lang)}>
+          <select value={lang} onChange={e=>{setLang(e.target.value as Lang); if(errors.lang) setErrors(prev=>({...prev, lang:""}));}} title="لغة المستند">
             <option value="">--</option>
             <option value="en">EN</option>
             <option value="ar">AR</option>
@@ -383,11 +413,14 @@ export default function Editor() {
             <option value="ja">JA</option>
             <option value="other">Other</option>
           </select>
+          {errors.lang && <div className="error" style={{color:'red'}}>{errors.lang}</div>}
+          <small className="hint">اختر اللغة</small>
         </div>
       </div>
 
       <div className="card" style={{marginBottom:12}}>
         <label>Custom Criteria</label>
+        <small className="hint">إضافة معايير مخصصة للتقييم</small>
         <div className="criteria-list">
           {criteria.map(c => (
             <div key={c.id}>
@@ -398,25 +431,29 @@ export default function Editor() {
           ))}
         </div>
         <div className="add-crit" style={{marginTop:8}}>
-          <input placeholder="ID" value={newId} onChange={e=>setNewId(e.target.value)} />
-          <input placeholder="Description" value={newDesc} onChange={e=>setNewDesc(e.target.value)} />
-          <input type="number" placeholder="Weight" value={newWeight} onChange={e=>setNewWeight(parseInt(e.target.value||"1"))} />
-          <input placeholder="keywords,comma" value={newKeywords} onChange={e=>setNewKeywords(e.target.value)} />
+          <input placeholder="ID" value={newId} onChange={e=>setNewId(e.target.value)} title="معرف فريد" />
+          <input placeholder="Description" value={newDesc} onChange={e=>setNewDesc(e.target.value)} title="وصف المعيار" />
+          <input type="number" placeholder="Weight" value={newWeight} onChange={e=>setNewWeight(parseInt(e.target.value||"1"))} title="وزن المعيار" />
+          <input placeholder="keywords,comma" value={newKeywords} onChange={e=>setNewKeywords(e.target.value)} title="كلمات مفتاحية مفصولة بفواصل" />
           <button className="btn" type="button" onClick={addCustomCriterion}>Add</button>
         </div>
       </div>
 
       <div className="card" style={{marginBottom:12}}>
         <label>النص</label>
-        <textarea rows={12} placeholder="ألصق هنا النص المبعثر…" value={text} onChange={e=>setText(e.target.value)} />
+        <textarea rows={12} placeholder="ألصق هنا النص المبعثر…" value={text} onChange={e=>{setText(e.target.value); if(errors.text) setErrors(prev=>({...prev, text:""}));}} title="النص المراد معالجته" />
+        {errors.text && <div className="error" style={{color:'red'}}>{errors.text}</div>}
+        <small className="hint">النص المطلوب معالجته</small>
       </div>
 
       <div className="card" style={{marginBottom:12}}>
+        <progress value={progress} max={100} style={{width:"100%", marginBottom:8}}></progress>
+        <div className="note">{progress.toFixed(0)}% مكتمل</div>
         <div className="actions">
-          <button className="btn" onClick={exportCompose} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export (compose demo)"}</button>
-          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy || !target || !lang}>{zipBusy ? "..." : "Export ZIP"}</button>
-          <button className="btn" onClick={doGenerate} disabled={busy || !target || !lang}>{busy ? "جارٍ…" : "Generate"}</button>
-          <button className="btn" onClick={runSelfTest} disabled={selfBusy || !text}>{selfBusy ? "..." : "Self-Test"}</button>
+          <button className="btn" onClick={exportCompose} disabled={zipBusy || !ready}>{zipBusy ? "..." : "Export (compose demo)"}</button>
+          <button className="btn btn-primary" onClick={exportOrchestrate} disabled={zipBusy || !ready}>{zipBusy ? "..." : "Export ZIP"}</button>
+          <button className="btn" onClick={doGenerate} disabled={busy || !ready}>{busy ? "جارٍ…" : "Generate"}</button>
+          <button className="btn" onClick={runSelfTest} disabled={selfBusy || !text || !hasApiKey}>{selfBusy ? "..." : "Self-Test"}</button>
           {snapshotPath && (
             <a className="btn" href={snapshotPath} target="_blank" rel="noopener noreferrer">Open Snapshot</a>
           )}
@@ -462,7 +499,8 @@ export default function Editor() {
 
       <div className="card">
         <label>Output</label>
-        <textarea className="output" value={out} readOnly />
+        <textarea className="output" value={out} readOnly title="الناتج المولد" />
+        <small className="hint">الناتج بعد المعالجة</small>
       </div>
     </>
   );
