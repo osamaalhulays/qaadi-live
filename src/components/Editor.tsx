@@ -26,6 +26,32 @@ type Lang =
   | "other";
 type ModelSel = "openai" | "deepseek" | "auto";
 
+interface JudgeCriterion {
+  id: number;
+  name: string;
+  score: number;
+  gap: number;
+  type?: "internal" | "external" | "advisory";
+  covered?: boolean;
+}
+
+interface Judge {
+  percentage: number;
+  classification: "accepted" | "needs_improvement" | "weak";
+  criteria: JudgeCriterion[];
+}
+
+interface SelfTestDeviation {
+  role: string;
+  expected: string;
+  found: string;
+}
+
+interface SelfTest {
+  ratio: number;
+  deviations: SelfTestDeviation[];
+}
+
 export default function Editor() {
   const [openaiKey, setOpenaiKey] = useState("");
   const [deepseekKey, setDeepseekKey] = useState("");
@@ -42,8 +68,8 @@ export default function Editor() {
   const [msg, setMsg] = useState<string>("");
   const [verify, setVerify] = useState<null | { eq_before:number; eq_after:number; eq_match:boolean; glossary_entries:number; rtl_ltr:string; idempotency:boolean }>(null);
   const [files, setFiles] = useState<string[]>([]);
-  const [judge, setJudge] = useState<any>(null);
-  const [selfTest, setSelfTest] = useState<null | { ratio:number; deviations:{role:string; expected:string; found:string}[] }>(null);
+  const [judge, setJudge] = useState<Judge | null>(null);
+  const [selfTest, setSelfTest] = useState<SelfTest | null>(null);
   const [selfBusy, setSelfBusy] = useState(false);
   const [errors, setErrors] = useState<{[key:string]: string}>({});
 
@@ -105,7 +131,7 @@ export default function Editor() {
       try {
         const res = await fetch(`/api/selftest?slug=${slug}`);
         if (res.ok) {
-          const j = await res.json();
+          const j: SelfTest = await res.json();
           setSelfTest(j);
         }
       } catch {}
@@ -167,8 +193,8 @@ export default function Editor() {
         headers,
         body: JSON.stringify({ slug, sample: text })
       });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j?.error || "selftest_failed");
+      const j: SelfTest = await res.json();
+      if (!res.ok) throw new Error((j as any)?.error || "selftest_failed");
       setSelfTest(j);
       setMsg(`Self-Test ${(j.ratio * 100).toFixed(0)}%`);
     } catch (e:any) {
@@ -273,7 +299,7 @@ export default function Editor() {
     try {
       const jr = await fetch("/paper/judge.json");
       if (jr.ok) {
-        const jj = await jr.json();
+        const jj: Judge = await jr.json();
         setJudge(jj);
       } else setJudge(null);
     } catch { setJudge(null); }
