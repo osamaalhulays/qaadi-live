@@ -8,9 +8,9 @@ import assert from 'node:assert';
 test('export and generate buttons require target and lang', async () => {
   const { TextEncoder, TextDecoder } = await import('util');
   // @ts-ignore
-  global.TextEncoder ??= TextEncoder;
+  if (!global.TextEncoder) global.TextEncoder = TextEncoder;
   // @ts-ignore
-  global.TextDecoder ??= TextDecoder;
+  if (!global.TextDecoder) global.TextDecoder = TextDecoder;
 
   // initial render without target/lang -> buttons disabled
   let { default: Editor } = await import('../src/components/Editor');
