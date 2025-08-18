@@ -1,2 +1,2 @@
 export { runGates } from "./gates";
-export type { GateResult, SecretaryReport } from "./gates";
+export type { GateResult, SecretaryReport, FieldScore, Issue } from "./gates";

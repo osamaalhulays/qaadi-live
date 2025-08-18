@@ -2,6 +2,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { createInterface } from "readline/promises";
 import { stdin as input, stdout as output } from "node:process";
+import { runGates } from "../workflow";
 
 export interface SecretaryData {
   summary: string;
@@ -92,22 +93,17 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
       predictions,
       testability,
     };
-  const missing = Object.entries(fields)
-    .filter(([, v]) =>
-      v === undefined ||
-      v === null ||
-      (typeof v === "string" && !v.trim()) ||
-      (Array.isArray(v) && v.length === 0)
-    )
-    .map(([k]) => k);
-  const ready_percent = Math.round(
-    ((Object.keys(fields).length - missing.length) /
-      Object.keys(fields).length) *
-      100
-  );
+  const baseGate = runGates({ secretary: { audit: { ...fields, issues: [] } } });
+  const issues = Object.entries(baseGate.fields)
+    .filter(([name, info]) => name !== "issues" && info.score < 1)
+    .map(([name, info]) => ({
+      type: info.status === "missing" ? "missing_field" : "partial_field",
+      note: name,
+    }));
+  const gate = runGates({ secretary: { audit: { ...fields, issues } } });
 
   const content = [
-    `Ready%: ${ready_percent}`,
+    `Ready%: ${gate.ready_percent}`,
     "",
     "# Secretary",
     "",
@@ -136,7 +132,7 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     testability,
     "",
     "## Issues",
-    ...missing.map((m) => `- type: missing_field\n  note: ${m}`),
+    ...issues.map((i) => `- type: ${i.type}\n  note: ${i.note}`),
     "",
   ].join("\n");
 
