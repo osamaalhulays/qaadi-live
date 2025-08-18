@@ -298,10 +298,13 @@ export async function POST(req: NextRequest) {
     const gate = runGates({ secretary: { audit: secretaryAudit } });
 
     // Write secretary.md with gate results
+    const fieldLines = Object.entries((gate as any).info || {})
+      .map(([name, info]: [string, any]) => `- ${name}: ${info.score} (${info.status})`);
+    const fieldText = fieldLines.length ? `\nFields:\n${fieldLines.join("\n")}\n` : "";
     const missingText = gate.missing.length
       ? `\nMissing Fields:\n${gate.missing.map((f: FieldKey) => `- ${f}`).join("\n")}\n`
       : "";
-    const secretaryMd = `Ready%: ${gate.ready_percent}${missingText}`;
+    const secretaryMd = `Ready%: ${gate.ready_percent}${fieldText}${missingText}`;
     try {
       const secPath = path.join(process.cwd(), "paper", "secretary.md");
       await mkdir(path.dirname(secPath), { recursive: true });
