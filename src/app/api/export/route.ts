@@ -6,7 +6,7 @@ import path from "path";
 import crypto from "crypto";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { sanitizeSlug, type SnapshotEntry } from "../../../lib/utils/snapshot";
-import { runGates } from "../../../lib/workflow";
+import { runGates, gateQn21 } from "../../../lib/workflow";
 
 export const runtime = "nodejs";
 
@@ -305,14 +305,18 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    // Consultant and journalist can run in parallel
-    const [con, jour] = await Promise.allSettled([
-      generateText(selection, providerOpts, prompts.consultant, max_tokens),
-      generateText(selection, providerOpts, prompts.journalist, max_tokens)
-    ]);
-    const getText = (r: PromiseSettledResult<any>) => (r.status === "fulfilled" ? (r.value?.text ?? "") : "");
-    const consultantText = getText(con);
-    const journalistText = getText(jour);
+    const qnGate = gateQn21(judgeReport);
+    let consultantText = "";
+    let journalistText = "";
+    if (qnGate.allowed) {
+      const [con, jour] = await Promise.allSettled([
+        generateText(selection, providerOpts, prompts.consultant, max_tokens),
+        generateText(selection, providerOpts, prompts.journalist, max_tokens)
+      ]);
+      const getText = (r: PromiseSettledResult<any>) => (r.status === "fulfilled" ? (r.value?.text ?? "") : "");
+      consultantText = getText(con);
+      journalistText = getText(jour);
+    }
 
     const composePayload = {
       name: typeof body?.name === "string" ? body.name : "qaadi_export.zip",
