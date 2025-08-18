@@ -3,6 +3,7 @@ import { useEffect, useMemo, useState } from "react";
 import { latestFilesFor } from "../lib/utils/manifest";
 import ScoreCharts from "./ScoreCharts";
 import type { Criterion } from "../lib/criteria";
+import { runGates, type SecretaryReport } from "../lib/workflow";
 
 type Target =
   | "wide"
@@ -240,6 +241,17 @@ export default function Editor() {
     setZipBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
+      const secFields: SecretaryReport = {
+        summary: "demo summary",
+        keywords: ["demo"],
+        tokens: ["token"],
+        boundary: ["demo"],
+        post_analysis: "demo",
+        risks: ["demo"],
+        predictions: ["demo"],
+        testability: "demo"
+      };
+      const gate = runGates({ secretary: { audit: secFields } });
       const res = await fetch("/api/export", {
         method: "POST",
         headers,
@@ -249,7 +261,7 @@ export default function Editor() {
           slug,
           v,
           input: { text },
-          secretary: { audit: { ready_percent: 50, issues: [{ type: "demo", note: "example only" }] } },
+          secretary: { audit: { fields: secFields, ready_percent: gate.ready_percent, missing: gate.missing } },
           judge: { report: { score_total: 110, criteria: [], notes: "demo" } },
           consultant: { plan: out || "plan(demo)" },
           journalist: { summary: (out && out.slice(0, 400)) || "summary(demo)" },
