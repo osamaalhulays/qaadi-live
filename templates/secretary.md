@@ -1,40 +1,39 @@
-<!-- mandatory fields: ready_percent, issues[].type, issues[].note, summary, keywords, tokens, boundary, post_analysis, risks, predictions, testability -->
+<!-- mandatory fields: ready_percent, summary, keywords, tokens, boundary, post_analysis, risks, predictions, testability, identity -->
 
 Ready%: 100
 
-# ملخص
-يلخص هذا المستند الإطار النظري المقترح، ويعرض الأهداف والفرضيات الرئيسة للدراسة.
+# Secretary
 
-## كلمات دالة
-- إطار نظري
-- تحليل بعدي
-- شروط حدية
+## Identity
+abcd1234
 
-## رموز وتعريفات
-| الرمز | التعريف |
-|-------|---------|
-| \(c\) | سرعة الضوء |
-| \(m\) | الكتلة |
-| \(E\) | الطاقة |
+## Summary
+This document outlines the proposed theoretical framework and its main hypotheses.
 
-## شروط حدية
-- \(t = 0\) : الحالة الابتدائية للنظام.
-- \(x \to \infty\) : تبديد الطاقة يقترب من الصفر.
+## Keywords
+- framework
+- analysis
 
-## تحليل بعدي
-جميع المعادلات متجانسة من حيث الأبعاد، إذ تتحقق علاقة \([E] = [M][L]^2[T]^{-2}\).
+## Tokens and Definitions
+- c: speed of light
+- m: mass
 
-## مخاطر
-- تبسيط مفرط قد يؤدي إلى نتائج مضللة.
-- حدود صالحة ضمن نطاق سرعات أقل من سرعة الضوء.
+## Boundary Conditions
+- t = 0 : initial state of the system
+- x -> ∞ : energy dissipation approaches zero
 
-## التنبؤات
-تصف النتائج المتوقعة من النموذج وكيف يمكن ملاحظتها.
+## Post-Analysis
+All equations are dimensionally homogeneous, satisfying [E] = [M][L]^2[T]^{-2].
 
-## قابلية الاختبار
-توضح الشروط أو التجارب اللازمة للتحقق من صحة الفرضيات.
+## Risks
+- excessive simplification may mislead
+- valid only below light speed
 
+## Predictions
+Expected behaviour of the model and how it might be observed.
 
-## Issues
-- type: none
-  note: no issues
+## Testability
+Conditions or experiments necessary to verify the hypotheses.
+
+## Overflow Log
+- none

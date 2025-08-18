@@ -14,6 +14,7 @@ const sampleSecretary = {
   risks: ['oversimplification'],
   predictions: ['growth'],
   testability: 'lab experiments',
+  overflow: ['extra note'],
 };
 
 const samplePlan = [
@@ -31,6 +32,7 @@ test('runSecretary generates a complete secretary.md', async () => {
     const fileContent = await readFile(filePath, 'utf8');
     assert.strictEqual(fileContent, content);
     assert.match(fileContent, /Ready%: 100/);
+    assert.match(fileContent, /## Identity\n[0-9a-f]{8}/);
     assert.match(fileContent, /## Summary\nProject overview/);
     assert.match(
       fileContent,
@@ -54,7 +56,20 @@ test('runSecretary generates a complete secretary.md', async () => {
       /## Predictions\n- growth/
     );
     assert.match(fileContent, /## Testability\nlab experiments/);
-    assert.match(fileContent, /## Issues\n\s*$/);
+    assert.match(fileContent, /## Overflow Log\n- extra note/);
+  } finally {
+    process.chdir(prev);
+  }
+});
+
+test('runSecretary calculates readiness based on missing fields', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
+  const prev = process.cwd();
+  process.chdir(dir);
+  try {
+    const partial = { ...sampleSecretary, summary: '' };
+    const content = await runSecretary(partial);
+    assert.match(content, /Ready%: 89/);
   } finally {
     process.chdir(prev);
   }
