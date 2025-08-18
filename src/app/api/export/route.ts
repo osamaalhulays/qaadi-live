@@ -6,7 +6,7 @@ import path from "path";
 import crypto from "crypto";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
 import { sanitizeSlug, type SnapshotEntry } from "../../../lib/utils/snapshot";
-import { runGates, gateQn21 } from "../../../lib/workflow";
+import { runGates, gateQn21, type FieldKey } from "../../../lib/workflow";
 
 export const runtime = "nodejs";
 
@@ -299,7 +299,7 @@ export async function POST(req: NextRequest) {
 
     // Write secretary.md with gate results
     const missingText = gate.missing.length
-      ? `\nMissing Fields:\n${gate.missing.map((f) => `- ${f}`).join("\n")}\n`
+      ? `\nMissing Fields:\n${gate.missing.map((f: FieldKey) => `- ${f}`).join("\n")}\n`
       : "";
     const secretaryMd = `Ready%: ${gate.ready_percent}${missingText}`;
     try {
@@ -317,7 +317,7 @@ export async function POST(req: NextRequest) {
     } else {
       judgeReport = {
         score_total: 0,
-        criteria: gate.missing.map((m, i) => ({ id: i + 1, name: m, score: 0, notes: "missing required field" })),
+        criteria: gate.missing.map((m: FieldKey, i) => ({ id: i + 1, name: m, score: 0, notes: "missing required field" })),
         notes: "Missing required fields in secretary output"
       };
     }
