@@ -13,7 +13,8 @@ import {
   runJudge,
   runConsultant,
   runLead,
-  runJournalist
+  runJournalist,
+  runHead
 } from "../../../lib/workers";
 
 export const runtime = "nodejs";
@@ -42,6 +43,14 @@ function detectDir(s: string): "rtl" | "ltr" | "mixed" {
 
 export async function POST(req: NextRequest) {
   const url = new URL(req.url);
+  if (url.searchParams.get("workflow") === "head") {
+    const body: any = await req.json().catch(() => ({}));
+    const card_id = String(body.card_id || "");
+    const user = String(body.user || "");
+    const nonce = String(body.nonce || "");
+    const res = await runHead({ card_id, user, nonce });
+    return new Response(JSON.stringify(res), { status: 200 });
+  }
   if (url.searchParams.get("workflow") === "orchestrator") {
     const body: any = await req.json().catch(() => ({}));
     const cards = Array.isArray(body.cards) ? body.cards.slice(0, 10) : [];

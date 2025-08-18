@@ -27,8 +27,22 @@ test('placeholder files have stable fingerprints on regeneration', async () => {
   process.chdir(dir);
   const restore = fakeDates();
   try {
-    await saveSnapshot([{ path: 'paper/draft.tex', content: 'a' }], 'revtex', 'en', 'demo', 'v1');
-    await saveSnapshot([{ path: 'paper/draft.tex', content: 'b' }], 'revtex', 'en', 'demo', 'v1');
+    await saveSnapshot(
+      [{ path: 'paper/draft.tex', content: 'a' }],
+      'revtex',
+      'en',
+      'demo',
+      'v1',
+      { card_id: 'c1', user: 'u1', nonce: 'n1' }
+    );
+    await saveSnapshot(
+      [{ path: 'paper/draft.tex', content: 'b' }],
+      'revtex',
+      'en',
+      'demo',
+      'v1',
+      { card_id: 'c1', user: 'u1', nonce: 'n2' }
+    );
   } finally {
     restore();
     process.chdir(prev);
@@ -41,6 +55,8 @@ test('placeholder files have stable fingerprints on regeneration', async () => {
   assert.strictEqual(figs.length, 2);
   assert.strictEqual(new Set(biblio.map((e: any) => e.sha256)).size, 1);
   assert.strictEqual(new Set(figs.map((e: any) => e.sha256)).size, 1);
+  assert.ok(biblio.every((e: any) => e.card_id === 'c1'));
+  assert.ok(new Set(biblio.map((e: any) => e.session_id)).size === 2);
 });
 
 test('saves role files with type role', async () => {
@@ -50,7 +66,14 @@ test('saves role files with type role', async () => {
   await mkdir('paper', { recursive: true });
   await writeFile('paper/secretary.md', 'sec');
   try {
-    await saveSnapshot([{ path: 'paper/draft.tex', content: 'x' }], 'revtex', 'en', 'demo', 'v1');
+    await saveSnapshot(
+      [{ path: 'paper/draft.tex', content: 'x' }],
+      'revtex',
+      'en',
+      'demo',
+      'v1',
+      { card_id: 'c2', user: 'u1', nonce: 'n1' }
+    );
   } finally {
     process.chdir(prev);
   }

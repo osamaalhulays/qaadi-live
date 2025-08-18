@@ -54,13 +54,25 @@ function tsFolder(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
-async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug: string, v: string) {
+async function saveSnapshot(
+  files: ZipFile[],
+  target: string,
+  lang: string,
+  slug: string,
+  v: string,
+  ctx: { card_id: string; user: string; nonce: string } = {
+    card_id: "",
+    user: "",
+    nonce: ""
+  }
+) {
   const safeSlug = sanitizeSlug(slug);
   const safeV = sanitizeSlug(v);
   const now = new Date();
   const tsDir = tsFolder(now);
   const timestamp = now.toISOString();
   const entries: SnapshotEntry[] = [];
+  const session_id = sha256Hex(ctx.card_id + ctx.user + ctx.nonce);
 
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
@@ -76,7 +88,9 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
       slug: safeSlug,
       v: safeV,
       timestamp,
-      type: "paper"
+      type: "paper",
+      card_id: ctx.card_id,
+      session_id
     });
   }
 
@@ -96,7 +110,9 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
         slug: safeSlug,
         v: safeV,
         timestamp,
-        type: "role"
+        type: "role",
+        card_id: ctx.card_id,
+        session_id
       });
     } catch {}
   }
@@ -110,6 +126,7 @@ async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug
   manifest.push(...entries);
   await mkdir(path.dirname(manifestPath), { recursive: true });
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+  return { session_id };
 }
 
 async function buildTreeFromCompose(payload: any) {

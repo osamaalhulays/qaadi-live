@@ -11,6 +11,8 @@ export interface SnapshotEntry {
   slug: string;
   v: string;
   type: "paper" | "role";
+  card_id: string;
+  session_id: string;
 }
 
 const slugRe = /^[a-zA-Z0-9_-]+$/;
@@ -37,7 +39,12 @@ export async function saveSnapshot(
   target: string,
   lang: string,
   slug: string,
-  v: string
+  v: string,
+  ctx: { card_id: string; user: string; nonce: string } = {
+    card_id: "",
+    user: "",
+    nonce: ""
+  }
 ) {
   const now = new Date();
   const tsDir = tsFolder(now);
@@ -47,6 +54,7 @@ export async function saveSnapshot(
 
   const safeSlug = sanitizeSlug(slug);
   const safeV = sanitizeSlug(v);
+  const session_id = sha256Hex(ctx.card_id + ctx.user + ctx.nonce);
 
   const roleNames = [
     "secretary.md",
@@ -103,7 +111,9 @@ export async function saveSnapshot(
       slug: safeSlug,
       v: safeV,
       timestamp,
-      type: "paper"
+      type: "paper",
+      card_id: ctx.card_id,
+      session_id
     });
   }
 
@@ -122,7 +132,9 @@ export async function saveSnapshot(
       slug: safeSlug,
       v: safeV,
       timestamp,
-      type: "role"
+      type: "role",
+      card_id: ctx.card_id,
+      session_id
     });
   }
 
@@ -141,7 +153,9 @@ export async function saveSnapshot(
       slug: safeSlug,
       v: safeV,
       timestamp,
-      type: "paper"
+      type: "paper",
+      card_id: ctx.card_id,
+      session_id
     });
 
     const relFigs = path.join(base, "figs");
@@ -155,7 +169,9 @@ export async function saveSnapshot(
       slug: safeSlug,
       v: safeV,
       timestamp,
-      type: "paper"
+      type: "paper",
+      card_id: ctx.card_id,
+      session_id
     });
   }
 
@@ -168,5 +184,5 @@ export async function saveSnapshot(
   manifest.push(...entries);
   await mkdir(path.dirname(manifestPath), { recursive: true });
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
-  return { files: entries.map((e) => e.path), covers };
+  return { files: entries.map((e) => e.path), covers, session_id };
 }
