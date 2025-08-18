@@ -27,7 +27,8 @@ test('placeholder files have stable fingerprints on regeneration', async () => {
   process.chdir(dir);
   const restore = fakeDates();
   try {
-    await saveSnapshot([{ path: 'paper/draft.tex', content: 'a' }], 'revtex', 'en', 'demo', 'v1');
+    const first = await saveSnapshot([{ path: 'paper/draft.tex', content: 'a' }], 'revtex', 'en', 'demo', 'v1');
+    assert.ok(first.entries[0].sha256);
     await saveSnapshot([{ path: 'paper/draft.tex', content: 'b' }], 'revtex', 'en', 'demo', 'v1');
   } finally {
     restore();

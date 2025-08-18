@@ -168,5 +168,5 @@ export async function saveSnapshot(
   manifest.push(...entries);
   await mkdir(path.dirname(manifestPath), { recursive: true });
   await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
-  return { files: entries.map((e) => e.path), covers };
+  return { files: entries.map((e) => e.path), covers, entries };
 }

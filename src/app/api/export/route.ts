@@ -5,8 +5,8 @@ import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 import { checkIdempotency } from "../../../lib/utils/idempotency";
-import { sanitizeSlug, type SnapshotEntry } from "../../../lib/utils/snapshot";
 import { runGates } from "../../../lib/workflow";
+import { saveSnapshot } from "../../../lib/saveSnapshot";
 
 export const runtime = "nodejs";
 
@@ -54,65 +54,7 @@ function tsFolder(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
-async function saveSnapshot(files: ZipFile[], target: string, lang: string, slug: string, v: string) {
-  const safeSlug = sanitizeSlug(slug);
-  const safeV = sanitizeSlug(v);
-  const now = new Date();
-  const tsDir = tsFolder(now);
-  const timestamp = now.toISOString();
-  const entries: SnapshotEntry[] = [];
-
-  for (const f of files) {
-    const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
-    const rel = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
-    const full = path.join(process.cwd(), "public", rel);
-    await mkdir(path.dirname(full), { recursive: true });
-    await writeFile(full, data);
-    entries.push({
-      path: rel.replace(/\\/g, "/"),
-      sha256: sha256Hex(data),
-      target,
-      lang,
-      slug: safeSlug,
-      v: safeV,
-      timestamp,
-      type: "paper"
-    });
-  }
-
-  const roleNames = ["secretary.md", "judge.json", "plan.md", "notes.txt", "comparison.md"];
-  for (const name of roleNames) {
-    try {
-      const data = await readFile(path.join(process.cwd(), "paper", name));
-      const rel = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang, name);
-      const full = path.join(process.cwd(), "public", rel);
-      await mkdir(path.dirname(full), { recursive: true });
-      await writeFile(full, data);
-      entries.push({
-        path: rel.replace(/\\/g, "/"),
-        sha256: sha256Hex(data),
-        target,
-        lang,
-        slug: safeSlug,
-        v: safeV,
-        timestamp,
-        type: "role"
-      });
-    } catch {}
-  }
-
-  const manifestPath = path.join(process.cwd(), "public", "snapshots", "manifest.json");
-  let manifest: SnapshotEntry[] = [];
-  try {
-    const existing = await readFile(manifestPath, "utf-8");
-    manifest = JSON.parse(existing);
-  } catch {}
-  manifest.push(...entries);
-  await mkdir(path.dirname(manifestPath), { recursive: true });
-  await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
-}
-
-async function buildTreeFromCompose(payload: any) {
+async function buildTreeFromCompose(payload: any, identity: string) {
   // EXPECTS:
   // {
   //   name?: "qaadi_export.zip",
@@ -120,48 +62,33 @@ async function buildTreeFromCompose(payload: any) {
   //   secretary?: { audit: any },
   //   judge?: { report: any },
   //   consultant?: { plan: string },
-  //   journalist?: { summary: string },
   //   meta?: { target?: string, lang?: string, model?: string, max_tokens?: number }
   // }
-  const files: ZipFile[] = [];
   const name = typeof payload?.name === "string" ? payload.name : "qaadi_export.zip";
 
-  const manifest = {
-    kind: "qaadi-export",
-    version: 1,
-    created_at: isoNow(),
-    build: {
-      tag: (process.env.NEXT_PUBLIC_BUILD_TAG ?? "qaadi-fast-track"),
-      byok: true
-    },
-    meta: payload?.meta ?? {}
-  };
+  const otherFiles: ZipFile[] = [];
 
-  // 00_manifest.json + 90_build_info.json
-  files.push({ path: "paper/00_manifest.json", content: JSON.stringify(manifest, null, 2) });
-  files.push({
-    path: "paper/90_build_info.json",
-    content: JSON.stringify({ created_at: isoNow(), env: "edge" }, null, 2)
-  });
+  // 10_identity.json
+  otherFiles.push({ path: "paper/10_identity.json", content: identity });
 
-  // 10_input.md
+  // 20_input.md
   const inputText = payload?.input?.text ?? "";
-  files.push({ path: "paper/10_input.md", content: inputText });
+  otherFiles.push({ path: "paper/20_input.md", content: inputText });
 
   // secretary.md (human-readable gate report)
   if (typeof payload?.secretary?.markdown === "string") {
-    files.push({ path: "paper/secretary.md", content: payload.secretary.markdown });
+    otherFiles.push({ path: "paper/secretary.md", content: payload.secretary.markdown });
   }
 
-  // 20_secretary_audit.json
+  // 30_secretary_audit.json
   if (payload?.secretary?.audit !== undefined) {
-    files.push({
-      path: "paper/20_secretary_audit.json",
+    otherFiles.push({
+      path: "paper/30_secretary_audit.json",
       content: JSON.stringify(payload.secretary.audit, null, 2)
     });
   }
 
-  // 30_judge_report.json
+  // 40_judge_report.json
   if (payload?.judge?.report !== undefined) {
     const report = payload.judge.report;
     let percentage = 0;
@@ -173,8 +100,8 @@ async function buildTreeFromCompose(payload: any) {
       else if (percentage >= 60) classification = "needs_improvement";
     }
     const enriched = { ...report, percentage, classification };
-    files.push({
-      path: "paper/30_judge_report.json",
+    otherFiles.push({
+      path: "paper/40_judge_report.json",
       content: JSON.stringify(enriched, null, 2)
     });
     try {
@@ -186,15 +113,32 @@ async function buildTreeFromCompose(payload: any) {
     } catch {}
   }
 
-  // 40_consultant_plan.md
+  // 50_consultant_plan.md
   if (typeof payload?.consultant?.plan === "string") {
-    files.push({ path: "paper/40_consultant_plan.md", content: payload.consultant.plan });
+    otherFiles.push({ path: "paper/50_consultant_plan.md", content: payload.consultant.plan });
   }
 
-  // 50_journalist_summary.md
-  if (typeof payload?.journalist?.summary === "string") {
-    files.push({ path: "paper/50_journalist_summary.md", content: payload.journalist.summary });
-  }
+  // 90_build_info.json
+  otherFiles.push({
+    path: "paper/90_build_info.json",
+    content: JSON.stringify({ created_at: isoNow(), env: "edge" }, null, 2)
+  });
+
+  const fileMeta = otherFiles.map((f) => ({ path: f.path, sha256: sha256Hex(f.content) }));
+
+  const manifest = {
+    kind: "qaadi-export",
+    version: 1,
+    created_at: isoNow(),
+    build: {
+      tag: process.env.NEXT_PUBLIC_BUILD_TAG ?? "qaadi-fast-track",
+      byok: true
+    },
+    meta: payload?.meta ?? {},
+    files: fileMeta
+  };
+
+  const files: ZipFile[] = [{ path: "paper/00_manifest.json", content: JSON.stringify(manifest, null, 2) }, ...otherFiles];
 
   return { name, files };
 }
@@ -204,8 +148,7 @@ function promptsForOrchestrate(inputText: string) {
   return {
     secretary: `You are Qaadi Secretary. Audit the submission: list missing items, ambiguity, formatting issues. Output strict JSON: { "ready_percent": number, "issues": [ { "type": "...", "note": "..." } ] }.\n\nINPUT:\n${inputText}`,
     judge: `You are Qaadi Judge. Evaluate scientifically against 20 internal criteria. Output strict JSON: { "score_total": number, "criteria": [ { "id": 1, "name": "...", "score": number, "notes": "..." } ], "notes": "..." }.\n\nINPUT:\n${inputText}`,
-    consultant: `You are Qaadi Consultant. Merge secretary issues + judge gaps into an action plan. Output a concise Markdown plan (no code fences). INPUT:\n${inputText}`,
-    journalist: `You are Qaadi Journalist. Produce a concise, publication-ready summary in Arabic. No code fences. INPUT:\n${inputText}`
+    consultant: `You are Qaadi Consultant. Merge secretary issues + judge gaps into an action plan. Output a concise Markdown plan (no code fences). INPUT:\n${inputText}`
   };
 }
 
@@ -229,6 +172,11 @@ export async function POST(req: NextRequest) {
   const slug = typeof body?.slug === "string" ? body.slug : "default";
   const v = typeof body?.v === "string" ? body.v : "default";
 
+  let identityRaw = "{}";
+  try {
+    identityRaw = await readFile(path.join(process.cwd(), "QaadiDB", `theory-${slug}`, "identity.json"), "utf-8");
+  } catch {}
+
   // Mode A: raw → same as old behavior (accept ready files[])
   if (mode === "raw") {
     const files = Array.isArray(body?.files) ? (body.files as ZipFile[]) : null;
@@ -244,7 +192,7 @@ export async function POST(req: NextRequest) {
 
   // Mode B: compose → client provides unit outputs; server builds canonical tree
   if (mode === "compose") {
-    const { name, files } = await buildTreeFromCompose(body);
+    const { name, files } = await buildTreeFromCompose(body, identityRaw);
     if (!files.length) {
       return new Response(JSON.stringify({ error: "compose_empty" }), { status: 400, headers: headersJSON() });
     }
@@ -305,14 +253,9 @@ export async function POST(req: NextRequest) {
       };
     }
 
-    // Consultant and journalist can run in parallel
-    const [con, jour] = await Promise.allSettled([
-      generateText(selection, providerOpts, prompts.consultant, max_tokens),
-      generateText(selection, providerOpts, prompts.journalist, max_tokens)
-    ]);
-    const getText = (r: PromiseSettledResult<any>) => (r.status === "fulfilled" ? (r.value?.text ?? "") : "");
-    const consultantText = getText(con);
-    const journalistText = getText(jour);
+    // Consultant plan
+    const con = await generateText(selection, providerOpts, prompts.consultant, max_tokens).catch(() => ({ text: "" }));
+    const consultantText = con?.text ?? "";
 
     const composePayload = {
       name: typeof body?.name === "string" ? body.name : "qaadi_export.zip",
@@ -320,11 +263,10 @@ export async function POST(req: NextRequest) {
       secretary: { audit: secretaryAudit, markdown: secretaryMd },
       judge: { report: judgeReport },
       consultant: { plan: consultantText },
-      journalist: { summary: journalistText },
       meta: { model: selection, max_tokens }
     };
 
-    const { name, files } = await buildTreeFromCompose(composePayload);
+    const { name, files } = await buildTreeFromCompose(composePayload, identityRaw);
     await saveSnapshot(files, target, lang, slug, v);
     const zip = makeZip(files);
     const shaHex = sha256Hex(zip);
