@@ -2,6 +2,7 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { createInterface } from "readline/promises";
 import { stdin as input, stdout as output } from "node:process";
+import { createHash } from "crypto";
 
 export interface SecretaryData {
   summary: string;
@@ -12,6 +13,7 @@ export interface SecretaryData {
   risks: string[];
   predictions: string[];
   testability: string;
+  overflow?: string[];
 }
 
 /**
@@ -28,6 +30,7 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
   let risks: string[];
   let predictions: string[];
   let testability: string;
+  let overflow: string[];
 
   if (!data) {
     const rl = createInterface({ input, output });
@@ -65,33 +68,54 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
         .split(",")
         .map((p) => p.trim())
         .filter(Boolean);
-        testability = await rl.question("Testability: ");
-      } finally {
-        rl.close();
-      }
-    } else {
-      ({
-        summary = "",
-        keywords = [],
-        tokens = [],
-        boundary = [],
-        post_analysis = "",
-        risks = [],
-        predictions = [],
-        testability = "",
-      } = data);
+      testability = await rl.question("Testability: ");
+      const overflowInput = await rl.question(
+        "Overflow log (comma separated, optional): "
+      );
+      overflow = overflowInput
+        .split(",")
+        .map((o) => o.trim())
+        .filter(Boolean);
+    } finally {
+      rl.close();
     }
+  } else {
+    ({
+      summary = "",
+      keywords = [],
+      tokens = [],
+      boundary = [],
+      post_analysis = "",
+      risks = [],
+      predictions = [],
+      testability = "",
+      overflow = [],
+    } = data);
+  }
 
-    const fields = {
-      summary,
-      keywords,
-      tokens,
-      boundary,
-      post_analysis,
-      risks,
-      predictions,
-      testability,
-    };
+  const identityInput = [
+    summary,
+    keywords.join(","),
+    tokens.join(","),
+    boundary.join(","),
+    post_analysis,
+    risks.join(","),
+    predictions.join(","),
+    testability,
+  ].join("|");
+  const identity = createHash("sha256").update(identityInput).digest("hex").slice(0, 8);
+
+  const fields = {
+    summary,
+    keywords,
+    tokens,
+    boundary,
+    post_analysis,
+    risks,
+    predictions,
+    testability,
+    identity,
+  };
   const missing = Object.entries(fields)
     .filter(([, v]) =>
       v === undefined ||
@@ -110,6 +134,9 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     `Ready%: ${ready_percent}`,
     "",
     "# Secretary",
+    "",
+    "## Identity",
+    identity,
     "",
     "## Summary",
     summary,
@@ -135,8 +162,8 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     "## Testability",
     testability,
     "",
-    "## Issues",
-    ...missing.map((m) => `- type: missing_field\n  note: ${m}`),
+    "## Overflow Log",
+    ...(overflow.length > 0 ? overflow.map((o) => `- ${o}`) : ["- none"]),
     "",
   ].join("\n");
 
