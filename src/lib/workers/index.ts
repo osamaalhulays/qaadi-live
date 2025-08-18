@@ -4,3 +4,4 @@ export { runJudge } from "./judge";
 export { runConsultant } from "./consultant";
 export { runLead } from "./lead";
 export { runJournalist } from "./journalist";
+export { runHead, endHead, resetHead, activeHeadSessions } from "./head";

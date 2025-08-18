@@ -1,0 +1,50 @@
+import { mkdir } from "fs/promises";
+import path from "path";
+import crypto from "crypto";
+
+const MAX_SESSIONS = 10;
+
+interface SessionInfo {
+  session_id: string;
+  vectorPath: string;
+}
+
+const sessions = new Map<string, SessionInfo>();
+
+function sha256(data: string) {
+  return crypto.createHash("sha256").update(data).digest("hex");
+}
+
+export async function runHead(opts: {
+  card_id: string;
+  user: string;
+  nonce: string;
+}): Promise<SessionInfo> {
+  const { card_id, user, nonce } = opts;
+  if (!card_id) throw new Error("missing_card_id");
+  if (!user) throw new Error("missing_user");
+  if (!nonce) throw new Error("missing_nonce");
+  if (!sessions.has(card_id) && sessions.size >= MAX_SESSIONS) {
+    throw new Error("too_many_sessions");
+  }
+
+  const vectorPath = path.join("/vector_db", `qaadi_sec_${card_id}`);
+  await mkdir(vectorPath, { recursive: true });
+  const session_id = sha256(card_id + user + nonce);
+  const info = { session_id, vectorPath };
+  sessions.set(card_id, info);
+  return info;
+}
+
+export function endHead(card_id: string) {
+  sessions.delete(card_id);
+}
+
+export function resetHead() {
+  sessions.clear();
+}
+
+export function activeHeadSessions() {
+  return Array.from(sessions.keys());
+}
+
