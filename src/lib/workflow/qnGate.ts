@@ -1,6 +1,7 @@
 export interface QN21Criterion {
   id: number;
   score: number;
+  name?: string;
 }
 
 export interface QN21Report {
@@ -11,7 +12,7 @@ export interface QN21Report {
 export interface QN21GateResult {
   allowed: boolean;
   percentage: number;
-  failed: number[];
+  failed: Array<number | string>;
 }
 
 /**
@@ -34,9 +35,18 @@ export function gateQn21(
   }
   const max = report.criteria.length * 10;
   const percentage = max > 0 ? (report.score_total / max) * 100 : 0;
-  const failed = report.criteria
+  const failed: Array<number | string> = report.criteria
     .filter((c) => critical.includes(c.id) && c.score < criticalThreshold)
     .map((c) => c.id);
+
+  const mandatory = ["equations", "definitions", "dimensional"];
+  for (const name of mandatory) {
+    const crit = report.criteria.find((c) => c.name === name);
+    if (!crit || crit.score < 1) {
+      failed.push(name);
+    }
+  }
+
   const allowed = failed.length === 0 && percentage >= minTotal;
   return { allowed, percentage, failed };
 }
