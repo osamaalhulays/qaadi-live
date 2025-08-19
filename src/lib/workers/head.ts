@@ -2,7 +2,7 @@ import { mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 
-const MAX_SESSIONS = 10;
+const MAX_SESSIONS = Number(process.env.HEAD_MAX_SESSIONS) || 10;
 
 interface SessionInfo {
   session_id: string;
