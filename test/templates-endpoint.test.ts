@@ -1,6 +1,8 @@
 import { test } from '@jest/globals';
 import assert from 'node:assert';
 import { NextRequest } from 'next/server';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { GET } from '../src/app/api/templates/route';
 const base = 'http://localhost/api/templates';
 
@@ -33,4 +35,12 @@ test('missing template returns 404', async () => {
   const req = new NextRequest(`${base}?name=missing.md`);
   const res = await GET(req);
   assert.strictEqual(res.status, 404);
+});
+
+test('documentation files exist', () => {
+  const root = process.cwd();
+  const qn21 = readFileSync(path.join(root, 'docs', 'qn21-criteria.md'), 'utf8');
+  const gate = readFileSync(path.join(root, 'docs', 'gate-stack.md'), 'utf8');
+  assert.ok(qn21.includes('QN21 Criteria'));
+  assert.ok(gate.includes('Gate Stack'));
 });
