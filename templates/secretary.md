@@ -2,38 +2,38 @@
 
 Ready%: 100
 
-# Secretary
+# السكرتير
 
-## Identity
+## الهوية
 abcd1234
 
-## Summary
-This document outlines the proposed theoretical framework and its main hypotheses.
+## ملخص
+يوضح هذا المستند الإطار النظري المقترح وفرضياته الرئيسية.
 
-## Keywords
-- framework
-- analysis
+## الكلمات المفتاحية
+- إطار
+- تحليل
 
-## Tokens and Definitions
-- c: speed of light
-- m: mass
+## الرموز والتعريفات
+- c: سرعة الضوء
+- m: الكتلة
 
-## Boundary Conditions
-- t = 0 : initial state of the system
-- x -> ∞ : energy dissipation approaches zero
+## الشروط الحدية
+- t = 0 : الحالة الابتدائية للنظام
+- x -> ∞ : تبديد الطاقة يقترب من الصفر
 
-## Post-Analysis
-All equations are dimensionally homogeneous, satisfying [E] = [M][L]^2[T]^{-2].
+## ما بعد التحليل
+جميع المعادلات متجانسة أبعاديًا، وتحقق [E] = [M][L]^2[T]^{-2].
 
-## Risks
-- excessive simplification may mislead
-- valid only below light speed
+## المخاطر
+- قد يؤدي التبسيط المفرط إلى تضليل
+- صالح فقط دون سرعة الضوء
 
-## Predictions
-Expected behaviour of the model and how it might be observed.
+## التوقعات
+السلوك المتوقع للنموذج وكيف يمكن رصده.
 
-## Testability
-Conditions or experiments necessary to verify the hypotheses.
+## قابلية الاختبار
+الشروط أو التجارب اللازمة للتحقق من الفرضيات.
 
-## Overflow Log
-- none
+## سجل الفائض
+- لا شيء
