@@ -76,7 +76,7 @@ async function saveSnapshot(
 
   for (const f of files) {
     const data = typeof f.content === "string" ? Buffer.from(f.content) : Buffer.from(f.content);
-    const rel = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang, f.path.replace(/^paper\//, ""));
+    const rel = path.join("snapshots", safeSlug, safeV, tsDir, "exports", target, lang, f.path.replace(/^exports\//, ""));
     const full = path.join(process.cwd(), "public", rel);
     await mkdir(path.dirname(full), { recursive: true });
     await writeFile(full, data);
@@ -98,7 +98,7 @@ async function saveSnapshot(
   for (const name of roleNames) {
     try {
       const data = await readFile(path.join(process.cwd(), "paper", name));
-      const rel = path.join("snapshots", safeSlug, safeV, tsDir, "paper", target, lang, name);
+      const rel = path.join("snapshots", safeSlug, safeV, tsDir, "exports", target, lang, name);
       const full = path.join(process.cwd(), "public", rel);
       await mkdir(path.dirname(full), { recursive: true });
       await writeFile(full, data);
@@ -155,25 +155,36 @@ async function buildTreeFromCompose(payload: any) {
   };
 
   // 00_manifest.json + 90_build_info.json
-  files.push({ path: "paper/00_manifest.json", content: JSON.stringify(manifest, null, 2) });
+  files.push({ path: "exports/00_manifest.json", content: JSON.stringify(manifest, null, 2) });
   files.push({
-    path: "paper/90_build_info.json",
+    path: "exports/90_build_info.json",
     content: JSON.stringify({ created_at: isoNow(), env: "edge" }, null, 2)
   });
 
   // 10_input.md
   const inputText = payload?.input?.text ?? "";
-  files.push({ path: "paper/10_input.md", content: inputText });
+  files.push({ path: "exports/10_input.md", content: inputText });
+
+  // 10_identity.json
+  const identity = typeof payload?.secretary?.audit?.identity === "string"
+    ? payload.secretary.audit.identity
+    : "";
+  if (identity) {
+    files.push({
+      path: "exports/10_identity.json",
+      content: JSON.stringify({ identity }, null, 2)
+    });
+  }
 
   // secretary.md (human-readable gate report)
   if (typeof payload?.secretary?.markdown === "string") {
-    files.push({ path: "paper/secretary.md", content: payload.secretary.markdown });
+    files.push({ path: "exports/secretary.md", content: payload.secretary.markdown });
   }
 
   // 20_secretary_audit.json
   if (payload?.secretary?.audit !== undefined) {
     files.push({
-      path: "paper/20_secretary_audit.json",
+      path: "exports/20_secretary_audit.json",
       content: JSON.stringify(payload.secretary.audit, null, 2)
     });
   }
@@ -191,7 +202,7 @@ async function buildTreeFromCompose(payload: any) {
     }
     const enriched = { ...report, percentage, classification };
     files.push({
-      path: "paper/30_judge_report.json",
+      path: "exports/30_judge_report.json",
       content: JSON.stringify(enriched, null, 2)
     });
     try {
@@ -205,12 +216,12 @@ async function buildTreeFromCompose(payload: any) {
 
   // 40_consultant_plan.md
   if (typeof payload?.consultant?.plan === "string") {
-    files.push({ path: "paper/40_consultant_plan.md", content: payload.consultant.plan });
+    files.push({ path: "exports/40_consultant_plan.md", content: payload.consultant.plan });
   }
 
   // 50_journalist_summary.md
   if (typeof payload?.journalist?.summary === "string") {
-    files.push({ path: "paper/50_journalist_summary.md", content: payload.journalist.summary });
+    files.push({ path: "exports/50_journalist_summary.md", content: payload.journalist.summary });
   }
 
   return { name, files };
