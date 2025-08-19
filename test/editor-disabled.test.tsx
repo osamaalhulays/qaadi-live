@@ -1,7 +1,5 @@
 // Tests run in the default Node environment; no DOM APIs are required.
 
-import React from 'react';
-import { renderToStaticMarkup } from 'react-dom/server';
 import { test, jest } from '@jest/globals';
 import assert from 'node:assert';
 
@@ -13,6 +11,8 @@ test('export and generate buttons require target and lang', async () => {
   if (!global.TextDecoder) global.TextDecoder = TextDecoder;
 
   // initial render without target/lang -> buttons disabled
+  let React = (await import('react')).default;
+  let { renderToStaticMarkup } = await import('react-dom/server');
   let { default: Editor } = await import('../src/components/Editor');
   const initial = renderToStaticMarkup(<Editor />);
   assert.match(initial, /<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
@@ -20,6 +20,9 @@ test('export and generate buttons require target and lang', async () => {
   assert.match(initial, /<button class="btn"[^>]*disabled[^>]*>Generate<\/button>/);
 
   // render with target and lang preset -> buttons enabled
+  jest.resetModules();
+  React = (await import('react')).default;
+  ({ renderToStaticMarkup } = await import('react-dom/server'));
   const origUseState = React.useState;
   let calls = 0;
   jest.spyOn(React, 'useState').mockImplementation((init: any) => {
@@ -28,7 +31,6 @@ test('export and generate buttons require target and lang', async () => {
     if (calls === 4) return ['en', () => {}]; // lang
     return origUseState(init);
   });
-  jest.resetModules();
   ({ default: Editor } = await import('../src/components/Editor'));
   const withValues = renderToStaticMarkup(<Editor />);
   (React.useState as any).mockRestore();
