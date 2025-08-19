@@ -15,5 +15,5 @@ export async function generateText(
     maxTokens: number
   ) => Promise<any> = runWithFallback
 ) {
-  return runner(model, keys, prompt, maxTokens);
+  return runner(model, { ...keys }, prompt, maxTokens);
 }
