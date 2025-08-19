@@ -4,16 +4,20 @@ import { mkdtemp, readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { runSecretary, runResearchSecretary } from '../src/lib/workers/index.ts';
+import { runGates } from '../src/lib/workflow/gates.ts';
 
 const sampleSecretary = {
   summary: 'Project overview',
   keywords: ['analysis', 'physics'],
   tokens: ['c: speed of light', 'm: mass'],
   boundary: ['t=0', 'x->∞'],
-  post_analysis: 'dimensionless',
+  core_equations: ['E=mc^2'],
+  dimensional: 'all equations consistent',
+  post_analysis: 'post review',
   risks: ['oversimplification'],
   predictions: ['growth'],
   testability: 'lab experiments',
+  references: ['Doe 2020'],
   overflow: ['extra note'],
 };
 
@@ -31,6 +35,7 @@ test('runSecretary generates a complete secretary.md', async () => {
     const filePath = path.join(dir, 'paper', 'secretary.md');
     const fileContent = await readFile(filePath, 'utf8');
     assert.strictEqual(fileContent, content);
+    assert.match(fileContent, /Fingerprint: qaadi-live\/0.1.0\/\d{4}-\d{2}-\d{2}\/[0-9a-f]{8}/);
     assert.match(fileContent, /Ready%: 100/);
     assert.match(fileContent, /## Identity\n[0-9a-f]{8}/);
     assert.match(fileContent, /## Summary\nProject overview/);
@@ -44,9 +49,14 @@ test('runSecretary generates a complete secretary.md', async () => {
     );
     assert.match(
       fileContent,
+      /## Core Equations\n- E=mc\^2/
+    );
+    assert.match(
+      fileContent,
       /## Boundary Conditions\n- t=0\n- x->∞/
     );
-    assert.match(fileContent, /## Post-Analysis\ndimensionless/);
+    assert.match(fileContent, /## Dimensional Analysis\nall equations consistent/);
+    assert.match(fileContent, /## Post-Analysis\npost review/);
     assert.match(
       fileContent,
       /## Risks\n- oversimplification/
@@ -56,6 +66,7 @@ test('runSecretary generates a complete secretary.md', async () => {
       /## Predictions\n- growth/
     );
     assert.match(fileContent, /## Testability\nlab experiments/);
+    assert.match(fileContent, /## References\n- Doe 2020/);
     assert.match(fileContent, /## Overflow Log\n- extra note/);
   } finally {
     process.chdir(prev);
@@ -73,6 +84,24 @@ test('runSecretary calculates readiness based on missing fields', async () => {
   } finally {
     process.chdir(prev);
   }
+});
+
+test('runGates requires identity among fields', () => {
+  const report = {
+    summary: 's',
+    keywords: ['k'],
+    tokens: ['t'],
+    boundary: ['b'],
+    post_analysis: 'p',
+    risks: ['r'],
+    predictions: ['pr'],
+    testability: 'tst',
+    identity: 'abcd1234',
+  };
+  const result = runGates({ secretary: { audit: report } });
+  assert.strictEqual(result.ready_percent, 100);
+  const missing = runGates({ secretary: { audit: { ...report, identity: '' } } });
+  assert.ok(missing.missing.includes('identity'));
 });
 
 test('runResearchSecretary writes plan files with QN-21 table', async () => {
