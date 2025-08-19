@@ -48,3 +48,17 @@ export function activeHeadSessions() {
   return Array.from(sessions.keys());
 }
 
+export async function exportHead<T>(
+  card_ids: string | string[],
+  exporter: () => Promise<T>,
+): Promise<T> {
+  const ids = Array.isArray(card_ids) ? card_ids : [card_ids];
+  try {
+    return await exporter();
+  } finally {
+    for (const id of ids) {
+      endHead(id);
+    }
+  }
+}
+

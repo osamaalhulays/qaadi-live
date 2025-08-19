@@ -1,7 +1,13 @@
 import { test, expect } from '@jest/globals';
-import { runHead, resetHead } from '../src/lib/workers';
-import { stat, rm } from 'node:fs/promises';
+import {
+  runHead,
+  resetHead,
+  runResearchCenter,
+  activeHeadSessions,
+} from '../src/lib/workers';
+import { stat, rm, readFile, mkdtemp } from 'node:fs/promises';
 import path from 'node:path';
+import { tmpdir } from 'node:os';
 
 test('AT-1/AT-5 vector store isolation', async () => {
   resetHead();
@@ -21,5 +27,26 @@ test('AT-1/AT-5 vector store isolation', async () => {
     await rm(path.join('/vector_db', `qaadi_sec_a${i}`), { recursive: true, force: true });
   }
   resetHead();
+});
+
+test('research center prevents data leakage between cards', async () => {
+  resetHead();
+  const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
+  const plans = {
+    alpha: [{ item: 'Alpha item', priority: 'P0', qn: 'QN-21-A1' }],
+    beta: [{ item: 'Beta item', priority: 'P1', qn: 'QN-21-B1' }],
+  } as const;
+  await runResearchCenter(plans, dir);
+  const alphaPlan = await readFile(path.join(dir, 'paper', 'plan-alpha.md'), 'utf8');
+  const betaPlan = await readFile(path.join(dir, 'paper', 'plan-beta.md'), 'utf8');
+  expect(alphaPlan).toContain('Alpha item');
+  expect(alphaPlan).not.toContain('Beta item');
+  expect(betaPlan).toContain('Beta item');
+  expect(betaPlan).not.toContain('Alpha item');
+  const cmp = await readFile(path.join(dir, 'paper', 'comparison.md'), 'utf8');
+  expect(cmp).toContain('Alpha item');
+  expect(cmp).toContain('Beta item');
+  expect(activeHeadSessions()).toEqual([]);
+  await rm(dir, { recursive: true, force: true });
 });
 
