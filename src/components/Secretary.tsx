@@ -7,11 +7,15 @@ export default function Secretary() {
   const [keywords, setKeywords] = useState("");
   const [tokens, setTokens] = useState("");
   const [boundary, setBoundary] = useState("");
+  const [coreEquations, setCoreEquations] = useState("");
+  const [dimensional, setDimensional] = useState("");
   const [postAnalysis, setPostAnalysis] = useState("");
   const [risks, setRisks] = useState("");
   const [predictions, setPredictions] = useState("");
   const [testability, setTestability] = useState("");
+  const [references, setReferences] = useState("");
   const [overflow, setOverflow] = useState("");
+  const [identity, setIdentity] = useState("");
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -29,6 +33,11 @@ export default function Secretary() {
         .split(",")
         .map((b) => b.trim())
         .filter(Boolean),
+      core_equations: coreEquations
+        .split("\n")
+        .map((e) => e.trim())
+        .filter(Boolean),
+      dimensional,
       post_analysis: postAnalysis,
       risks: risks
         .split(",")
@@ -39,13 +48,19 @@ export default function Secretary() {
         .map((p) => p.trim())
         .filter(Boolean),
       testability,
+      references: references
+        .split("\n")
+        .map((r) => r.trim())
+        .filter(Boolean),
       overflow: overflow
         .split(",")
         .map((o) => o.trim())
         .filter(Boolean),
     };
     const { runSecretary } = await import("../lib/workers/secretary");
-    await runSecretary(data);
+    const content = await runSecretary(data);
+    const match = content.match(/## Identity\n([0-9a-f]{8})/);
+    if (match) setIdentity(match[1]);
   }
 
   return (
@@ -86,6 +101,22 @@ export default function Secretary() {
         />
       </div>
       <div>
+        <label className="block font-semibold">Core Equations (one per line)</label>
+        <textarea
+          value={coreEquations}
+          onChange={(e) => setCoreEquations(e.target.value)}
+          className="w-full border p-2"
+        />
+      </div>
+      <div>
+        <label className="block font-semibold">Dimensional Analysis</label>
+        <textarea
+          value={dimensional}
+          onChange={(e) => setDimensional(e.target.value)}
+          className="w-full border p-2"
+        />
+      </div>
+      <div>
         <label className="block font-semibold">Post-analysis</label>
         <textarea
           value={postAnalysis}
@@ -120,12 +151,29 @@ export default function Secretary() {
         />
       </div>
       <div>
+        <label className="block font-semibold">References (one per line)</label>
+        <textarea
+          value={references}
+          onChange={(e) => setReferences(e.target.value)}
+          className="w-full border p-2"
+        />
+      </div>
+      <div>
         <label className="block font-semibold">Overflow log (comma separated)</label>
         <input
           type="text"
           value={overflow}
           onChange={(e) => setOverflow(e.target.value)}
           className="w-full border p-2"
+        />
+      </div>
+      <div>
+        <label className="block font-semibold">Identity</label>
+        <input
+          type="text"
+          value={identity}
+          readOnly
+          className="w-full border p-2 bg-gray-100"
         />
       </div>
       <button type="submit" className="px-4 py-2 bg-blue-600 text-white">

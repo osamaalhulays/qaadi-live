@@ -7,6 +7,7 @@ export interface SecretaryReport {
   risks?: string[];
   predictions?: string[];
   testability?: string;
+  identity?: string;
 }
 
 export type FieldScore = 0 | 1;
@@ -29,6 +30,7 @@ const REQUIRED_FIELDS: FieldKey[] = [
   "risks",
   "predictions",
   "testability",
+  "identity",
 ];
 
 // Check mandatory fields inside secretary report and return missing ones
@@ -44,6 +46,7 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
     risks: 0,
     predictions: 0,
     testability: 0,
+    identity: 0,
   };
 
   if (!report || typeof report !== "object") {
