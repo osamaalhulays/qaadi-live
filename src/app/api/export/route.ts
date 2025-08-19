@@ -54,6 +54,21 @@ function tsFolder(d = new Date()) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
 }
 
+function wrapMath(text: string) {
+  return text
+    .replace(/\$\$(.+?)\$\$/gs, (_, p1) => `\\[${p1}\\]`)
+    .replace(/\$(.+?)\$/g, (_, p1) => `\\(${p1}\\)`);
+}
+
+function planHasP0(files: ZipFile[]) {
+  const plan = files.find(f => /consultant_plan\.md$/.test(f.path));
+  if (!plan) return false;
+  const content = typeof plan.content === "string"
+    ? plan.content
+    : Buffer.from(plan.content).toString("utf8");
+  return /\bP0\b/.test(content);
+}
+
 async function saveSnapshot(
   files: ZipFile[],
   target: string,
@@ -129,7 +144,7 @@ async function saveSnapshot(
   return { session_id };
 }
 
-async function buildTreeFromCompose(payload: any) {
+async function buildTreeFromCompose(payload: any, lang = "en") {
   // EXPECTS:
   // {
   //   name?: "qaadi_export.zip",
@@ -210,7 +225,10 @@ async function buildTreeFromCompose(payload: any) {
 
   // 50_journalist_summary.md
   if (typeof payload?.journalist?.summary === "string") {
-    files.push({ path: "paper/50_journalist_summary.md", content: payload.journalist.summary });
+    const dir = lang === "ar" ? "rtl" : "ltr";
+    const protectedSummary = wrapMath(payload.journalist.summary);
+    const wrapped = `<div dir="${dir}">\n${protectedSummary}\n</div>`;
+    files.push({ path: "paper/50_journalist_summary.md", content: wrapped });
   }
 
   return { name, files };
@@ -253,6 +271,9 @@ export async function POST(req: NextRequest) {
     if (!files || !files.length) {
       return new Response(JSON.stringify({ error: "no_files" }), { status: 400, headers: headersJSON() });
     }
+    if (planHasP0(files)) {
+      return new Response(JSON.stringify({ error: "p0_present" }), { status: 400, headers: headersJSON() });
+    }
     await saveSnapshot(files, target, lang, slug, v);
     const zip = makeZip(files);
     const shaHex = sha256Hex(zip);
@@ -261,9 +282,12 @@ export async function POST(req: NextRequest) {
 
   // Mode B: compose → client provides unit outputs; server builds canonical tree
   if (mode === "compose") {
-    const { name, files } = await buildTreeFromCompose(body);
+    const { name, files } = await buildTreeFromCompose(body, lang);
     if (!files.length) {
       return new Response(JSON.stringify({ error: "compose_empty" }), { status: 400, headers: headersJSON() });
+    }
+    if (planHasP0(files)) {
+      return new Response(JSON.stringify({ error: "p0_present" }), { status: 400, headers: headersJSON() });
     }
     await saveSnapshot(files, target, lang, slug, v);
     const zip = makeZip(files);
@@ -348,7 +372,10 @@ export async function POST(req: NextRequest) {
       meta: { model: selection, max_tokens }
     };
 
-    const { name, files } = await buildTreeFromCompose(composePayload);
+    const { name, files } = await buildTreeFromCompose(composePayload, lang);
+    if (planHasP0(files)) {
+      return new Response(JSON.stringify({ error: "p0_present" }), { status: 400, headers: headersJSON() });
+    }
     await saveSnapshot(files, target, lang, slug, v);
     const zip = makeZip(files);
     const shaHex = sha256Hex(zip);

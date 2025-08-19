@@ -12,7 +12,7 @@ test('runJournalist creates multilingual summaries and reports', async () => {
   try {
     const paperDir = path.join(dir, 'paper');
     await mkdir(paperDir, { recursive: true });
-    const comparison = 'Result with equation $E=mc^2$.';
+    const comparison = 'Result with equation $E=mc^2$ and $$a^2+b^2=c^2$$.';
     await writeFile(path.join(paperDir, 'comparison.md'), comparison, 'utf8');
 
     const content = await runJournalist();
@@ -26,8 +26,13 @@ test('runJournalist creates multilingual summaries and reports', async () => {
     ];
     for (const f of files) {
       const fc = await readFile(path.join(paperDir, f), 'utf8');
-      assert.match(fc, /E=mc\^2/);
+      assert.match(fc, /\\(E=mc\^2\\)/);
+      assert.match(fc, /\\[a\^2\+b\^2=c\^2\\]/);
     }
+    const enSummary = await readFile(path.join(paperDir, 'summary.en.md'), 'utf8');
+    const arSummary = await readFile(path.join(paperDir, 'summary.ar.md'), 'utf8');
+    assert.match(enSummary, /dir="ltr"/);
+    assert.match(arSummary, /dir="rtl"/);
     assert.strictEqual(content, await readFile(path.join(paperDir, 'summary.md'), 'utf8'));
   } finally {
     process.chdir(prev);
