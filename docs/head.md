@@ -2,7 +2,8 @@
 
 The `head` worker manages up to ten concurrent secretary sessions. Each
 session is isolated by `card_id` and stores its vectors under
-`/vector_db/qaadi_sec_<card_id>`.
+`${VECTOR_DB}/qaadi_sec_<card_id>`. If `VECTOR_DB` is not set, it defaults to
+`vector_db` within the current working directory.
 
 ## API usage
 

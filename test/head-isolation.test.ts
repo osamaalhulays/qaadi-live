@@ -11,10 +11,12 @@ import { tmpdir } from 'node:os';
 
 test('AT-1/AT-5 vector store isolation', async () => {
   resetHead();
+  const base = await mkdtemp(path.join(tmpdir(), 'vector-'));
+  process.env.VECTOR_DB = base;
   const s1 = await runHead({ card_id: 'a1', user: 'u', nonce: 'n1' });
   const s2 = await runHead({ card_id: 'a2', user: 'u', nonce: 'n1' });
-  const dir1 = path.join('/vector_db', 'qaadi_sec_a1');
-  const dir2 = path.join('/vector_db', 'qaadi_sec_a2');
+  const dir1 = path.join(base, 'qaadi_sec_a1');
+  const dir2 = path.join(base, 'qaadi_sec_a2');
   await stat(dir1);
   await stat(dir2);
   expect(dir1).not.toBe(dir2);
@@ -24,8 +26,10 @@ test('AT-1/AT-5 vector store isolation', async () => {
   }
   await expect(runHead({ card_id: 'a11', user: 'u', nonce: 'n1' })).rejects.toThrow();
   for (let i = 1; i <= 10; i++) {
-    await rm(path.join('/vector_db', `qaadi_sec_a${i}`), { recursive: true, force: true });
+    await rm(path.join(base, `qaadi_sec_a${i}`), { recursive: true, force: true });
   }
+  await rm(base, { recursive: true, force: true });
+  delete process.env.VECTOR_DB;
   resetHead();
 });
 

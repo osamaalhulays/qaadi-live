@@ -28,7 +28,8 @@ export async function runHead(opts: {
     throw new Error("too_many_sessions");
   }
 
-  const vectorPath = path.join("/vector_db", `qaadi_sec_${card_id}`);
+  const base = process.env.VECTOR_DB || path.join(process.cwd(), "vector_db");
+  const vectorPath = path.join(base, `qaadi_sec_${card_id}`);
   await mkdir(vectorPath, { recursive: true });
   const session_id = sha256(card_id + user + nonce);
   const info = { session_id, vectorPath };
