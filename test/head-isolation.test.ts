@@ -1,6 +1,7 @@
 import { test, expect } from '@jest/globals';
 import {
   runHead,
+  endHead,
   resetHead,
   runResearchCenter,
   activeHeadSessions,
@@ -24,7 +25,8 @@ test('AT-1/AT-5 vector store isolation', async () => {
   }
   await expect(runHead({ card_id: 'a11', user: 'u', nonce: 'n1' })).rejects.toThrow();
   for (let i = 1; i <= 10; i++) {
-    await rm(path.join('/vector_db', `qaadi_sec_a${i}`), { recursive: true, force: true });
+    await endHead(`a${i}`);
+    await expect(stat(path.join('/vector_db', `qaadi_sec_a${i}`))).rejects.toThrow();
   }
   resetHead();
 });
@@ -47,6 +49,8 @@ test('research center prevents data leakage between cards', async () => {
   expect(cmp).toContain('Alpha item');
   expect(cmp).toContain('Beta item');
   expect(activeHeadSessions()).toEqual([]);
+  await expect(stat(path.join('/vector_db', 'qaadi_sec_alpha'))).rejects.toThrow();
+  await expect(stat(path.join('/vector_db', 'qaadi_sec_beta'))).rejects.toThrow();
   await rm(dir, { recursive: true, force: true });
 });
 

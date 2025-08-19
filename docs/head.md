@@ -27,8 +27,17 @@ import { runHead } from '../src/lib/workers';
 
 const session = await runHead({ card_id: 'abc123', user: 'alice', nonce: '1' });
 console.log(session.session_id);
+
+// When finished, end the session and remove its vectors
+await endHead('abc123');
 ```
 
 Remember to keep fewer than ten sessions active at once. Exceeding this
 limit will throw an error.
+
+### Cleaning up
+
+The head worker exposes a `cleanupHead(card_id)` helper that removes the
+vector directory for a given card. `endHead` calls this internally, but
+you can also invoke `cleanupHead` directly to purge leftover session data.
 

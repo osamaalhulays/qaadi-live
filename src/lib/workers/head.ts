@@ -1,4 +1,4 @@
-import { mkdir } from "fs/promises";
+import { mkdir, rm } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
 
@@ -36,7 +36,15 @@ export async function runHead(opts: {
   return info;
 }
 
-export function endHead(card_id: string) {
+export async function cleanupHead(card_id: string) {
+  const info = sessions.get(card_id);
+  if (info) {
+    await rm(info.vectorPath, { recursive: true, force: true });
+  }
+}
+
+export async function endHead(card_id: string) {
+  await cleanupHead(card_id);
   sessions.delete(card_id);
 }
 
@@ -57,7 +65,7 @@ export async function exportHead<T>(
     return await exporter();
   } finally {
     for (const id of ids) {
-      endHead(id);
+      await endHead(id);
     }
   }
 }

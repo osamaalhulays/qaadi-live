@@ -17,7 +17,7 @@ export async function runResearchCenter(
         await runResearchSecretary(id, cardPlans[id]);
         sessions.push(id);
       } catch (err) {
-        endHead(id);
+        await endHead(id);
         throw err;
       }
     }

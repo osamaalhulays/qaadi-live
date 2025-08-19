@@ -7,6 +7,7 @@ export { runJournalist } from "./journalist";
 export {
   runHead,
   endHead,
+  cleanupHead,
   resetHead,
   activeHeadSessions,
   exportHead,
