@@ -96,6 +96,7 @@ test('runGates requires identity among fields', () => {
     risks: ['r'],
     predictions: ['pr'],
     testability: 'tst',
+    overflow: ['o'],
     identity: 'abcd1234',
   };
   const result = runGates({ secretary: { audit: report } });
