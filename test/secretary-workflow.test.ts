@@ -6,19 +6,17 @@ import { tmpdir } from 'node:os';
 import { runSecretary, runResearchSecretary } from '../src/lib/workers/index.ts';
 import { runGates } from '../src/lib/workflow/gates.ts';
 
+// Build sample data using nine secretary fields
 const sampleSecretary = {
   summary: 'Project overview',
   keywords: ['analysis', 'physics'],
   tokens: ['c: speed of light', 'm: mass'],
   boundary: ['t=0', 'x->∞'],
-  core_equations: ['E=mc^2'],
-  dimensional: 'all equations consistent',
   post_analysis: 'post review',
   risks: ['oversimplification'],
   predictions: ['growth'],
   testability: 'lab experiments',
   references: ['Doe 2020'],
-  overflow: ['extra note'],
 };
 
 const samplePlan = [
@@ -49,13 +47,8 @@ test('runSecretary generates a complete secretary.md', async () => {
     );
     assert.match(
       fileContent,
-      /## Core Equations\n- E=mc\^2/
-    );
-    assert.match(
-      fileContent,
       /## Boundary Conditions\n- t=0\n- x->∞/
     );
-    assert.match(fileContent, /## Dimensional Analysis\nall equations consistent/);
     assert.match(fileContent, /## Post-Analysis\npost review/);
     assert.match(
       fileContent,
@@ -67,7 +60,7 @@ test('runSecretary generates a complete secretary.md', async () => {
     );
     assert.match(fileContent, /## Testability\nlab experiments/);
     assert.match(fileContent, /## References\n- Doe 2020/);
-    assert.match(fileContent, /## Overflow Log\n- extra note/);
+    assert.match(fileContent, /## Overflow Log\n- none/);
   } finally {
     process.chdir(prev);
   }
@@ -101,7 +94,39 @@ test('runGates requires identity among fields', () => {
   const result = runGates({ secretary: { audit: report } });
   assert.strictEqual(result.ready_percent, 100);
   const missing = runGates({ secretary: { audit: { ...report, identity: '' } } });
+  assert.strictEqual(missing.ready_percent, 89);
   assert.ok(missing.missing.includes('identity'));
+});
+
+test('runSecretary handles malformed nomenclature rows', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
+  const prev = process.cwd();
+  process.chdir(dir);
+  try {
+    const malformed = { ...sampleSecretary, tokens: ['bad row', 'm: mass'] };
+    const content = await runSecretary(malformed);
+    assert.match(
+      content,
+      /## Tokens and Definitions\n- bad row\n- m: mass/
+    );
+    assert.match(content, /Ready%: 100/);
+  } finally {
+    process.chdir(prev);
+  }
+});
+
+test('runSecretary outputs empty references section when none provided', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
+  const prev = process.cwd();
+  process.chdir(dir);
+  try {
+    const noRefs = { ...sampleSecretary, references: [] };
+    const content = await runSecretary(noRefs);
+    assert.match(content, /Ready%: 100/);
+    assert.match(content, /## References\n\n## Overflow Log\n- none/);
+  } finally {
+    process.chdir(prev);
+  }
 });
 
 test('runResearchSecretary writes plan files with QN-21 table', async () => {
