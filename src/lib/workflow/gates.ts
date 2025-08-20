@@ -7,6 +7,7 @@ export interface SecretaryReport {
   risks?: string[];
   predictions?: string[];
   testability?: string;
+  overflow?: string[];
   identity?: string;
 }
 
@@ -30,6 +31,7 @@ const REQUIRED_FIELDS: FieldKey[] = [
   "risks",
   "predictions",
   "testability",
+  "overflow",
   "identity",
 ];
 
@@ -46,6 +48,7 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
     risks: 0,
     predictions: 0,
     testability: 0,
+    overflow: 0,
     identity: 0,
   };
 
