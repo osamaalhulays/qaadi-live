@@ -3,9 +3,13 @@ import assert from 'node:assert';
 import { runGates, type SecretaryReport, type FieldKey } from '../src/lib/workflow';
 
 test('runGates detects multiple missing fields', () => {
-  const audit: SecretaryReport = { keywords: ['physics'], tokens: ['c: light'] };
+  const audit: SecretaryReport = {
+    keywords: ['physics'],
+    tokens: ['c: light'],
+    identity: '',
+  };
   const result = runGates({ secretary: { audit } });
-  assert.strictEqual(result.ready_percent, 25);
+  assert.strictEqual(result.ready_percent, 22);
   const expectedMissing: FieldKey[] = [
     'summary',
     'boundary',
@@ -13,6 +17,7 @@ test('runGates detects multiple missing fields', () => {
     'risks',
     'predictions',
     'testability',
+    'identity',
   ];
   assert.deepStrictEqual(result.missing, expectedMissing);
   assert.deepStrictEqual(result.fields, {
@@ -24,6 +29,7 @@ test('runGates detects multiple missing fields', () => {
     risks: 0,
     predictions: 0,
     testability: 0,
+    identity: 0,
   });
 });
 
@@ -37,6 +43,7 @@ test('runGates passes when all required fields are present', () => {
     risks: ['oversimplification'],
     predictions: ['growth'],
     testability: 'lab',
+    identity: 'source',
   };
   const result = runGates({ secretary: { audit } });
   assert.strictEqual(result.ready_percent, 100);
@@ -50,11 +57,12 @@ test('runGates passes when all required fields are present', () => {
     risks: 1,
     predictions: 1,
     testability: 1,
+    identity: 1,
   });
 });
 
 test('runGates blocks evaluation when fields are missing', () => {
-  const audit: SecretaryReport = { keywords: [] };
+  const audit: SecretaryReport = { keywords: [], identity: '' };
   const gate = runGates({ secretary: { audit } });
   const shouldEvaluate = gate.missing.length === 0;
   assert.strictEqual(shouldEvaluate, false);
