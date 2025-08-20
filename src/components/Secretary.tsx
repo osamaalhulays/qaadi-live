@@ -3,16 +3,13 @@
 import { useState, FormEvent } from "react";
 
 export default function Secretary() {
-  const [summary, setSummary] = useState("");
+  const [abstract, setAbstract] = useState("");
   const [keywords, setKeywords] = useState("");
-  const [tokens, setTokens] = useState("");
+  const [nomenclature, setNomenclature] = useState("");
   const [boundary, setBoundary] = useState("");
   const [coreEquations, setCoreEquations] = useState("");
   const [dimensional, setDimensional] = useState("");
-  const [postAnalysis, setPostAnalysis] = useState("");
-  const [risks, setRisks] = useState("");
-  const [predictions, setPredictions] = useState("");
-  const [testability, setTestability] = useState("");
+  const [limitations, setLimitations] = useState("");
   const [references, setReferences] = useState("");
   const [overflow, setOverflow] = useState("");
   const [identity, setIdentity] = useState("");
@@ -20,16 +17,20 @@ export default function Secretary() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const data = {
-      summary,
+      abstract,
       keywords: keywords
         .split(",")
         .map((k) => k.trim())
         .filter(Boolean),
-      tokens: tokens
+      nomenclature: nomenclature
         .split(",")
-        .map((t) => t.trim())
-        .filter(Boolean),
-      boundary: boundary
+        .map((n) => n.trim())
+        .filter(Boolean)
+        .map((n) => {
+          const [symbol, definition] = n.split("=").map((t) => t.trim());
+          return { symbol, definition };
+        }),
+      boundary_conditions: boundary
         .split(",")
         .map((b) => b.trim())
         .filter(Boolean),
@@ -37,17 +38,11 @@ export default function Secretary() {
         .split("\n")
         .map((e) => e.trim())
         .filter(Boolean),
-      dimensional,
-      post_analysis: postAnalysis,
-      risks: risks
+      dimensional_analysis: dimensional,
+      limitations_risks: limitations
         .split(",")
         .map((r) => r.trim())
         .filter(Boolean),
-      predictions: predictions
-        .split(",")
-        .map((p) => p.trim())
-        .filter(Boolean),
-      testability,
       references: references
         .split("\n")
         .map((r) => r.trim())
@@ -66,10 +61,10 @@ export default function Secretary() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block font-semibold">Summary</label>
+        <label className="block font-semibold">Abstract</label>
         <textarea
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
+          value={abstract}
+          onChange={(e) => setAbstract(e.target.value)}
           className="w-full border p-2"
         />
       </div>
@@ -83,11 +78,11 @@ export default function Secretary() {
         />
       </div>
       <div>
-        <label className="block font-semibold">Tokens (symbol=definition, comma separated)</label>
+        <label className="block font-semibold">Nomenclature (symbol=definition, comma separated)</label>
         <input
           type="text"
-          value={tokens}
-          onChange={(e) => setTokens(e.target.value)}
+          value={nomenclature}
+          onChange={(e) => setNomenclature(e.target.value)}
           className="w-full border p-2"
         />
       </div>
@@ -117,36 +112,11 @@ export default function Secretary() {
         />
       </div>
       <div>
-        <label className="block font-semibold">Post-analysis</label>
-        <textarea
-          value={postAnalysis}
-          onChange={(e) => setPostAnalysis(e.target.value)}
-          className="w-full border p-2"
-        />
-      </div>
-      <div>
-        <label className="block font-semibold">Risks (comma separated)</label>
+        <label className="block font-semibold">Limitations & Risks (comma separated)</label>
         <input
           type="text"
-          value={risks}
-          onChange={(e) => setRisks(e.target.value)}
-          className="w-full border p-2"
-        />
-      </div>
-      <div>
-        <label className="block font-semibold">Predictions (comma separated)</label>
-        <input
-          type="text"
-          value={predictions}
-          onChange={(e) => setPredictions(e.target.value)}
-          className="w-full border p-2"
-        />
-      </div>
-      <div>
-        <label className="block font-semibold">Testability</label>
-        <textarea
-          value={testability}
-          onChange={(e) => setTestability(e.target.value)}
+          value={limitations}
+          onChange={(e) => setLimitations(e.target.value)}
           className="w-full border p-2"
         />
       </div>

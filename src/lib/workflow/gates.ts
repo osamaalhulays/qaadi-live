@@ -1,12 +1,13 @@
 export interface SecretaryReport {
-  summary?: string;
+  abstract?: string;
   keywords?: string[];
-  tokens?: string[];
-  boundary?: string[];
-  post_analysis?: string;
-  risks?: string[];
-  predictions?: string[];
-  testability?: string;
+  nomenclature?: { symbol: string; definition: string }[];
+  core_equations?: string[];
+  boundary_conditions?: string[];
+  dimensional_analysis?: string;
+  limitations_risks?: string[];
+  references?: string[];
+  overflow?: string[];
   identity?: string;
 }
 
@@ -22,14 +23,15 @@ export interface GateResult {
 // Required fields for a complete secretary report
 // These map directly to sections in templates/secretary.md
 const REQUIRED_FIELDS: FieldKey[] = [
-  "summary",
+  "abstract",
   "keywords",
-  "tokens",
-  "boundary",
-  "post_analysis",
-  "risks",
-  "predictions",
-  "testability",
+  "nomenclature",
+  "core_equations",
+  "boundary_conditions",
+  "dimensional_analysis",
+  "limitations_risks",
+  "references",
+  "overflow",
   "identity",
 ];
 
@@ -38,14 +40,15 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
   const report = data.secretary?.audit;
   const missing: FieldKey[] = [];
   const fields: Record<FieldKey, FieldScore> = {
-    summary: 0,
+    abstract: 0,
     keywords: 0,
-    tokens: 0,
-    boundary: 0,
-    post_analysis: 0,
-    risks: 0,
-    predictions: 0,
-    testability: 0,
+    nomenclature: 0,
+    core_equations: 0,
+    boundary_conditions: 0,
+    dimensional_analysis: 0,
+    limitations_risks: 0,
+    references: 0,
+    overflow: 0,
     identity: 0,
   };
 

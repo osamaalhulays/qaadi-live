@@ -7,16 +7,16 @@ import { runSecretary, runResearchSecretary } from '../src/lib/workers/index.ts'
 import { runGates } from '../src/lib/workflow/gates.ts';
 
 const sampleSecretary = {
-  summary: 'Project overview',
+  abstract: 'Project overview',
   keywords: ['analysis', 'physics'],
-  tokens: ['c: speed of light', 'm: mass'],
-  boundary: ['t=0', 'x->∞'],
+  nomenclature: [
+    { symbol: 'c', definition: 'speed of light' },
+    { symbol: 'm', definition: 'mass' },
+  ],
   core_equations: ['E=mc^2'],
-  dimensional: 'all equations consistent',
-  post_analysis: 'post review',
-  risks: ['oversimplification'],
-  predictions: ['growth'],
-  testability: 'lab experiments',
+  boundary_conditions: ['t=0', 'x->∞'],
+  dimensional_analysis: 'all equations consistent',
+  limitations_risks: ['oversimplification'],
   references: ['Doe 2020'],
   overflow: ['extra note'],
 };
@@ -38,14 +38,14 @@ test('runSecretary generates a complete secretary.md', async () => {
     assert.match(fileContent, /Fingerprint: qaadi-live\/0.1.0\/\d{4}-\d{2}-\d{2}\/[0-9a-f]{8}/);
     assert.match(fileContent, /Ready%: 100/);
     assert.match(fileContent, /## Identity\n[0-9a-f]{8}/);
-    assert.match(fileContent, /## Summary\nProject overview/);
+    assert.match(fileContent, /## Abstract\nProject overview/);
     assert.match(
       fileContent,
       /## Keywords\n- analysis\n- physics/
     );
     assert.match(
       fileContent,
-      /## Tokens and Definitions\n- c: speed of light\n- m: mass/
+      /## Nomenclature\n\| Symbol \| Definition \|\n\|--------\|------------\|\n\| c \| speed of light \|\n\| m \| mass \|/
     );
     assert.match(
       fileContent,
@@ -56,16 +56,10 @@ test('runSecretary generates a complete secretary.md', async () => {
       /## Boundary Conditions\n- t=0\n- x->∞/
     );
     assert.match(fileContent, /## Dimensional Analysis\nall equations consistent/);
-    assert.match(fileContent, /## Post-Analysis\npost review/);
     assert.match(
       fileContent,
-      /## Risks\n- oversimplification/
+      /## Limitations & Risks\n- oversimplification/
     );
-    assert.match(
-      fileContent,
-      /## Predictions\n- growth/
-    );
-    assert.match(fileContent, /## Testability\nlab experiments/);
     assert.match(fileContent, /## References\n- Doe 2020/);
     assert.match(fileContent, /## Overflow Log\n- extra note/);
   } finally {
@@ -78,7 +72,7 @@ test('runSecretary calculates readiness based on missing fields', async () => {
   const prev = process.cwd();
   process.chdir(dir);
   try {
-    const partial = { ...sampleSecretary, summary: '' };
+    const partial = { ...sampleSecretary, abstract: '' };
     const content = await runSecretary(partial);
     assert.match(content, /Ready%: 89/);
   } finally {
@@ -88,14 +82,15 @@ test('runSecretary calculates readiness based on missing fields', async () => {
 
 test('runGates requires identity among fields', () => {
   const report = {
-    summary: 's',
+    abstract: 'a',
     keywords: ['k'],
-    tokens: ['t'],
-    boundary: ['b'],
-    post_analysis: 'p',
-    risks: ['r'],
-    predictions: ['pr'],
-    testability: 'tst',
+    nomenclature: [{ symbol: 's', definition: 'd' }],
+    core_equations: ['e'],
+    boundary_conditions: ['b'],
+    dimensional_analysis: 'd',
+    limitations_risks: ['r'],
+    references: ['ref'],
+    overflow: ['o'],
     identity: 'abcd1234',
   };
   const result = runGates({ secretary: { audit: report } });
