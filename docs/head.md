@@ -4,7 +4,8 @@ The `head` worker manages up to ten concurrent secretary sessions by default.
 You can override this limit by setting the `HEAD_MAX_SESSIONS` environment
 variable. Each session is isolated by `card_id` and stores its vectors under
 `$VECTOR_DB/qaadi_sec_<card_id>`. The `VECTOR_DB` environment variable defines
-the root directory for vector storage and defaults to `/vector_db`.
+the root directory for vector storage and defaults to `./vector_db` under the
+current working directory.
 
 ## API usage
 

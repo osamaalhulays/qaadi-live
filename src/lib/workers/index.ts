@@ -11,5 +11,6 @@ export {
   resetHead,
   activeHeadSessions,
   exportHead,
+  getVectorDbRoot,
 } from "./head";
 export { runResearchCenter } from "./researchCenter";
