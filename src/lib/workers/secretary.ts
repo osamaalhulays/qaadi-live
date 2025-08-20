@@ -1,8 +1,12 @@
 import { writeFile, mkdir, readFile } from "fs/promises";
 import path from "path";
+import { fileURLToPath } from "url";
 import { createInterface } from "readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { createHash } from "crypto";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const projectRoot = path.resolve(__dirname, "../../../");
 
 export interface SecretaryData {
   summary: string;
@@ -132,7 +136,7 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
   ].join("|");
   const identity = createHash("sha256").update(identityInput).digest("hex").slice(0, 8);
 
-  const pkgRaw = await readFile(path.join(process.cwd(), "package.json"), "utf8");
+  const pkgRaw = await readFile(path.join(projectRoot, "package.json"), "utf8");
   const pkg = JSON.parse(pkgRaw) as { name?: string; version?: string };
   const date = new Date().toISOString().slice(0, 10);
   const fingerprint = `${pkg.name ?? ""}/${pkg.version ?? ""}/${date}/${identity}`;
@@ -210,7 +214,7 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     "",
   ].join("\n");
 
-  const filePath = path.join(process.cwd(), "paper", "secretary.md");
+  const filePath = path.join(projectRoot, "paper", "secretary.md");
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeFile(filePath, content, "utf8");
   return content;
