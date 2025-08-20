@@ -6,7 +6,7 @@ import {
   activeHeadSessions,
   endHead,
 } from '../src/lib/workers';
-import { stat, rm, readFile, mkdtemp } from 'node:fs/promises';
+import { stat, readFile, mkdtemp, rm } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 
@@ -26,15 +26,15 @@ test('AT-1/AT-5 vector store isolation', async () => {
   await expect(runHead({ card_id: 'a11', user: 'u', nonce: 'n1' })).rejects.toThrow();
   expect(activeHeadSessions()).toHaveLength(10);
   endHead('a1');
+  await expect(stat(dir1)).rejects.toThrow();
   expect(activeHeadSessions()).toHaveLength(9);
   expect(activeHeadSessions()).not.toContain('a1');
-  for (let i = 1; i <= 10; i++) {
-    const dir = path.join('/vector_db', `qaadi_sec_a${i}`);
-    await rm(dir, { recursive: true, force: true });
-    await expect(stat(dir)).rejects.toThrow();
-  }
   resetHead();
   expect(activeHeadSessions()).toEqual([]);
+  for (let i = 2; i <= 10; i++) {
+    const dir = path.join('/vector_db', `qaadi_sec_a${i}`);
+    await expect(stat(dir)).rejects.toThrow();
+  }
 });
 
 test('research center prevents data leakage between cards', async () => {
