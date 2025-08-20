@@ -3,6 +3,7 @@ import path from "path";
 import crypto from "crypto";
 
 const MAX_SESSIONS = Number(process.env.HEAD_MAX_SESSIONS) || 10;
+const VECTOR_DB = process.env.VECTOR_DB || "/vector_db";
 
 interface SessionInfo {
   session_id: string;
@@ -28,7 +29,7 @@ export async function runHead(opts: {
     throw new Error("too_many_sessions");
   }
 
-  const vectorPath = path.join("/vector_db", `qaadi_sec_${card_id}`);
+  const vectorPath = path.join(VECTOR_DB, `qaadi_sec_${card_id}`);
   await mkdir(vectorPath, { recursive: true });
   const session_id = sha256(card_id + user + nonce);
   const info = { session_id, vectorPath };
