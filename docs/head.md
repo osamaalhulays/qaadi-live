@@ -3,7 +3,8 @@
 The `head` worker manages up to ten concurrent secretary sessions by default.
 You can override this limit by setting the `HEAD_MAX_SESSIONS` environment
 variable. Each session is isolated by `card_id` and stores its vectors under
-`/vector_db/qaadi_sec_<card_id>`.
+`$VECTOR_DB/qaadi_sec_<card_id>`. The `VECTOR_DB` environment variable defines
+the root directory for vector storage and defaults to `/vector_db`.
 
 ## API usage
 
@@ -24,13 +25,13 @@ The response returns the generated `session_id` (SHA256 of
 In a Node.js script:
 
 ```ts
-import { runHead } from '../src/lib/workers';
+import { runHead, cleanupHead } from '../src/lib/workers';
 
 const session = await runHead({ card_id: 'abc123', user: 'alice', nonce: '1' });
 console.log(session.session_id);
 
-// When finished, end the session and remove its vectors
-await endHead('abc123');
+// When finished, remove the session's vectors
+await cleanupHead('abc123');
 ```
 
 Remember to keep fewer than the configured maximum (default ten) sessions active
