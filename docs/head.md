@@ -3,7 +3,13 @@
 The `head` worker manages up to ten concurrent secretary sessions by default.
 You can override this limit by setting the `HEAD_MAX_SESSIONS` environment
 variable. Each session is isolated by `card_id` and stores its vectors under
-`/vector_db/qaadi_sec_<card_id>`.
+`$VECTOR_DB/qaadi_sec_<card_id>`. If `VECTOR_DB` is unset, the worker falls
+back to a `vector_db` directory inside the operating system's temporary
+directory.
+
+> **Vercel:** The deployment filesystem is read-only except for `/tmp`. Configure
+> the `VECTOR_DB` environment variable to a writable path such as
+> `/tmp/vector_db`.
 
 ## API usage
 
