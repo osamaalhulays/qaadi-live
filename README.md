@@ -31,9 +31,9 @@ The system evaluates scientific drafts using the QN-21 criteria and optional cus
 - summary
 - keywords
 - tokens
-- boundary
-- post-analysis
+- core equations
+- boundary conditions
+- dimensional analysis
 - risks
-- predictions
-- testability
+- references
 

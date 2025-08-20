@@ -13,12 +13,8 @@ const sampleSecretary = {
   boundary: ['t=0', 'x->∞'],
   core_equations: ['E=mc^2'],
   dimensional: 'all equations consistent',
-  post_analysis: 'post review',
   risks: ['oversimplification'],
-  predictions: ['growth'],
-  testability: 'lab experiments',
-  references: ['Doe 2020'],
-  overflow: ['extra note'],
+  references: ['Doe, J. (2020). Title. Journal.'],
 };
 
 const samplePlan = [
@@ -39,35 +35,16 @@ test('runSecretary generates a complete secretary.md', async () => {
     assert.match(fileContent, /Ready%: 100/);
     assert.match(fileContent, /## Identity\n[0-9a-f]{8}/);
     assert.match(fileContent, /## Summary\nProject overview/);
+    assert.match(fileContent, /## Keywords\n- analysis\n- physics/);
     assert.match(
       fileContent,
-      /## Keywords\n- analysis\n- physics/
+      /## Nomenclature\n\| Symbol \| Definition \|\n\|--------\|------------\|\n\| c \| speed of light \|\n\| m \| mass \|/
     );
-    assert.match(
-      fileContent,
-      /## Tokens and Definitions\n- c: speed of light\n- m: mass/
-    );
-    assert.match(
-      fileContent,
-      /## Core Equations\n- E=mc\^2/
-    );
-    assert.match(
-      fileContent,
-      /## Boundary Conditions\n- t=0\n- x->∞/
-    );
+    assert.match(fileContent, /## Core Equations\n- E=mc\^2/);
+    assert.match(fileContent, /## Boundary Conditions\n- t=0\n- x->∞/);
     assert.match(fileContent, /## Dimensional Analysis\nall equations consistent/);
-    assert.match(fileContent, /## Post-Analysis\npost review/);
-    assert.match(
-      fileContent,
-      /## Risks\n- oversimplification/
-    );
-    assert.match(
-      fileContent,
-      /## Predictions\n- growth/
-    );
-    assert.match(fileContent, /## Testability\nlab experiments/);
-    assert.match(fileContent, /## References\n- Doe 2020/);
-    assert.match(fileContent, /## Overflow Log\n- extra note/);
+    assert.match(fileContent, /## Risks\n- oversimplification/);
+    assert.match(fileContent, /## References\n- Doe, J\. \(2020\)/);
   } finally {
     process.chdir(prev);
   }
@@ -91,11 +68,11 @@ test('runGates requires identity among fields', () => {
     summary: 's',
     keywords: ['k'],
     tokens: ['t'],
+    core_equations: ['e'],
     boundary: ['b'],
-    post_analysis: 'p',
+    dimensional: 'd',
     risks: ['r'],
-    predictions: ['pr'],
-    testability: 'tst',
+    references: ['ref'],
     identity: 'abcd1234',
   };
   const result = runGates({ secretary: { audit: report } });

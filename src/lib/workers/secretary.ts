@@ -15,12 +15,8 @@ export interface SecretaryData {
   boundary: string[];
   core_equations: string[];
   dimensional: string;
-  post_analysis: string;
   risks: string[];
-  predictions: string[];
-  testability: string;
   references: string[];
-  overflow?: string[];
 }
 
 /**
@@ -35,12 +31,8 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
   let boundary: string[];
   let core_equations: string[];
   let dimensional: string;
-  let post_analysis: string;
   let risks: string[];
-  let predictions: string[];
-  let testability: string;
   let references: string[];
-  let overflow: string[];
 
   if (!data) {
     const rl = createInterface({ input, output });
@@ -60,13 +52,6 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
         .split(",")
         .map((t) => t.trim())
         .filter(Boolean);
-      const boundInput = await rl.question(
-        "Boundary conditions (comma separated): "
-      );
-      boundary = boundInput
-        .split(",")
-        .map((b) => b.trim())
-        .filter(Boolean);
       const coreInput = await rl.question(
         "Core equations (comma separated): "
       );
@@ -74,32 +59,25 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
         .split(",")
         .map((e) => e.trim())
         .filter(Boolean);
+      const boundInput = await rl.question(
+        "Boundary conditions (comma separated): "
+      );
+      boundary = boundInput
+        .split(",")
+        .map((b) => b.trim())
+        .filter(Boolean);
       dimensional = await rl.question("Dimensional analysis: ");
-      post_analysis = await rl.question("Post-analysis: ");
       const riskInput = await rl.question("Risks (comma separated): ");
       risks = riskInput
         .split(",")
         .map((r) => r.trim())
         .filter(Boolean);
-      const predInput = await rl.question("Predictions (comma separated): ");
-      predictions = predInput
-        .split(",")
-        .map((p) => p.trim())
-        .filter(Boolean);
-      testability = await rl.question("Testability: ");
       const refInput = await rl.question(
         "References (comma separated): "
       );
       references = refInput
         .split(",")
         .map((r) => r.trim())
-        .filter(Boolean);
-      const overflowInput = await rl.question(
-        "Overflow log (comma separated, optional): "
-      );
-      overflow = overflowInput
-        .split(",")
-        .map((o) => o.trim())
         .filter(Boolean);
     } finally {
       rl.close();
@@ -112,12 +90,8 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
       boundary = [],
       core_equations = [],
       dimensional = "",
-      post_analysis = "",
       risks = [],
-      predictions = [],
-      testability = "",
       references = [],
-      overflow = [],
     } = data);
   }
 
@@ -125,13 +99,10 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     summary,
     keywords.join(","),
     tokens.join(","),
-    boundary.join(","),
     core_equations.join(","),
+    boundary.join(","),
     dimensional,
-    post_analysis,
     risks.join(","),
-    predictions.join(","),
-    testability,
     references.join(","),
   ].join("|");
   const identity = createHash("sha256").update(identityInput).digest("hex").slice(0, 8);
@@ -146,11 +117,11 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     summary,
     keywords,
     tokens,
+    core_equations,
     boundary,
-    post_analysis,
+    dimensional,
     risks,
-    predictions,
-    testability,
+    references,
     identity,
   };
   const missing = Object.entries(fields)
@@ -182,8 +153,13 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     "## Keywords",
     ...keywords.map((k) => `- ${k}`),
     "",
-    "## Tokens and Definitions",
-    ...tokens.map((t) => `- ${t}`),
+    "## Nomenclature",
+    "| Symbol | Definition |",
+    "|--------|------------|",
+    ...tokens.map((t) => {
+      const [sym, def] = t.split(":").map((s) => s.trim());
+      return `| ${sym} | ${def} |`;
+    }),
     "",
     "## Core Equations",
     ...core_equations.map((e) => `- ${e}`),
@@ -194,23 +170,11 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     "## Dimensional Analysis",
     dimensional,
     "",
-    "## Post-Analysis",
-    post_analysis,
-    "",
     "## Risks",
     ...risks.map((r) => `- ${r}`),
     "",
-    "## Predictions",
-    ...predictions.map((p) => `- ${p}`),
-    "",
-    "## Testability",
-    testability,
-    "",
     "## References",
     ...references.map((r) => `- ${r}`),
-    "",
-    "## Overflow Log",
-    ...(overflow.length > 0 ? overflow.map((o) => `- ${o}`) : ["- none"]),
     "",
   ].join("\n");
 

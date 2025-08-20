@@ -7,11 +7,11 @@ The Qaadi pipeline enforces four sequential gates. A draft must satisfy each gat
      - summary
      - keywords
      - tokens
-     - boundary
-     - post-analysis
+     - core equations
+     - boundary conditions
+     - dimensional analysis
      - risks
-     - predictions
-     - testability
+     - references
 
 2. **QN21 Gate**
    - Runs the 21-criterion evaluation.

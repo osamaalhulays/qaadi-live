@@ -9,12 +9,8 @@ export default function Secretary() {
   const [boundary, setBoundary] = useState("");
   const [coreEquations, setCoreEquations] = useState("");
   const [dimensional, setDimensional] = useState("");
-  const [postAnalysis, setPostAnalysis] = useState("");
   const [risks, setRisks] = useState("");
-  const [predictions, setPredictions] = useState("");
-  const [testability, setTestability] = useState("");
   const [references, setReferences] = useState("");
-  const [overflow, setOverflow] = useState("");
   const [identity, setIdentity] = useState("");
 
   async function handleSubmit(e: FormEvent) {
@@ -38,23 +34,13 @@ export default function Secretary() {
         .map((e) => e.trim())
         .filter(Boolean),
       dimensional,
-      post_analysis: postAnalysis,
       risks: risks
         .split(",")
         .map((r) => r.trim())
         .filter(Boolean),
-      predictions: predictions
-        .split(",")
-        .map((p) => p.trim())
-        .filter(Boolean),
-      testability,
       references: references
         .split("\n")
         .map((r) => r.trim())
-        .filter(Boolean),
-      overflow: overflow
-        .split(",")
-        .map((o) => o.trim())
         .filter(Boolean),
     };
     const { runSecretary } = await import("../lib/workers/secretary");
@@ -117,14 +103,6 @@ export default function Secretary() {
         />
       </div>
       <div>
-        <label className="block font-semibold">Post-analysis</label>
-        <textarea
-          value={postAnalysis}
-          onChange={(e) => setPostAnalysis(e.target.value)}
-          className="w-full border p-2"
-        />
-      </div>
-      <div>
         <label className="block font-semibold">Risks (comma separated)</label>
         <input
           type="text"
@@ -134,36 +112,10 @@ export default function Secretary() {
         />
       </div>
       <div>
-        <label className="block font-semibold">Predictions (comma separated)</label>
-        <input
-          type="text"
-          value={predictions}
-          onChange={(e) => setPredictions(e.target.value)}
-          className="w-full border p-2"
-        />
-      </div>
-      <div>
-        <label className="block font-semibold">Testability</label>
-        <textarea
-          value={testability}
-          onChange={(e) => setTestability(e.target.value)}
-          className="w-full border p-2"
-        />
-      </div>
-      <div>
         <label className="block font-semibold">References (one per line)</label>
         <textarea
           value={references}
           onChange={(e) => setReferences(e.target.value)}
-          className="w-full border p-2"
-        />
-      </div>
-      <div>
-        <label className="block font-semibold">Overflow log (comma separated)</label>
-        <input
-          type="text"
-          value={overflow}
-          onChange={(e) => setOverflow(e.target.value)}
           className="w-full border p-2"
         />
       </div>

@@ -245,11 +245,11 @@ export default function Editor() {
         summary: "demo summary",
         keywords: ["demo"],
         tokens: ["token"],
+        core_equations: ["demo eq"],
         boundary: ["demo"],
-        post_analysis: "demo",
+        dimensional: "demo",
         risks: ["demo"],
-        predictions: ["demo"],
-        testability: "demo"
+        references: ["Doe, J. (2020). Title. Journal."]
       };
       const gate = runGates({ secretary: { audit: secFields } });
       const res = await fetch("/api/export", {

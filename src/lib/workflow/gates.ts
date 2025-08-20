@@ -2,11 +2,11 @@ export interface SecretaryReport {
   summary?: string;
   keywords?: string[];
   tokens?: string[];
+  core_equations?: string[];
   boundary?: string[];
-  post_analysis?: string;
+  dimensional?: string;
   risks?: string[];
-  predictions?: string[];
-  testability?: string;
+  references?: string[];
   identity?: string;
 }
 
@@ -25,11 +25,11 @@ const REQUIRED_FIELDS: FieldKey[] = [
   "summary",
   "keywords",
   "tokens",
+  "core_equations",
   "boundary",
-  "post_analysis",
+  "dimensional",
   "risks",
-  "predictions",
-  "testability",
+  "references",
   "identity",
 ];
 
@@ -41,11 +41,11 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
     summary: 0,
     keywords: 0,
     tokens: 0,
+    core_equations: 0,
     boundary: 0,
-    post_analysis: 0,
+    dimensional: 0,
     risks: 0,
-    predictions: 0,
-    testability: 0,
+    references: 0,
     identity: 0,
   };
 
