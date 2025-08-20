@@ -3,16 +3,13 @@
 import { useState, FormEvent } from "react";
 
 export default function Secretary() {
-  const [summary, setSummary] = useState("");
+  const [abstract, setAbstract] = useState("");
   const [keywords, setKeywords] = useState("");
-  const [tokens, setTokens] = useState("");
-  const [boundary, setBoundary] = useState("");
+  const [nomenclature, setNomenclature] = useState("");
+  const [boundaryConditions, setBoundaryConditions] = useState("");
   const [coreEquations, setCoreEquations] = useState("");
   const [dimensional, setDimensional] = useState("");
-  const [postAnalysis, setPostAnalysis] = useState("");
-  const [risks, setRisks] = useState("");
-  const [predictions, setPredictions] = useState("");
-  const [testability, setTestability] = useState("");
+  const [limitationsRisks, setLimitationsRisks] = useState("");
   const [references, setReferences] = useState("");
   const [overflow, setOverflow] = useState("");
   const [identity, setIdentity] = useState("");
@@ -20,39 +17,30 @@ export default function Secretary() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
     const data = {
-      summary,
+      abstract,
       keywords: keywords
         .split(",")
         .map((k) => k.trim())
         .filter(Boolean),
-      tokens: tokens
-        .split(",")
-        .map((t) => t.trim())
+      nomenclature: nomenclature
+        .split("\n")
+        .map((n) => n.trim())
         .filter(Boolean),
-      boundary: boundary
-        .split(",")
+      boundary_conditions: boundaryConditions
+        .split("\n")
         .map((b) => b.trim())
         .filter(Boolean),
       core_equations: coreEquations
         .split("\n")
         .map((e) => e.trim())
         .filter(Boolean),
-      dimensional,
-      post_analysis: postAnalysis,
-      risks: risks
-        .split(",")
-        .map((r) => r.trim())
-        .filter(Boolean),
-      predictions: predictions
-        .split(",")
-        .map((p) => p.trim())
-        .filter(Boolean),
-      testability,
-      references: references
+      dimensional_analysis: dimensional,
+      limitations_risks: limitationsRisks,
+      preliminary_references: references
         .split("\n")
         .map((r) => r.trim())
         .filter(Boolean),
-      overflow: overflow
+      overflow_log: overflow
         .split(",")
         .map((o) => o.trim())
         .filter(Boolean),
@@ -66,10 +54,10 @@ export default function Secretary() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <div>
-        <label className="block font-semibold">Summary</label>
+        <label className="block font-semibold">Abstract (150–300 words)</label>
         <textarea
-          value={summary}
-          onChange={(e) => setSummary(e.target.value)}
+          value={abstract}
+          onChange={(e) => setAbstract(e.target.value)}
           className="w-full border p-2"
         />
       </div>
@@ -83,25 +71,29 @@ export default function Secretary() {
         />
       </div>
       <div>
-        <label className="block font-semibold">Tokens (symbol=definition, comma separated)</label>
-        <input
-          type="text"
-          value={tokens}
-          onChange={(e) => setTokens(e.target.value)}
+        <label className="block font-semibold">
+          Nomenclature (symbol | unit | definition per line)
+        </label>
+        <textarea
+          value={nomenclature}
+          onChange={(e) => setNomenclature(e.target.value)}
           className="w-full border p-2"
         />
       </div>
       <div>
-        <label className="block font-semibold">Boundary conditions (comma separated)</label>
-        <input
-          type="text"
-          value={boundary}
-          onChange={(e) => setBoundary(e.target.value)}
+        <label className="block font-semibold">
+          Boundary Conditions (type: expression per line)
+        </label>
+        <textarea
+          value={boundaryConditions}
+          onChange={(e) => setBoundaryConditions(e.target.value)}
           className="w-full border p-2"
         />
       </div>
       <div>
-        <label className="block font-semibold">Core Equations (one per line)</label>
+        <label className="block font-semibold">
+          Core Equations (LaTeX, one per line)
+        </label>
         <textarea
           value={coreEquations}
           onChange={(e) => setCoreEquations(e.target.value)}
@@ -117,41 +109,17 @@ export default function Secretary() {
         />
       </div>
       <div>
-        <label className="block font-semibold">Post-analysis</label>
+        <label className="block font-semibold">Limitations &amp; Risks</label>
         <textarea
-          value={postAnalysis}
-          onChange={(e) => setPostAnalysis(e.target.value)}
+          value={limitationsRisks}
+          onChange={(e) => setLimitationsRisks(e.target.value)}
           className="w-full border p-2"
         />
       </div>
       <div>
-        <label className="block font-semibold">Risks (comma separated)</label>
-        <input
-          type="text"
-          value={risks}
-          onChange={(e) => setRisks(e.target.value)}
-          className="w-full border p-2"
-        />
-      </div>
-      <div>
-        <label className="block font-semibold">Predictions (comma separated)</label>
-        <input
-          type="text"
-          value={predictions}
-          onChange={(e) => setPredictions(e.target.value)}
-          className="w-full border p-2"
-        />
-      </div>
-      <div>
-        <label className="block font-semibold">Testability</label>
-        <textarea
-          value={testability}
-          onChange={(e) => setTestability(e.target.value)}
-          className="w-full border p-2"
-        />
-      </div>
-      <div>
-        <label className="block font-semibold">References (one per line)</label>
+        <label className="block font-semibold">
+          Preliminary References (one per line)
+        </label>
         <textarea
           value={references}
           onChange={(e) => setReferences(e.target.value)}
@@ -159,7 +127,7 @@ export default function Secretary() {
         />
       </div>
       <div>
-        <label className="block font-semibold">Overflow log (comma separated)</label>
+        <label className="block font-semibold">Overflow Log (comma separated)</label>
         <input
           type="text"
           value={overflow}

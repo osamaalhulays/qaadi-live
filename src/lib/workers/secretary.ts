@@ -9,18 +9,15 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "../../../");
 
 export interface SecretaryData {
-  summary: string;
+  abstract: string;
   keywords: string[];
-  tokens: string[];
-  boundary: string[];
+  nomenclature: string[];
+  boundary_conditions: string[];
   core_equations: string[];
-  dimensional: string;
-  post_analysis: string;
-  risks: string[];
-  predictions: string[];
-  testability: string;
-  references: string[];
-  overflow?: string[];
+  dimensional_analysis: string;
+  limitations_risks: string;
+  preliminary_references: string[];
+  overflow_log?: string[];
 }
 
 /**
@@ -29,23 +26,20 @@ export interface SecretaryData {
  * function falls back to interactive prompts on the command line.
  */
 export async function runSecretary(data?: Partial<SecretaryData>) {
-  let summary: string;
+  let abstract: string;
   let keywords: string[];
-  let tokens: string[];
-  let boundary: string[];
+  let nomenclature: string[];
+  let boundary_conditions: string[];
   let core_equations: string[];
-  let dimensional: string;
-  let post_analysis: string;
-  let risks: string[];
-  let predictions: string[];
-  let testability: string;
-  let references: string[];
-  let overflow: string[];
+  let dimensional_analysis: string;
+  let limitations_risks: string;
+  let preliminary_references: string[];
+  let overflow_log: string[];
 
   if (!data) {
     const rl = createInterface({ input, output });
     try {
-      summary = await rl.question("Summary: ");
+      abstract = await rl.question("Abstract: ");
       const keyInput = await rl.question(
         "Keywords (comma separated): "
       );
@@ -53,17 +47,17 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
         .split(",")
         .map((k) => k.trim())
         .filter(Boolean);
-      const tokInput = await rl.question(
-        "Tokens and definitions (symbol=definition, comma separated): "
+      const nomInput = await rl.question(
+        "Nomenclature (symbol|unit|definition, comma separated): "
       );
-      tokens = tokInput
+      nomenclature = nomInput
         .split(",")
-        .map((t) => t.trim())
+        .map((n) => n.trim())
         .filter(Boolean);
       const boundInput = await rl.question(
         "Boundary conditions (comma separated): "
       );
-      boundary = boundInput
+      boundary_conditions = boundInput
         .split(",")
         .map((b) => b.trim())
         .filter(Boolean);
@@ -74,30 +68,19 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
         .split(",")
         .map((e) => e.trim())
         .filter(Boolean);
-      dimensional = await rl.question("Dimensional analysis: ");
-      post_analysis = await rl.question("Post-analysis: ");
-      const riskInput = await rl.question("Risks (comma separated): ");
-      risks = riskInput
-        .split(",")
-        .map((r) => r.trim())
-        .filter(Boolean);
-      const predInput = await rl.question("Predictions (comma separated): ");
-      predictions = predInput
-        .split(",")
-        .map((p) => p.trim())
-        .filter(Boolean);
-      testability = await rl.question("Testability: ");
+      dimensional_analysis = await rl.question("Dimensional analysis: ");
+      limitations_risks = await rl.question("Limitations & Risks: ");
       const refInput = await rl.question(
-        "References (comma separated): "
+        "Preliminary references (comma separated): "
       );
-      references = refInput
+      preliminary_references = refInput
         .split(",")
         .map((r) => r.trim())
         .filter(Boolean);
       const overflowInput = await rl.question(
         "Overflow log (comma separated, optional): "
       );
-      overflow = overflowInput
+      overflow_log = overflowInput
         .split(",")
         .map((o) => o.trim())
         .filter(Boolean);
@@ -106,33 +89,27 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     }
   } else {
     ({
-      summary = "",
+      abstract = "",
       keywords = [],
-      tokens = [],
-      boundary = [],
+      nomenclature = [],
+      boundary_conditions = [],
       core_equations = [],
-      dimensional = "",
-      post_analysis = "",
-      risks = [],
-      predictions = [],
-      testability = "",
-      references = [],
-      overflow = [],
+      dimensional_analysis = "",
+      limitations_risks = "",
+      preliminary_references = [],
+      overflow_log = [],
     } = data);
   }
 
   const identityInput = [
-    summary,
+    abstract,
     keywords.join(","),
-    tokens.join(","),
-    boundary.join(","),
+    nomenclature.join(","),
+    boundary_conditions.join(","),
     core_equations.join(","),
-    dimensional,
-    post_analysis,
-    risks.join(","),
-    predictions.join(","),
-    testability,
-    references.join(","),
+    dimensional_analysis,
+    limitations_risks,
+    preliminary_references.join(","),
   ].join("|");
   const identity = createHash("sha256").update(identityInput).digest("hex").slice(0, 8);
 
@@ -143,14 +120,13 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
   console.log("Fingerprint:", fingerprint);
 
   const fields = {
-    summary,
+    abstract,
     keywords,
-    tokens,
-    boundary,
-    post_analysis,
-    risks,
-    predictions,
-    testability,
+    nomenclature,
+    boundary_conditions,
+    dimensional_analysis,
+    limitations_risks,
+    preliminary_references,
     identity,
   };
   const missing = Object.entries(fields)
@@ -176,41 +152,34 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     "## Identity",
     identity,
     "",
-    "## Summary",
-    summary,
+    "## Abstract",
+    abstract,
     "",
     "## Keywords",
     ...keywords.map((k) => `- ${k}`),
     "",
-    "## Tokens and Definitions",
-    ...tokens.map((t) => `- ${t}`),
+    "## Nomenclature",
+    ...nomenclature.map((n) => `- ${n}`),
     "",
     "## Core Equations",
     ...core_equations.map((e) => `- ${e}`),
     "",
     "## Boundary Conditions",
-    ...boundary.map((b) => `- ${b}`),
+    ...boundary_conditions.map((b) => `- ${b}`),
     "",
     "## Dimensional Analysis",
-    dimensional,
+    dimensional_analysis,
     "",
-    "## Post-Analysis",
-    post_analysis,
+    "## Limitations & Risks",
+    limitations_risks,
     "",
-    "## Risks",
-    ...risks.map((r) => `- ${r}`),
-    "",
-    "## Predictions",
-    ...predictions.map((p) => `- ${p}`),
-    "",
-    "## Testability",
-    testability,
-    "",
-    "## References",
-    ...references.map((r) => `- ${r}`),
+    "## Preliminary References",
+    ...preliminary_references.map((r) => `- ${r}`),
     "",
     "## Overflow Log",
-    ...(overflow.length > 0 ? overflow.map((o) => `- ${o}`) : ["- none"]),
+    ...(overflow_log.length > 0
+      ? overflow_log.map((o) => `- ${o}`)
+      : ["- none"]),
     "",
   ].join("\n");
 
