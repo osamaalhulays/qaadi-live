@@ -1,7 +1,4 @@
-<!-- mandatory fields: identity, abstract, keywords, nomenclature, core_equations, boundary_conditions, dimensional_analysis, limitations_risks, preliminary_references, overflow_log -->
-
-## identity
-Unique identifier (e.g., arXiv:1234.56789 or DOI:10.1234/example).
+<!-- mandatory fields: abstract, keywords, nomenclature, core_equations, boundary_conditions, dimensional_analysis, limitations_risks, preliminary_references, overflow_log, identity -->
 
 ## abstract
 A concise summary of the theoretical framework and its main hypotheses.
@@ -37,3 +34,6 @@ All equations satisfy dimensional consistency, e.g., \([E] = [M][L]^2[T]^{-2}\).
 
 ## overflow_log
 - None
+
+## identity
+Unique identifier (e.g., arXiv:1234.56789 or DOI:10.1234/example).
