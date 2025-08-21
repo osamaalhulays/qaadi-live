@@ -36,4 +36,9 @@ The system evaluates scientific drafts using the QN-21 criteria and optional cus
 - risks
 - predictions
 - testability
+- identity
+- overflow (optional)
+
+The secretary gate validates these sections according to the template in
+[`secretary.md`](templates/secretary.md).
 
