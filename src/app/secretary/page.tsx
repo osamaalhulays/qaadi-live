@@ -2,7 +2,7 @@ import Header from "../../components/Header";
 import Footer from "../../components/Footer";
 import QN21Radar from "../../components/QN21Radar";
 import QN21Timeline from "../../components/QN21Timeline";
-import Secretary from "../../components/Secretary";
+import SecretaryArabic from "../../components/SecretaryArabic";
 
 export default function Page() {
   const radar = [
@@ -23,9 +23,9 @@ export default function Page() {
     <>
       <Header />
       <div className="card">
-        <Secretary />
+        <SecretaryArabic />
         <QN21Radar data={radar} />
-        <div style={{ marginTop: 16 }}>
+        <div className="mt-4">
           <QN21Timeline data={timeline} />
         </div>
       </div>
