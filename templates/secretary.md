@@ -1,39 +1,39 @@
-<!-- mandatory fields: ready_percent, summary, keywords, tokens, boundary, post_analysis, risks, predictions, testability, identity -->
+<!-- mandatory fields: identity, abstract, keywords, nomenclature, core_equations, boundary_conditions, dimensional_analysis, limitations_risks, preliminary_references, overflow_log -->
 
-جاهزية%: 100
+## identity
+Unique identifier (e.g., arXiv:1234.56789 or DOI:10.1234/example).
 
-# ملخص
+## abstract
+A concise summary of the theoretical framework and its main hypotheses.
 
-## الهوية
-abcd1234
+## keywords
+- example
+- placeholder
 
-## الملخص
-يوضح هذا المستند الإطار النظري المقترح وفرضياته الرئيسية.
+## nomenclature
+| Symbol | Description | SI Unit |
+|--------|-------------|---------|
+| c      | speed of light | m·s^{-1} |
+| m      | mass | kg |
 
-## الكلمات المفتاحية
-- إطار
-- تحليل
+## core_equations
+\[
+E = mc^2
+\]
 
-## الرموز والتعريفات
-- c: سرعة الضوء
-- m: الكتلة
+## boundary_conditions
+- \(t = 0\): initial state of the system  
+- \(x \to \infty\): energy dispersion tends to zero
 
-## شروط الحدود
-- t = 0 : الحالة الابتدائية للنظام
-- x -> ∞ : يتلاشى تشتت الطاقة إلى الصفر
+## dimensional_analysis
+All equations satisfy dimensional consistency, e.g., \([E] = [M][L]^2[T]^{-2}\).
 
-## ما بعد التحليل
-جميع المعادلات متجانسة الأبعاد، بحيث تحقق [E] = [M][L]^2[T]^{-2].
+## limitations_risks
+- Oversimplified assumptions may lead to misleading conclusions.  
+- Valid only for \(v < c\).
 
-## المخاطر
-- قد يؤدي التبسيط المفرط إلى التضليل
-- صالح فقط دون سرعة الضوء
+## preliminary_references
+1. A. Author, *Title*, Journal **1**, 1 (2023).
 
-## التوقعات
-السلوك المتوقع للنموذج وكيف يمكن ملاحظته.
-
-## قابلية الاختبار
-الشروط أو التجارب اللازمة للتحقق من الفرضيات.
-
-## سجل التجاوزات
-- لا يوجد
+## overflow_log
+- None
