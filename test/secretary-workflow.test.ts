@@ -16,7 +16,7 @@ const sampleSecretary = {
   dimensional_analysis: 'dimensionless',
   limitations_risks: 'oversimplification',
   preliminary_references: ['Doe 2020'],
-  overflow_log: [],
+  overflow_log: ['none'],
 };
 
 const samplePlan = [
@@ -29,7 +29,7 @@ test('runSecretary generates a complete secretary.md', async () => {
   const prev = process.cwd();
   process.chdir(dir);
   try {
-    const content = await runSecretary(sampleSecretary);
+    const { content } = await runSecretary(sampleSecretary);
     const filePath = path.join(dir, 'paper', 'secretary.md');
     const fileContent = await readFile(filePath, 'utf8');
     assert.strictEqual(fileContent, content);
@@ -71,8 +71,8 @@ test('runSecretary calculates readiness based on missing fields', async () => {
   process.chdir(dir);
   try {
     const partial = { ...sampleSecretary, abstract: '' };
-    const content = await runSecretary(partial);
-    assert.match(content, /Ready%: 89/);
+    const { content } = await runSecretary(partial);
+    assert.match(content, /Ready%: 90/);
   } finally {
     process.chdir(prev);
   }
@@ -104,7 +104,7 @@ test('runSecretary handles malformed nomenclature rows', async () => {
   process.chdir(dir);
   try {
     const malformed = { ...sampleSecretary, nomenclature: ['bad row', 'm|kg|mass'] };
-    const content = await runSecretary(malformed);
+    const { content } = await runSecretary(malformed);
     assert.match(
       content,
       /## Nomenclature\n- bad row\n- m\|kg\|mass/
@@ -121,8 +121,8 @@ test('runSecretary outputs empty references section when none provided', async (
   process.chdir(dir);
   try {
     const noRefs = { ...sampleSecretary, preliminary_references: [] };
-    const content = await runSecretary(noRefs);
-    assert.match(content, /Ready%: 89/);
+    const { content } = await runSecretary(noRefs);
+    assert.match(content, /Ready%: 90/);
     assert.match(content, /## Preliminary References\n\n## Overflow Log\n- none/);
   } finally {
     process.chdir(prev);

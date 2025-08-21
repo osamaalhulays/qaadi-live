@@ -61,7 +61,13 @@ export async function POST(req: NextRequest) {
     const v = body.v || "v1";
 
     const sec = await runSecretary();
-    await saveSnapshot([{ path: "paper/secretary.md", content: sec }], target, lang, slug, v);
+    await saveSnapshot(
+      [{ path: "paper/secretary.md", content: sec.content }],
+      target,
+      lang,
+      slug,
+      v
+    );
 
     for (const name of names) {
       const plan = await runResearchSecretary(name);

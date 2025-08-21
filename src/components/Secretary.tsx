@@ -46,9 +46,8 @@ export default function Secretary() {
         .filter(Boolean),
     };
     const { runSecretary } = await import("../lib/workers/secretary");
-    const content = await runSecretary(data);
-    const match = content.match(/## Identity\n([0-9a-f]{8})/);
-    if (match) setIdentity(match[1]);
+    const { content, identity } = await runSecretary(data);
+    setIdentity(identity);
   }
 
   return (

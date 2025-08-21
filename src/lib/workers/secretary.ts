@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 import { createInterface } from "readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { createHash } from "crypto";
+import { runGates, type GateResult, type SecretaryReport } from "../workflow/gates";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "../../../");
@@ -25,7 +26,14 @@ export interface SecretaryData {
  * describing the gathered requirements. When no data is supplied the
  * function falls back to interactive prompts on the command line.
  */
-export async function runSecretary(data?: Partial<SecretaryData>) {
+export interface SecretaryResult extends GateResult {
+  content: string;
+  identity: string;
+}
+
+export async function runSecretary(
+  data?: Partial<SecretaryData>
+): Promise<SecretaryResult> {
   let abstract: string;
   let keywords: string[];
   let nomenclature: string[];
@@ -119,7 +127,7 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
   const fingerprint = `${pkg.name ?? ""}/${pkg.version ?? ""}/${date}/${identity}`;
   console.log("Fingerprint:", fingerprint);
 
-  const fields = {
+  const audit: SecretaryReport = {
     abstract,
     keywords,
     nomenclature,
@@ -128,21 +136,12 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     dimensional_analysis,
     limitations_risks,
     preliminary_references,
+    overflow_log,
     identity,
   };
-  const missing = Object.entries(fields)
-    .filter(([, v]) =>
-      v === undefined ||
-      v === null ||
-      (typeof v === "string" && !v.trim()) ||
-      (Array.isArray(v) && v.length === 0)
-    )
-    .map(([k]) => k);
-  const ready_percent = Math.round(
-    ((Object.keys(fields).length - missing.length) /
-      Object.keys(fields).length) *
-      100
-  );
+  const { ready_percent, missing, fields } = runGates({
+    secretary: { audit },
+  });
 
   const content = [
     `Fingerprint: ${fingerprint}`,
@@ -187,5 +186,5 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
   const filePath = path.join(projectRoot, "paper", "secretary.md");
   await mkdir(path.dirname(filePath), { recursive: true });
   await writeFile(filePath, content, "utf8");
-  return content;
+  return { content, ready_percent, missing, fields, identity };
 }
