@@ -1,4 +1,4 @@
-<!-- mandatory fields: ready_percent, summary, keywords, tokens, boundary, post_analysis, risks, predictions, testability, identity -->
+<!-- mandatory fields: ready_percent, abstract, keywords, nomenclature, core_equations, boundary_conditions, dimensional_analysis, limitations_risks, preliminary_references, identity -->
 
 جاهزية%: 100
 
