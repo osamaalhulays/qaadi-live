@@ -1,6 +1,6 @@
 import { test } from '@jest/globals';
 import assert from 'node:assert';
-import { mkdtemp, readFile } from 'node:fs/promises';
+import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { runSecretary, runResearchSecretary } from '../src/lib/workers/index.ts';
@@ -24,10 +24,13 @@ const samplePlan = [
   { item: 'تحسين الواجهة', priority: 'P2', qn: 'QN-21-8' },
 ];
 
+const pkg = JSON.stringify({ name: 'qaadi-live', version: '0.1.0' });
+
 test('runSecretary generates a complete secretary.md', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
   const prev = process.cwd();
   process.chdir(dir);
+  await writeFile(path.join(dir, 'package.json'), pkg);
   try {
     const content = await runSecretary(sampleSecretary);
     const filePath = path.join(dir, 'paper', 'secretary.md');
@@ -69,6 +72,7 @@ test('runSecretary calculates readiness based on missing fields', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
   const prev = process.cwd();
   process.chdir(dir);
+  await writeFile(path.join(dir, 'package.json'), pkg);
   try {
     const partial = { ...sampleSecretary, abstract: '' };
     const content = await runSecretary(partial);
@@ -102,6 +106,7 @@ test('runSecretary handles malformed nomenclature rows', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
   const prev = process.cwd();
   process.chdir(dir);
+  await writeFile(path.join(dir, 'package.json'), pkg);
   try {
     const malformed = { ...sampleSecretary, nomenclature: ['bad row', 'm|kg|mass'] };
     const content = await runSecretary(malformed);
@@ -119,6 +124,7 @@ test('runSecretary outputs empty references section when none provided', async (
   const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
   const prev = process.cwd();
   process.chdir(dir);
+  await writeFile(path.join(dir, 'package.json'), pkg);
   try {
     const noRefs = { ...sampleSecretary, preliminary_references: [] };
     const content = await runSecretary(noRefs);
