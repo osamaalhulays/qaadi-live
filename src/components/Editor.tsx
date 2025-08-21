@@ -242,14 +242,16 @@ export default function Editor() {
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
       const secFields: SecretaryReport = {
-        summary: "demo summary",
+        abstract: "demo abstract",
         keywords: ["demo"],
-        tokens: ["token"],
-        boundary: ["demo"],
-        post_analysis: "demo",
-        risks: ["demo"],
-        predictions: ["demo"],
-        testability: "demo"
+        nomenclature: ["demo term"],
+        core_equations: ["E=mc^2"],
+        boundary_conditions: ["demo"],
+        dimensional_analysis: "demo",
+        limitations_risks: "demo",
+        preliminary_references: ["demo"],
+        overflow_log: ["demo"],
+        identity: "demo"
       };
       const gate = runGates({ secretary: { audit: secFields } });
       const res = await fetch("/api/export", {
