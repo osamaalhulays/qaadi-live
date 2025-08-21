@@ -1,39 +1,39 @@
-<!-- mandatory fields: abstract, keywords, nomenclature, core_equations, boundary_conditions, dimensional_analysis, limitations_risks, preliminary_references, overflow_log, identity -->
+<!-- mandatory fields: identity, abstract, keywords, nomenclature, core_equations, boundary_conditions, dimensional_analysis, limitations_risks, preliminary_references, overflow_log -->
 
-## abstract
+## Abstract
 A concise summary of the theoretical framework and its main hypotheses.
 
-## keywords
+## Keywords
 - example
 - placeholder
 
-## nomenclature
+## Nomenclature
 | Symbol | Description | SI Unit |
 |--------|-------------|---------|
 | c      | speed of light | m·s^{-1} |
 | m      | mass | kg |
 
-## core_equations
+## Core Equations
 \[
 E = mc^2
 \]
 
-## boundary_conditions
+## Boundary Conditions
 - \(t = 0\): initial state of the system  
 - \(x \to \infty\): energy dispersion tends to zero
 
-## dimensional_analysis
+## Dimensional Analysis
 All equations satisfy dimensional consistency, e.g., \([E] = [M][L]^2[T]^{-2}\).
 
-## limitations_risks
+## Limitations & Risks
 - Oversimplified assumptions may lead to misleading conclusions.  
 - Valid only for \(v < c\).
 
-## preliminary_references
+## Preliminary References
 1. A. Author, *Title*, Journal **1**, 1 (2023).
 
-## overflow_log
+## Overflow Log
 - None
 
-## identity
+## Identity
 Unique identifier (e.g., arXiv:1234.56789 or DOI:10.1234/example).
