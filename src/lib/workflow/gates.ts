@@ -1,18 +1,26 @@
 export interface SecretaryReport {
-  summary?: string;
+  abstract?: string;
   keywords?: string[];
-  tokens?: string[];
-  boundary?: string[];
-  post_analysis?: string;
-  risks?: string[];
-  predictions?: string[];
-  testability?: string;
-  overflow?: string[];
+  nomenclature?: string[];
+  core_equations?: string[];
+  boundary_conditions?: string[];
+  dimensional_analysis?: string;
+  limitations_risks?: string;
+  preliminary_references?: string[];
+  overflow_log?: string[];
   identity?: string;
 }
 
 export type FieldScore = 0 | 1;
-export type FieldKey = keyof SecretaryReport;
+export type FieldKey =
+  | 'abstract'
+  | 'keywords'
+  | 'nomenclature'
+  | 'boundary_conditions'
+  | 'dimensional_analysis'
+  | 'limitations_risks'
+  | 'preliminary_references'
+  | 'identity';
 
 export interface GateResult {
   ready_percent: number;
@@ -23,16 +31,14 @@ export interface GateResult {
 // Required fields for a complete secretary report
 // These map directly to sections in templates/secretary.md
 const REQUIRED_FIELDS: FieldKey[] = [
-  "summary",
-  "keywords",
-  "tokens",
-  "boundary",
-  "post_analysis",
-  "risks",
-  "predictions",
-  "testability",
-  "overflow",
-  "identity",
+  'abstract',
+  'keywords',
+  'nomenclature',
+  'boundary_conditions',
+  'dimensional_analysis',
+  'limitations_risks',
+  'preliminary_references',
+  'identity',
 ];
 
 // Check mandatory fields inside secretary report and return missing ones
@@ -40,15 +46,13 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
   const report = data.secretary?.audit;
   const missing: FieldKey[] = [];
   const fields: Record<FieldKey, FieldScore> = {
-    summary: 0,
+    abstract: 0,
     keywords: 0,
-    tokens: 0,
-    boundary: 0,
-    post_analysis: 0,
-    risks: 0,
-    predictions: 0,
-    testability: 0,
-    overflow: 0,
+    nomenclature: 0,
+    boundary_conditions: 0,
+    dimensional_analysis: 0,
+    limitations_risks: 0,
+    preliminary_references: 0,
     identity: 0,
   };
 

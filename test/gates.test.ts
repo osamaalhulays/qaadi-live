@@ -5,62 +5,54 @@ import { runGates, type SecretaryReport, type FieldKey } from '../src/lib/workfl
 test('runGates detects multiple missing fields', () => {
   const audit: SecretaryReport = {
     keywords: ['physics'],
-    tokens: ['c: light'],
+    nomenclature: ['c: light'],
     identity: '',
   };
   const result = runGates({ secretary: { audit } });
-  assert.strictEqual(result.ready_percent, 20);
+  assert.strictEqual(result.ready_percent, 25);
   const expectedMissing: FieldKey[] = [
-    'summary',
-    'boundary',
-    'post_analysis',
-    'risks',
-    'predictions',
-    'testability',
-    'overflow',
+    'abstract',
+    'boundary_conditions',
+    'dimensional_analysis',
+    'limitations_risks',
+    'preliminary_references',
     'identity',
   ];
   assert.deepStrictEqual(result.missing, expectedMissing);
   assert.deepStrictEqual(result.fields, {
-    summary: 0,
+    abstract: 0,
     keywords: 1,
-    tokens: 1,
-    boundary: 0,
-    post_analysis: 0,
-    risks: 0,
-    predictions: 0,
-    testability: 0,
-    overflow: 0,
+    nomenclature: 1,
+    boundary_conditions: 0,
+    dimensional_analysis: 0,
+    limitations_risks: 0,
+    preliminary_references: 0,
     identity: 0,
   });
 });
 
 test('runGates passes when all required fields are present', () => {
   const audit: SecretaryReport = {
-    summary: 'Overview',
+    abstract: 'Overview',
     keywords: ['physics'],
-    tokens: ['c: light'],
-    boundary: ['t=0'],
-    post_analysis: 'dimensionless',
-    risks: ['oversimplification'],
-    predictions: ['growth'],
-    testability: 'lab',
-    overflow: ['note'],
+    nomenclature: ['c: light'],
+    boundary_conditions: ['t=0'],
+    dimensional_analysis: 'dimensionless',
+    limitations_risks: 'oversimplification',
+    preliminary_references: ['ref'],
     identity: 'source',
   };
   const result = runGates({ secretary: { audit } });
   assert.strictEqual(result.ready_percent, 100);
   assert.deepStrictEqual(result.missing, []);
   assert.deepStrictEqual(result.fields, {
-    summary: 1,
+    abstract: 1,
     keywords: 1,
-    tokens: 1,
-    boundary: 1,
-    post_analysis: 1,
-    risks: 1,
-    predictions: 1,
-    testability: 1,
-    overflow: 1,
+    nomenclature: 1,
+    boundary_conditions: 1,
+    dimensional_analysis: 1,
+    limitations_risks: 1,
+    preliminary_references: 1,
     identity: 1,
   });
 });
