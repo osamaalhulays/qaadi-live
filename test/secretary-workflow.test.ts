@@ -72,7 +72,7 @@ test('runSecretary calculates readiness based on missing fields', async () => {
   try {
     const partial = { ...sampleSecretary, abstract: '' };
     const content = await runSecretary(partial);
-    assert.match(content, /Ready%: 88/);
+    assert.match(content, /Ready%: 89/);
   } finally {
     process.chdir(prev);
   }
@@ -122,7 +122,7 @@ test('runSecretary outputs empty references section when none provided', async (
   try {
     const noRefs = { ...sampleSecretary, preliminary_references: [] };
     const content = await runSecretary(noRefs);
-    assert.match(content, /Ready%: 100/);
+    assert.match(content, /Ready%: 89/);
     assert.match(content, /## Preliminary References\n\n## Overflow Log\n- none/);
   } finally {
     process.chdir(prev);

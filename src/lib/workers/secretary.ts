@@ -124,6 +124,7 @@ export async function runSecretary(data?: Partial<SecretaryData>) {
     keywords,
     nomenclature,
     boundary_conditions,
+    core_equations,
     dimensional_analysis,
     limitations_risks,
     preliminary_references,
