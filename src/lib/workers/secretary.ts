@@ -25,6 +25,12 @@ export async function runSecretary(
   data?: Partial<SecretaryData>,
   basePath: string = process.cwd()
 ) {
+  const debug = (msg: string) => {
+    if (process.env.DEBUG_SECRETARY) {
+      console.log(`runSecretary: ${msg}`);
+    }
+  };
+
   let abstract: string;
   let keywords: string[];
   let nomenclature: string[];
@@ -126,7 +132,7 @@ export async function runSecretary(
   }
   const date = new Date().toISOString().slice(0, 10);
   const fingerprint = `${pkg.name ?? ""}/${pkg.version ?? ""}/${date}/${identity}`;
-  console.log("Fingerprint:", fingerprint);
+  debug(`Fingerprint: ${fingerprint}`);
 
   const fields = {
     abstract,
