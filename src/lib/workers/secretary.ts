@@ -109,6 +109,7 @@ export async function runSecretary(
     dimensional_analysis,
     limitations_risks,
     preliminary_references.join(","),
+    overflow_log.join(","),
   ].join("|");
   const identity = createHash("sha256").update(identityInput).digest("hex").slice(0, 8);
 
