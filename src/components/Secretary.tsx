@@ -45,11 +45,16 @@ export default function Secretary() {
         .map((o) => o.trim())
         .filter(Boolean),
     };
-    const { runSecretary } = await import("../lib/workers/secretary");
-    const content = await runSecretary(data);
-    const match = content.match(/## Identity\n([0-9a-f]{8})/);
-    if (match) setIdentity(match[1]);
-  }
+      const res = await fetch("/api/secretary", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (res.ok) {
+        const json = (await res.json()) as { identity?: string };
+        if (json.identity) setIdentity(json.identity);
+      }
+    }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
