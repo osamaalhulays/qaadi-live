@@ -36,9 +36,13 @@ test('runSecretary generates a complete secretary.md', async () => {
     const filePath = path.join(dir, 'paper', 'secretary.md');
     const fileContent = await readFile(filePath, 'utf8');
     assert.strictEqual(fileContent, content);
-    assert.match(fileContent, /Fingerprint: qaadi-live\/0.1.0\/\d{4}-\d{2}-\d{2}\/[0-9a-f]{8}/);
+    const expectedId = 'd6ed8e3e';
+    assert.match(
+      fileContent,
+      new RegExp(`Fingerprint: qaadi-live/0\\.1\\.0/\\d{4}-\\d{2}-\\d{2}/${expectedId}`)
+    );
     assert.match(fileContent, /Ready%: 100/);
-    assert.match(fileContent, /## Identity\n[0-9a-f]{8}/);
+    assert.match(fileContent, new RegExp(`## Identity\\n${expectedId}`));
     assert.match(fileContent, /## Abstract\nProject overview/);
     assert.match(
       fileContent,
