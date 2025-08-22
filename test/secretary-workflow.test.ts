@@ -1,4 +1,4 @@
-import { test } from '@jest/globals';
+import { test, jest } from '@jest/globals';
 import assert from 'node:assert';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
@@ -174,6 +174,34 @@ test('runResearchSecretary outputs rows with priority and QN-21 links', async ()
       assert.match(line, rowPattern);
     }
   } finally {
+    process.chdir(prev);
+  }
+});
+
+test('runSecretary logs only when DEBUG_SECRETARY is true', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
+  const prev = process.cwd();
+  process.chdir(dir);
+  await writeFile(path.join(dir, 'package.json'), pkg);
+  const spy = jest.spyOn(console, 'log').mockImplementation(() => {});
+  try {
+    delete process.env.DEBUG_SECRETARY;
+    await runSecretary(sampleSecretary);
+    let secLogs = spy.mock.calls.filter(
+      ([msg]) => typeof msg === 'string' && msg.startsWith('runSecretary:')
+    );
+    assert.strictEqual(secLogs.length, 0);
+
+    spy.mockClear();
+    process.env.DEBUG_SECRETARY = 'true';
+    await runSecretary(sampleSecretary);
+    secLogs = spy.mock.calls.filter(
+      ([msg]) => typeof msg === 'string' && msg.startsWith('runSecretary:')
+    );
+    assert.strictEqual(secLogs.length, 1);
+  } finally {
+    spy.mockRestore();
+    delete process.env.DEBUG_SECRETARY;
     process.chdir(prev);
   }
 });
