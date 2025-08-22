@@ -100,6 +100,10 @@ export async function runSecretary(
     } = data);
   }
 
+  if (!overflow_log || overflow_log.length === 0) {
+    overflow_log = ["none"];
+  }
+
   const identityInput = [
     abstract,
     keywords.join(","),

@@ -96,7 +96,7 @@ test('runGates requires identity among fields', () => {
     dimensional_analysis: 'd',
     limitations_risks: 'r',
     preliminary_references: ['p'],
-    overflow_log: ['o'],
+    overflow_log: [],
     identity: 'abcd1234',
   };
   const result = runGates({ secretary: { audit: report } });
