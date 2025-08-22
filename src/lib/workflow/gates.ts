@@ -62,7 +62,7 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
       value === undefined ||
       value === null ||
       (typeof value === "string" && !value.trim()) ||
-      (Array.isArray(value) && value.length === 0);
+      (Array.isArray(value) && value.length === 0 && field !== "overflow_log");
     fields[field] = isMissing ? 0 : 1;
     if (isMissing) missing.push(field);
   }

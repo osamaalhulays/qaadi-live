@@ -45,7 +45,7 @@ test('runGates passes when all required fields are present', () => {
     dimensional_analysis: 'dimensionless',
     limitations_risks: 'oversimplification',
     preliminary_references: ['Doe 2020'],
-    overflow_log: ['note'],
+    overflow_log: [],
     identity: 'source',
   };
   const result = runGates({ secretary: { audit } });
