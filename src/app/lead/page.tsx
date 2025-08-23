@@ -1,7 +1,7 @@
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
-import QN21Radar from "../../components/QN21Radar";
-import QN21Timeline from "../../components/QN21Timeline";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import QN21Radar from "@/components/QN21Radar";
+import QN21Timeline from "@/components/QN21Timeline";
 
 export default function Page() {
   const radar = [

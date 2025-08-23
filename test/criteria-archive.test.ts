@@ -6,7 +6,7 @@ import {
   listArchivedCriteria,
   restoreCriteria,
   deleteCriterion
-} from '../src/lib/criteria';
+} from '@/lib/criteria';
 
 // Tests that archived criteria snapshots can be restored
 // without affecting the permanent QN-21 specification.

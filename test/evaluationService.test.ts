@@ -1,6 +1,6 @@
 import { test } from '@jest/globals';
 import assert from 'node:assert';
-import { evaluateText } from '../src/lib/evaluationService.ts';
+import { evaluateText } from '@/lib/evaluationService.ts';
 
 test('evaluateText combines QN21 and custom criteria', async () => {
   const text = 'Equations ensure safety and compliance in our methodology.';

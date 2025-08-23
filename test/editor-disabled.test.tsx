@@ -13,7 +13,7 @@ test('export and generate buttons require api key, target, lang, and text', asyn
   // initial render without required fields -> buttons disabled
   let React = (await import('react')).default;
   let { renderToStaticMarkup } = await import('react-dom/server');
-  let { default: Editor } = await import('../src/components/Editor');
+  let { default: Editor } = await import('@/components/Editor');
   const initial = renderToStaticMarkup(<Editor />);
   assert.match(initial, /<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
   assert.match(initial, /<button class="btn btn-primary"[^>]*disabled[^>]*>Export ZIP<\/button>/);
@@ -33,7 +33,7 @@ test('export and generate buttons require api key, target, lang, and text', asyn
     if (calls === 7) return ['sample text', () => {}]; // text
     return origUseState(init);
   });
-  ({ default: Editor } = await import('../src/components/Editor'));
+  ({ default: Editor } = await import('@/components/Editor'));
   const withValues = renderToStaticMarkup(<Editor />);
   (React.useState as any).mockRestore();
 

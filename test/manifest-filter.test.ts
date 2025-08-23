@@ -1,6 +1,6 @@
 import { test } from '@jest/globals';
 import assert from 'node:assert';
-import { latestFilesFor, ManifestEntry } from '../src/lib/utils/manifest';
+import { latestFilesFor, ManifestEntry } from '@/lib/utils/manifest';
 
 test('returns only files from requested version', () => {
   const manifest: ManifestEntry[] = [

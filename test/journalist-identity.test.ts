@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import { mkdtemp, writeFile, readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
-import { runJournalist } from '../src/lib/workers/index.ts';
+import { runJournalist } from '@/lib/workers/index.ts';
 
 test('runJournalist inserts identity, wraps math, and sets direction', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));

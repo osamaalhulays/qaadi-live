@@ -1,6 +1,6 @@
 import { test, afterAll } from '@jest/globals';
 import assert from 'node:assert';
-import { GET } from '../src/app/api/download/zip/route.ts';
+import { GET } from '@/app/api/download/zip/route.ts';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';

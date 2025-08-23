@@ -5,8 +5,8 @@ import {
   updateCriterion,
   deleteCriterion,
   evaluateCriteria
-} from '../src/lib/criteria';
-import { runJudge } from '../src/lib/workers/judge';
+} from '@/lib/criteria';
+import { runJudge } from '@/lib/workers/judge';
 
 test('CRUD and evaluation for custom criteria', async () => {
   const start = await loadCriteria();

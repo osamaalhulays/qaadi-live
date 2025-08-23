@@ -4,7 +4,7 @@ import {
   addCriterion,
   updateCriterion,
   deleteCriterion,
-} from "../../../lib/criteria";
+} from "@/lib/criteria";
 
 export const runtime = "nodejs";
 

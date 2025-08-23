@@ -1,4 +1,4 @@
-import { readStreamToText, safeJSON } from "../utils/json";
+import { readStreamToText, safeJSON } from "@/lib/utils/json";
 
 export async function callDeepSeek(key: string, prompt: string, max_tokens: number) {
   const t0 = Date.now();

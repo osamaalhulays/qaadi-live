@@ -1,10 +1,10 @@
 import { NextRequest } from "next/server";
-import { InputSchema, OutputSchema } from "../../../lib/schema/io";
-import { generateText } from "../../../lib/generationService";
-import { freezeText, restoreText, countEquations, FrozenText } from "../../../lib/utils/freeze";
-import { checkIdempotency } from "../../../lib/utils/idempotency";
-import { saveSnapshot } from "../../../lib/saveSnapshot";
-import { buildPrompt, buildTranslationPrompts } from "../../../lib/buildPrompt";
+import { InputSchema, OutputSchema } from "@/lib/schema/io";
+import { generateText } from "@/lib/generationService";
+import { freezeText, restoreText, countEquations, FrozenText } from "@/lib/utils/freeze";
+import { checkIdempotency } from "@/lib/utils/idempotency";
+import { saveSnapshot } from "@/lib/saveSnapshot";
+import { buildPrompt, buildTranslationPrompts } from "@/lib/buildPrompt";
 import fs from "fs/promises";
 import path from "path";
 import {
@@ -15,7 +15,7 @@ import {
   runLead,
   runJournalist,
   runHead
-} from "../../../lib/workers";
+} from "@/lib/workers";
 
 export const runtime = "nodejs";
 

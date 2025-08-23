@@ -1,8 +1,8 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import en from "../i18n/en.json";
-import ar from "../i18n/ar.json";
+import en from "@/i18n/en.json";
+import ar from "@/i18n/ar.json";
 
 type Lang = "en" | "ar";
 

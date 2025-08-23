@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import { mkdtemp, writeFile, readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
-import { runLead } from '../src/lib/workers/index.ts';
+import { runLead } from '@/lib/workers/index.ts';
 
 test('runLead merges plans and highlights best items', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));

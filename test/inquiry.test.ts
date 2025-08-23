@@ -1,6 +1,6 @@
 import { test } from '@jest/globals';
 import assert from 'node:assert';
-import { buildPrompt } from '../src/lib/buildPrompt';
+import { buildPrompt } from '@/lib/buildPrompt';
 
 test('buildPrompt handles inquiry in English', () => {
   const { prompt } = buildPrompt('inquiry', 'en', 'What is the role of Qaadi?', null);

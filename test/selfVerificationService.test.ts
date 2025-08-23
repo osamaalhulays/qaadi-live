@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import { mkdtemp, cp } from 'fs/promises';
 import path from 'path';
 import { tmpdir } from 'os';
-import { performSelfVerification } from '../src/lib/selfVerificationService.ts';
+import { performSelfVerification } from '@/lib/selfVerificationService.ts';
 
 test('performSelfVerification matches stored fingerprints', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));

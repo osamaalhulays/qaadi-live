@@ -1,6 +1,6 @@
 import { test, jest } from '@jest/globals';
 import assert from 'node:assert';
-import { generateText } from '../src/lib/generationService.ts';
+import { generateText } from '@/lib/generationService.ts';
 
 test('generateText delegates to provided runner', async () => {
   const runner = jest.fn().mockResolvedValue({ text: 'hi' });

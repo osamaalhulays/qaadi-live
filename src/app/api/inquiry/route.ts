@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
 import { z } from "zod";
-import { generateInquiryFromPlan, Lang } from "../../../lib/utils/inquiry";
-import { saveSnapshot } from "../../../lib/utils/snapshot";
+import { generateInquiryFromPlan, Lang } from "@/lib/utils/inquiry";
+import { saveSnapshot } from "@/lib/utils/snapshot";
 import { readFile } from "fs/promises";
 import path from "path";
 

@@ -1,5 +1,5 @@
 import assert from 'node:assert';
-import { evaluateCriteria, Criterion } from '../src/lib/criteria';
+import { evaluateCriteria, Criterion } from '@/lib/criteria';
 
 test('evaluateCriteria returns partial scores and handles mismatches', () => {
   const criteria: Criterion[] = [

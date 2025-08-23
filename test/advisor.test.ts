@@ -1,6 +1,6 @@
 import { test } from '@jest/globals';
 import assert from 'node:assert';
-import { generateInquiryFromPlan } from '../src/lib/utils/inquiry';
+import { generateInquiryFromPlan } from '@/lib/utils/inquiry';
 
 const samplePlan = `- Define scope
 - Collect data`;

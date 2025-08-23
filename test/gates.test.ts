@@ -1,6 +1,6 @@
 import { test } from '@jest/globals';
 import assert from 'node:assert';
-import { runGates, type SecretaryReport, type FieldKey } from '../src/lib/workflow';
+import { runGates, type SecretaryReport, type FieldKey } from '@/lib/workflow';
 
 test('runGates detects multiple missing fields', () => {
   const audit: SecretaryReport = {

@@ -1,6 +1,6 @@
 import { test } from '@jest/globals';
 import assert from 'node:assert';
-import { gateQn21 } from '../src/lib/workflow';
+import { gateQn21 } from '@/lib/workflow';
 
 test('gateQn21 blocks when total percentage below threshold', () => {
   const report = {

@@ -1,6 +1,6 @@
 import { writeFile, mkdir, readFile } from "fs/promises";
 import path from "path";
-import { evaluateText } from "../evaluationService";
+import { evaluateText } from "@/lib/evaluationService";
 
 export async function runJudge(text?: string) {
   const debug = (msg: string) => {

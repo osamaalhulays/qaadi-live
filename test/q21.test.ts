@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import { jest } from '@jest/globals';
 
-import { evaluateQN21, QN21_CRITERIA, summarizeQN21 } from '../src/lib/q21';
+import { evaluateQN21, QN21_CRITERIA, summarizeQN21 } from '@/lib/q21';
 
 test('evaluateQN21 returns scores and gaps based on patterns', () => {
   const text = 'Equations ensure rigor and ethics in research.';

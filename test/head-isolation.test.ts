@@ -5,7 +5,7 @@ import {
   resetHead,
   runResearchCenter,
   activeHeadSessions,
-} from '../src/lib/workers';
+} from '@/lib/workers';
 import { stat, rm, readFile, mkdtemp } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
