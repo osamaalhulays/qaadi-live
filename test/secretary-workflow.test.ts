@@ -36,9 +36,7 @@ test('runSecretary generates a complete secretary.md', async () => {
     const filePath = path.join(dir, 'paper', 'secretary.md');
     const fileContent = await readFile(filePath, 'utf8');
     assert.strictEqual(fileContent, content);
-    const fingerprintMatch = fileContent.match(
-      /^Fingerprint: qaadi-live\/0\.1\.0\/\d{4}-\d{2}-\d{2}\/([a-f0-9]{8})/m
-    );
+    const fingerprintMatch = fileContent.match(/^Fingerprint: qaadi-live\/0\.1\.0\/\d{4}-\d{2}-\d{2}\/([a-f0-9]{8})/m);
     assert.ok(fingerprintMatch, 'Fingerprint line missing or incorrect');
     const actualId = fingerprintMatch[1];
     assert.match(fileContent, /Ready%: 100/);
