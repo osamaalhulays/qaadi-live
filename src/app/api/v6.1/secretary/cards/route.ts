@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createCard } from "../../../../../lib/cardStore";
+import { parseCardPayload } from "../../../../../lib/parseCardPayload";
 
 export const runtime = "nodejs";
 
@@ -22,23 +23,20 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  let payload: any;
-  try {
-    payload = await req.json();
-  } catch {
+  const result = await parseCardPayload(req);
+  if ("error" in result) {
     return new Response(
-      JSON.stringify({ error: "invalid_json", version: "v6.1", tracking_id: "" }),
+      JSON.stringify({ error: result.error, version: "v6.1", tracking_id: result.tracking_id }),
       { status: 400, headers }
     );
   }
 
-  const tracking_id = typeof payload?.tracking_id === "string" ? payload.tracking_id : "";
-  const cardData = payload?.card;
+  const { card, tracking_id } = result;
 
-  const card = createCard(cardData);
+  const stored = createCard(card);
 
   return new Response(
-    JSON.stringify({ id: card.id, card, version: "v6.1", tracking_id }),
+    JSON.stringify({ id: stored.id, card: stored, version: "v6.1", tracking_id }),
     { status: 200, headers }
   );
 }
