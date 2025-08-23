@@ -7,8 +7,10 @@ import { runConsultant } from '@/lib/workers/index.ts';
 
 test('runConsultant summarizes judge strengths and gaps', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
-  const prev = process.cwd();
+  const prevCwd = process.cwd();
+  const prevBase = process.env.QN21_BASE_URL;
   process.chdir(dir);
+  process.env.QN21_BASE_URL = 'https://foo.test/qn21';
   try {
     const paperDir = path.join(dir, 'paper');
     await mkdir(paperDir, { recursive: true });
@@ -26,8 +28,12 @@ test('runConsultant summarizes judge strengths and gaps', async () => {
     assert.strictEqual(content, fileContent);
     assert.match(fileContent, /## Strengths\n- Method/);
     assert.match(fileContent, /## Gaps\n- Data/);
+    assert.match(fileContent, /\[QN-21-1\]\(https:\/\/foo\.test\/qn21#1\)/);
+    assert.match(fileContent, /\[QN-21-2\]\(https:\/\/foo\.test\/qn21#2\)/);
   } finally {
-    process.chdir(prev);
+    process.chdir(prevCwd);
+    if (prevBase === undefined) delete process.env.QN21_BASE_URL;
+    else process.env.QN21_BASE_URL = prevBase;
   }
 });
 
