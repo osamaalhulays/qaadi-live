@@ -5,10 +5,11 @@ import { runGates, type SecretaryReport, type FieldKey } from '@/lib/workflow';
 test('runGates detects multiple missing fields', () => {
   const audit: SecretaryReport = {
     keywords: ['physics'],
+    overflow_log: [],
     identity: '',
   };
   const result = runGates({ secretary: { audit } });
-  assert.strictEqual(result.ready_percent, 10);
+  assert.strictEqual(result.ready_percent, 15);
   const expectedMissing: FieldKey[] = [
     'abstract',
     'nomenclature',
@@ -17,7 +18,6 @@ test('runGates detects multiple missing fields', () => {
     'dimensional_analysis',
     'limitations_risks',
     'preliminary_references',
-    'overflow_log',
     'identity',
   ];
   assert.deepStrictEqual(result.missing, expectedMissing);
@@ -30,7 +30,7 @@ test('runGates detects multiple missing fields', () => {
     dimensional_analysis: 0,
     limitations_risks: 0,
     preliminary_references: 0,
-    overflow_log: 0,
+    overflow_log: 1,
     identity: 0,
   });
 });
@@ -66,7 +66,7 @@ test('runGates passes when all required fields are present', () => {
 });
 
 test('runGates blocks evaluation when fields are missing', () => {
-  const audit: SecretaryReport = { keywords: [], identity: '' };
+  const audit: SecretaryReport = { keywords: [], overflow_log: [], identity: '' };
   const gate = runGates({ secretary: { audit } });
   const shouldEvaluate = gate.missing.length === 0;
   assert.strictEqual(shouldEvaluate, false);

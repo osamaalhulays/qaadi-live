@@ -60,7 +60,17 @@ export async function POST(req: NextRequest) {
     const slug = body.slug || "demo";
     const v = body.v || "v1";
 
-    const sec = await runSecretary();
+    const sec = await runSecretary({
+      abstract: "",
+      keywords: [],
+      nomenclature: [],
+      boundary_conditions: [],
+      core_equations: [],
+      dimensional_analysis: "",
+      limitations_risks: "",
+      preliminary_references: [],
+      overflow_log: [],
+    });
     await saveSnapshot([{ path: "paper/secretary.md", content: sec }], target, lang, slug, v);
 
     for (const name of names) {
