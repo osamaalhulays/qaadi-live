@@ -15,7 +15,7 @@ export async function apiClient<T>(url: string, options: ApiClientOptions = {}):
     return res;
   }
   if (!res.ok) {
-    throw new Error(`Request failed with status ${res.status}`);
+    throw new Error(`Request to ${fullUrl} failed with status ${res.status}`);
   }
   return res.json() as Promise<T>;
 }
