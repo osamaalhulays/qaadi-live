@@ -253,7 +253,7 @@ export async function POST(req: NextRequest) {
 
   const mode = (body?.mode ?? "raw") as "raw" | "compose" | "orchestrate";
   const target = typeof body?.target === "string" ? body.target : "default";
-  const lang = typeof body?.lang === "string" ? body.lang : "en";
+  const lang = body?.lang === "ar" ? "ar" : "en";
   const slug = typeof body?.slug === "string" ? body.slug : "default";
   const v = typeof body?.v === "string" ? body.v : "default";
 

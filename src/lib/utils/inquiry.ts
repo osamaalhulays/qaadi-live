@@ -1,16 +1,6 @@
 import crypto from "crypto";
 
-export type Lang =
-  | "ar"
-  | "en"
-  | "tr"
-  | "fr"
-  | "es"
-  | "de"
-  | "ru"
-  | "zh-Hans"
-  | "ja"
-  | "other";
+export type Lang = "ar" | "en";
 
 export interface InquiryQuestion {
   question: string;
@@ -24,14 +14,6 @@ function sha256Hex(data: string): string {
 const PROMPTS: Record<Lang, string> = {
   ar: "يرجى توضيح",
   en: "Please clarify",
-  tr: "Lütfen açıklayın",
-  fr: "Veuillez clarifier",
-  es: "Por favor aclare",
-  de: "Bitte erläutern",
-  ru: "Пожалуйста, уточните",
-  "zh-Hans": "请说明",
-  ja: "説明してください",
-  other: "Please clarify"
 };
 
 /**

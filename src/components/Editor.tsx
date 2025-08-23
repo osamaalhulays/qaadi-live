@@ -15,17 +15,7 @@ type Target =
   | "elsevier"
   | "ieee"
   | "arxiv";
-type Lang =
-  | "ar"
-  | "en"
-  | "tr"
-  | "fr"
-  | "es"
-  | "de"
-  | "ru"
-  | "zh-Hans"
-  | "ja"
-  | "other";
+type Lang = "ar" | "en";
 type ModelSel = "openai" | "deepseek" | "auto";
 
 interface JudgeCriterion {
@@ -138,7 +128,7 @@ export default function Editor() {
     try {
       if (lang) {
         localStorage.setItem("lang", lang);
-        const d = lang === "ar" || lang === "tr" ? "rtl" : "ltr";
+        const d = lang === "ar" ? "rtl" : "ltr";
         localStorage.setItem("dir", d);
         document.documentElement.lang = lang;
         document.documentElement.dir = d;
@@ -465,14 +455,6 @@ export default function Editor() {
             <option value="">--</option>
             <option value="en">EN</option>
             <option value="ar">AR</option>
-            <option value="tr">TR</option>
-            <option value="fr">FR</option>
-            <option value="es">ES</option>
-            <option value="de">DE</option>
-            <option value="ru">RU</option>
-            <option value="zh-Hans">ZH-Hans</option>
-            <option value="ja">JA</option>
-            <option value="other">Other</option>
           </select>
           {errors.lang && <div className="error" style={{color:'red'}}>{errors.lang}</div>}
           <small className="hint">اختر اللغة</small>

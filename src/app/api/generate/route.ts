@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     const cards = Array.isArray(body.cards) ? body.cards.slice(0, 10) : [];
     const names = cards.map((c: any) => String(c?.name || "card"));
     const target = body.target || "workflow";
-    const lang = body.lang || "en";
+    const lang = body.lang === "ar" ? "ar" : "en";
     const slug = body.slug || "demo";
     const v = body.v || "v1";
 
