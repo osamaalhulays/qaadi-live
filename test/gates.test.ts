@@ -30,7 +30,6 @@ test('runGates detects multiple missing fields', () => {
     dimensional_analysis: 0,
     limitations_risks: 0,
     preliminary_references: 0,
-    overflow_log: 1,
     identity: 0,
   });
 });
@@ -45,7 +44,6 @@ test('runGates passes when all required fields are present', () => {
     dimensional_analysis: 'dimensionless',
     limitations_risks: 'oversimplification',
     preliminary_references: ['Doe 2020'],
-    overflow_log: [],
     identity: 'source',
   };
   const result = runGates({ secretary: { audit } });
@@ -60,7 +58,6 @@ test('runGates passes when all required fields are present', () => {
     dimensional_analysis: 1,
     limitations_risks: 1,
     preliminary_references: 1,
-    overflow_log: 1,
     identity: 1,
   });
 });
