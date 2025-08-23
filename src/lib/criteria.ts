@@ -53,13 +53,23 @@ const DEFAULT_CRITERIA: Criterion[] = [
 
 export async function loadCriteria(): Promise<Criterion[]> {
   const { latest } = getPaths();
+  let raw: string;
   try {
-    const raw = await readFile(latest, "utf-8");
+    raw = await readFile(latest, "utf-8");
+  } catch (err: any) {
+    if (err && err.code === "ENOENT") {
+      console.warn(`loadCriteria: criteria file not found at ${latest}, using defaults`);
+      return [...DEFAULT_CRITERIA];
+    }
+    throw new Error(`Failed to read criteria file at ${latest}: ${err?.message ?? err}`);
+  }
+
+  try {
     const parsed = JSON.parse(raw) as Criterion[];
     const ids = new Set(parsed.map((c) => c.id));
     return [...parsed, ...DEFAULT_CRITERIA.filter((c) => !ids.has(c.id))];
-  } catch {
-    return [...DEFAULT_CRITERIA];
+  } catch (err: any) {
+    throw new Error(`Failed to parse criteria file at ${latest}: ${err?.message ?? err}`);
   }
 }
 
