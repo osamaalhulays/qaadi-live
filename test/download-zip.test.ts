@@ -4,6 +4,7 @@ import { GET } from '@/app/api/download/zip/route.ts';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { API_DOWNLOAD_ZIP } from '@/lib/endpoints';
 
 const root = process.cwd();
 
@@ -22,6 +23,11 @@ async function ensureTheory(slug: string, v: string) {
     'utf-8'
   );
 }
+
+test('API_DOWNLOAD_ZIP encodes slug and version', () => {
+  const url = API_DOWNLOAD_ZIP('demo slug', 'v1.0+test');
+  assert.strictEqual(url, '/api/download/zip?slug=demo%20slug&v=v1.0%2Btest');
+});
 
 afterAll(async () => {
   await rm(path.join(root, 'QaadiDB'), { recursive: true, force: true });
@@ -47,7 +53,7 @@ function unzipStore(u8: Uint8Array): Record<string, Uint8Array> {
 
 test('determinism and provenance non-empty', async () => {
   await ensureTheory('demo', 'v1.0');
-  const req = { url: 'http://localhost/api/download/zip?slug=demo&v=v1.0' } as any;
+  const req = { url: `http://localhost${API_DOWNLOAD_ZIP('demo', 'v1.0')}` } as any;
   const res = await GET(req);
   assert.strictEqual(res.status, 200);
   const buf = Buffer.from(await res.arrayBuffer());
@@ -72,7 +78,7 @@ test('reads snapshots manifest, filters by slug/version and uses v6 archive name
   await ensureTheory('demo', 'v1.0');
   await ensureTheory('demo', 'v2.0');
 
-  const req1 = { url: 'http://localhost/api/download/zip?slug=demo&v=v1.0' } as any;
+  const req1 = { url: `http://localhost${API_DOWNLOAD_ZIP('demo', 'v1.0')}` } as any;
   const res1 = await GET(req1);
   assert.strictEqual(res1.status, 200);
   const disp = res1.headers.get('Content-Disposition');
@@ -85,7 +91,7 @@ test('reads snapshots manifest, filters by slug/version and uses v6 archive name
     [0, 1]
   ]);
 
-  const req2 = { url: 'http://localhost/api/download/zip?slug=demo&v=v2.0' } as any;
+  const req2 = { url: `http://localhost${API_DOWNLOAD_ZIP('demo', 'v2.0')}` } as any;
   const res2 = await GET(req2);
   assert.strictEqual(res2.status, 200);
   const buf2 = Buffer.from(await res2.arrayBuffer());
@@ -141,7 +147,7 @@ test('includes latest snapshot files with identity in archive', async () => {
 
   await ensureTheory('demo', 'v1.0');
 
-  const req = { url: 'http://localhost/api/download/zip?slug=demo&v=v1.0' } as any;
+  const req = { url: `http://localhost${API_DOWNLOAD_ZIP('demo', 'v1.0')}` } as any;
   const res = await GET(req);
   assert.strictEqual(res.status, 200);
   const buf = Buffer.from(await res.arrayBuffer());
