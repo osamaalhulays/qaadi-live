@@ -70,7 +70,7 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
   }
 
   const readySum = (Object.keys(fields) as FieldKey[]).reduce(
-    (sum, key) => sum + fields[key] * READY_WEIGHTS[key],
+    (sum, key) => sum + fields[key] * (READY_WEIGHTS[key] ?? 0),
     0
   );
   const ready_percent = Math.round((readySum / READY_TOTAL) * 100);

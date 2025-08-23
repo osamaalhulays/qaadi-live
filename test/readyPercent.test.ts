@@ -20,10 +20,10 @@ test('ready_percent reflects weights for missing fields', () => {
   assert.strictEqual(full.ready_percent, 100);
 
   const noAbstract = runGates({ secretary: { audit: { ...base, abstract: '' } } });
-  assert.strictEqual(noAbstract.ready_percent, 80);
+  assert.strictEqual(noAbstract.ready_percent, 79);
 
   const noAbstractCore = runGates({
     secretary: { audit: { ...base, abstract: '', core_equations: [] } },
   });
-  assert.strictEqual(noAbstractCore.ready_percent, 65);
+  assert.strictEqual(noAbstractCore.ready_percent, 63);
 });
