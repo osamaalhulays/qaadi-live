@@ -11,7 +11,7 @@ test('secretary can write', () => {
 
 test('archivist read returns frozen copy', () => {
   const card: Card = { id: '2', data: { a: 1 }, version: '1.0', status: 'open', parent_id: null, date_created: '', last_modified: '' };
-  const copy = accessControl('archivist', card, 'read') as Card;
+  const copy = accessControl('archivist', card, 'read');
   assert.deepStrictEqual(copy, card);
   assert.notStrictEqual(copy, card);
   assert.ok(Object.isFrozen(copy));
