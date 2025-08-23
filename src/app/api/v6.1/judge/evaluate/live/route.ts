@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { accessControl, PermissionError } from "../../../../../../lib/accessControl";
+import { accessControl, PermissionError } from "@/lib/accessControl";
 import { z } from "zod";
 
 export const runtime = "nodejs";

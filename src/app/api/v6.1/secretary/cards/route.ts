@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { createCard } from "../../../../../lib/cardStore";
+import { createCard } from "@/lib/cardStore";
 import { z } from "zod";
 
 export const runtime = "nodejs";

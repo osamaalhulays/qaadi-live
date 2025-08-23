@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
-import { getCard } from "../../../../../../lib/cardStore";
-import { accessControl, PermissionError } from "../../../../../../lib/accessControl";
+import { getCard } from "@/lib/cardStore";
+import { accessControl, PermissionError } from "@/lib/accessControl";
 
 export const runtime = "nodejs";
 
