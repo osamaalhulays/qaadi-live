@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createCard } from "../../../../../lib/cardStore";
+import { API_VERSION } from "../../../../../lib/constants";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     payload = await req.json();
   } catch {
     return new Response(
-      JSON.stringify({ error: "invalid_json", version: "v6.1", tracking_id: "" }),
+      JSON.stringify({ error: "invalid_json", version: API_VERSION, tracking_id: "" }),
       { status: 400, headers }
     );
   }
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
   const result = PayloadSchema.safeParse(payload);
   if (!result.success) {
     return new Response(
-      JSON.stringify({ error: "invalid_payload", version: "v6.1", tracking_id: "" }),
+      JSON.stringify({ error: "invalid_payload", version: API_VERSION, tracking_id: "" }),
       { status: 400, headers }
     );
   }
@@ -51,7 +52,7 @@ export async function POST(req: NextRequest) {
   const card = createCard(cardData);
 
   return new Response(
-    JSON.stringify({ id: card.id, card, version: "v6.1", tracking_id }),
+    JSON.stringify({ id: card.id, card, version: API_VERSION, tracking_id }),
     { status: 200, headers }
   );
 }

@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { getCard } from "../../../../../../lib/cardStore";
 import { accessControl, PermissionError } from "../../../../../../lib/accessControl";
+import { API_VERSION } from "../../../../../../lib/constants";
 
 export const runtime = "nodejs";
 
@@ -27,20 +28,20 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   const card = getCard(params.id);
   if (!card) {
     return new Response(
-      JSON.stringify({ error: "not_found", version: "v6.1", tracking_id }),
+      JSON.stringify({ error: "not_found", version: API_VERSION, tracking_id }),
       { status: 404, headers }
     );
   }
   try {
     const safeCard = accessControl("archivist", card, "read");
     return new Response(
-      JSON.stringify({ id: params.id, card: safeCard, version: "v6.1", tracking_id }),
+      JSON.stringify({ id: params.id, card: safeCard, version: API_VERSION, tracking_id }),
       { status: 200, headers }
     );
   } catch (err) {
     if (err instanceof PermissionError) {
       return new Response(
-        JSON.stringify({ error: "forbidden", version: "v6.1", tracking_id }),
+        JSON.stringify({ error: "forbidden", version: API_VERSION, tracking_id }),
         { status: 403, headers }
       );
     }

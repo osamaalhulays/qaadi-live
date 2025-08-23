@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { accessControl, PermissionError } from "../../../../../../lib/accessControl";
+import { API_VERSION } from "../../../../../../lib/constants";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     payload = await req.json();
   } catch {
     return new Response(
-      JSON.stringify({ error: "invalid_json", version: "v6.1", tracking_id: "" }),
+      JSON.stringify({ error: "invalid_json", version: API_VERSION, tracking_id: "" }),
       { status: 400, headers }
     );
   }
@@ -41,7 +42,7 @@ export async function POST(req: NextRequest) {
   const result = PayloadSchema.safeParse(payload);
   if (!result.success) {
     return new Response(
-      JSON.stringify({ error: "invalid_payload", version: "v6.1", tracking_id: "" }),
+      JSON.stringify({ error: "invalid_payload", version: API_VERSION, tracking_id: "" }),
       { status: 400, headers }
     );
   }
@@ -52,7 +53,7 @@ export async function POST(req: NextRequest) {
   } catch (err) {
     if (err instanceof PermissionError) {
       return new Response(
-        JSON.stringify({ error: "forbidden", version: "v6.1", tracking_id }),
+        JSON.stringify({ error: "forbidden", version: API_VERSION, tracking_id }),
         { status: 403, headers }
       );
     }
@@ -62,7 +63,7 @@ export async function POST(req: NextRequest) {
   const score = text.length;
 
   return new Response(
-    JSON.stringify({ result: { score }, version: "v6.1", tracking_id }),
+    JSON.stringify({ result: { score }, version: API_VERSION, tracking_id }),
     { status: 200, headers }
   );
 }
