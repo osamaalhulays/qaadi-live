@@ -32,5 +32,17 @@ describe('apiFetch', () => {
 
     await expect(apiFetch('/test')).rejects.toBe('invalid_json');
   });
+
+  test('rethrows errors other than SyntaxError from res.json()', async () => {
+    process.env[ENV_KEY] = 'https://example.com';
+    const error = new Error('oops');
+    const response = {
+      ok: true,
+      json: jest.fn().mockRejectedValue(error),
+    } as unknown as Response;
+    global.fetch = jest.fn().mockResolvedValue(response);
+
+    await expect(apiFetch('/test')).rejects.toBe(error);
+  });
 });
 
