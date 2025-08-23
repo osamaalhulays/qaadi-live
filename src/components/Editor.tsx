@@ -90,7 +90,7 @@ export default function Editor() {
   const [slug, setSlug] = useState("default");
   const [v, setV] = useState("default");
 
-  const slugRe = /^[A-Za-z0-9_-]*$/;
+  const slugRe = /^[A-Za-z0-9_-]+$/;
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -173,6 +173,7 @@ export default function Editor() {
     if (!target) errs.target = "يرجى اختيار الهدف";
     if (!lang) errs.lang = "يرجى اختيار اللغة";
     if (!text) errs.text = "يرجى إدخال النص";
+    if (!slug) errs.slug = "يرجى إدخال المعرف";
     setErrors(errs);
     return Object.keys(errs).length === 0;
   }
@@ -381,7 +382,7 @@ export default function Editor() {
   const hasApiKey = Boolean(openaiKey.trim() || deepseekKey.trim());
   const requiredFilled = [hasApiKey, target, lang, text].filter(Boolean).length;
   const progress = (requiredFilled / 4) * 100;
-  const ready = requiredFilled === 4;
+  const ready = requiredFilled === 4 && slug.length > 0;
 
   return (
     <>
@@ -406,11 +407,15 @@ export default function Editor() {
             value={slug}
             onChange={e => {
               const val = e.target.value;
-              if (slugRe.test(val)) setSlug(val);
+              if (slugRe.test(val)) {
+                setSlug(val);
+                if (errors.slug) setErrors(prev => ({ ...prev, slug: "" }));
+              }
             }}
             placeholder="demo"
             title="معرف المشروع"
           />
+          {errors.slug && <div className="error" style={{color:'red'}}>{errors.slug}</div>}
           <small className="hint">أحرف وأرقام فقط</small>
         </div>
         <div>
