@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { updateCard } from "../../../../../../lib/cardStore";
+import { CardSchema, type Card } from "../../../../../../lib/schema/card";
 
 export const runtime = "nodejs";
 
@@ -33,9 +34,17 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   const tracking_id = typeof payload?.tracking_id === "string" ? payload.tracking_id : "";
-  const cardData = payload?.card;
+  let card: Card;
+  try {
+    card = CardSchema.parse(payload?.card);
+  } catch {
+    return new Response(
+      JSON.stringify({ error: "invalid_card", version: "v6.1", tracking_id }),
+      { status: 400, headers }
+    );
+  }
 
-  const ok = updateCard(params.id, cardData);
+  const ok = updateCard(params.id, card);
   if (!ok) {
     return new Response(
       JSON.stringify({ error: "not_found", version: "v6.1", tracking_id }),
