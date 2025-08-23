@@ -9,6 +9,7 @@ import { READY_WEIGHTS, READY_TOTAL } from "@/lib/workflow/readyWeights";
 export interface SecretaryData {
   abstract: string;
   keywords: string[];
+  symbols_units: string[];
   nomenclature: string[];
   boundary_conditions: string[];
   core_equations: string[];
@@ -35,6 +36,7 @@ export async function runSecretary(
 
   let abstract: string;
   let keywords: string[];
+  let symbols_units: string[];
   let nomenclature: string[];
   let boundary_conditions: string[];
   let core_equations: string[];
@@ -53,6 +55,13 @@ export async function runSecretary(
       keywords = keyInput
         .split(",")
         .map((k) => k.trim())
+        .filter(Boolean);
+      const suInput = await rl.question(
+        "Symbols & Units (symbol|unit, comma separated): "
+      );
+      symbols_units = suInput
+        .split(",")
+        .map((s) => s.trim())
         .filter(Boolean);
       const nomInput = await rl.question(
         "Nomenclature (symbol|unit|definition, comma separated): "
@@ -98,6 +107,7 @@ export async function runSecretary(
     ({
       abstract = "",
       keywords = [],
+      symbols_units = [],
       nomenclature = [],
       boundary_conditions = [],
       core_equations = [],
@@ -115,6 +125,7 @@ export async function runSecretary(
   const identityInput = [
     abstract,
     keywords.join(","),
+    symbols_units.join(","),
     nomenclature.join(","),
     boundary_conditions.join(","),
     core_equations.join(","),
@@ -171,8 +182,21 @@ export async function runSecretary(
     "## Keywords",
     ...keywords.map((k) => `- ${k}`),
     "",
+    "## Symbols & Units",
+    "| Symbol | Unit |",
+    "|--------|------|",
+    ...symbols_units.map((s) => {
+      const [symbol, unit] = s.split("|").map((p) => p.trim());
+      return `| ${symbol} | ${unit ?? ""} |`;
+    }),
+    "",
     "## Nomenclature",
-    ...nomenclature.map((n) => `- ${n}`),
+    "| Symbol | Definition | Unit |",
+    "|--------|------------|------|",
+    ...nomenclature.map((n) => {
+      const [symbol, unit, def] = n.split("|").map((p) => p.trim());
+      return `| ${symbol} | ${def ?? ""} | ${unit ?? ""} |`;
+    }),
     "",
     "## Core Equations",
     ...core_equations.map((e) => `- ${e}`),

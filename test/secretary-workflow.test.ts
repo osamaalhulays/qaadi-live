@@ -10,6 +10,7 @@ import { runGates } from '@/lib/workflow/gates.ts';
 const sampleSecretary = {
   abstract: 'Project overview',
   keywords: ['analysis', 'physics'],
+  symbols_units: ['c|m/s', 'm|kg'],
   nomenclature: ['c|m/s|speed of light', 'm|kg|mass'],
   boundary_conditions: ['t=0', 'x->∞'],
   core_equations: ['E=mc^2'],
@@ -54,7 +55,11 @@ test('runSecretary generates a complete secretary.md', async () => {
     );
     assert.match(
       fileContent,
-      /## Nomenclature\n- c\|m\/s\|speed of light\n- m\|kg\|mass/
+      /## Symbols & Units\n\| Symbol \| Unit \|\n\|--------\|------\|\n\| c \| m\/s \|\n\| m \| kg \|/
+    );
+    assert.match(
+      fileContent,
+      /## Nomenclature\n\| Symbol \| Definition \| Unit \|\n\|--------\|------------\|------\|\n\| c \| speed of light \| m\/s \|\n\| m \| mass \| kg \|/
     );
     assert.match(
       fileContent,
@@ -120,7 +125,7 @@ test('runSecretary handles malformed nomenclature rows', async () => {
     const content = await runSecretary(malformed);
     assert.match(
       content,
-      /## Nomenclature\n- bad row\n- m\|kg\|mass/
+      /## Symbols & Units\n\| Symbol \| Unit \|\n\|--------\|------\|\n\| c \| m\/s \|\n\| m \| kg \|\n\n## Nomenclature\n\| Symbol \| Definition \| Unit \|\n\|--------\|------------\|------\|\n\| bad row \|  \|  \|\n\| m \| mass \| kg \|/
     );
     assert.match(content, /Ready%: 100/);
   } finally {
