@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { updateCard } from "../../../../../../lib/cardStore";
+import { z } from "zod";
 
 export const runtime = "nodejs";
 
@@ -9,6 +10,11 @@ const headers = {
   "X-Content-Type-Options": "nosniff",
   "Access-Control-Allow-Origin": "*",
 };
+
+const PayloadSchema = z.object({
+  tracking_id: z.string().optional(),
+  card: z.unknown().optional(),
+});
 
 export async function OPTIONS() {
   return new Response(null, {
@@ -22,7 +28,7 @@ export async function OPTIONS() {
 }
 
 export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
-  let payload: any;
+  let payload: unknown;
   try {
     payload = await req.json();
   } catch {
@@ -32,10 +38,17 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     );
   }
 
-  const tracking_id = typeof payload?.tracking_id === "string" ? payload.tracking_id : "";
-  const cardData = payload?.card;
+  const result = PayloadSchema.safeParse(payload);
+  if (!result.success) {
+    return new Response(
+      JSON.stringify({ error: "invalid_payload", version: "v6.1", tracking_id: "" }),
+      { status: 400, headers }
+    );
+  }
 
-  const card = updateCard(params.id, cardData);
+  const { tracking_id = "", card: cardData } = result.data;
+
+  const card = updateCard(params.id, cardData as any);
   if (!card) {
     return new Response(
       JSON.stringify({ error: "not_found", version: "v6.1", tracking_id }),
