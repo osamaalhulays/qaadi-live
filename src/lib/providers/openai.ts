@@ -1,6 +1,8 @@
+import { OPENAI_CHAT_COMPLETIONS } from "./constants";
+
 export async function callOpenAI(key: string, prompt: string, max_tokens: number) {
   const t0 = Date.now();
-  const r = await fetch("https://api.openai.com/v1/chat/completions", {
+  const r = await fetch(OPENAI_CHAT_COMPLETIONS, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${key}`,

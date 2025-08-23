@@ -1,8 +1,9 @@
 import { readStreamToText, safeJSON } from "@/lib/utils/json";
+import { DEEPSEEK_CHAT_COMPLETIONS } from "./constants";
 
 export async function callDeepSeek(key: string, prompt: string, max_tokens: number) {
   const t0 = Date.now();
-  const r = await fetch("https://api.deepseek.com/chat/completions", {
+  const r = await fetch(DEEPSEEK_CHAT_COMPLETIONS, {
     method: "POST",
     headers: {
       "Authorization": `Bearer ${key}`,

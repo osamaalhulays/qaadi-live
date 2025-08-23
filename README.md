@@ -24,6 +24,11 @@ npm test
 |----------|-------------|
 | `NEXT_PUBLIC_QAADI_API_BASE` | Base URL for the QAADI API (e.g. `https://api.example.com`). When undefined, the UI falls back to relative Next.js API routes. |
 
+## Provider Endpoints
+
+Provider chat completion URLs for OpenAI and DeepSeek are centralized in
+[`src/lib/providers/constants.ts`](src/lib/providers/constants.ts).
+
 ## Testing
 
 Jest discovers test files using the pattern `**/test/**/*.test.ts`. Place your
