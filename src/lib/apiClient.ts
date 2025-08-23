@@ -26,7 +26,7 @@ export async function apiClient<T>(url: string, options: ApiClientOptions = {}):
     return (await res.json()) as Promise<T>;
   } catch (err) {
     if (err instanceof SyntaxError) {
-      throw "invalid_json";
+      throw new Error("invalid_json");
     }
     throw err;
   }

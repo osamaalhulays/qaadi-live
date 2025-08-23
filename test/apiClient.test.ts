@@ -30,7 +30,7 @@ describe('apiClient', () => {
     const response = new Response('not-json', { status: 200 });
     global.fetch = jest.fn().mockResolvedValue(response);
 
-    await expect(apiClient('/test')).rejects.toBe('invalid_json');
+    await expect(apiClient('/test')).rejects.toThrow('invalid_json');
   });
 
   test('rethrows errors other than SyntaxError from res.json()', async () => {
