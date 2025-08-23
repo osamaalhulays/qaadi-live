@@ -4,6 +4,7 @@ import { generateInquiryFromPlan, Lang } from "@/lib/utils/inquiry";
 import { saveSnapshot } from "@/lib/utils/snapshot";
 import { readFile } from "fs/promises";
 import path from "path";
+import { headers } from "@/lib/httpHeaders";
 
 export const runtime = "nodejs";
 
@@ -11,10 +12,7 @@ export async function OPTIONS() {
   return new Response(null, {
     status: 204,
     headers: {
-      "Content-Type": "application/json",
-      "Cache-Control": "no-store",
-      "X-Content-Type-Options": "nosniff",
-      "Access-Control-Allow-Origin": "*",
+      ...headers,
       "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type"
     }
@@ -62,13 +60,6 @@ export async function POST(req: NextRequest) {
 
   return new Response(
     JSON.stringify({ text: markdown, questions, files: saved.files, covers: saved.covers }),
-    {
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
-        "X-Content-Type-Options": "nosniff",
-        "Access-Control-Allow-Origin": "*"
-      }
-    }
+    { headers }
   );
 }

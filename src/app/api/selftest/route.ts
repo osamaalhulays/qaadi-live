@@ -2,15 +2,9 @@ import type { NextRequest } from "next/server";
 import { readFile, mkdir, readdir } from "fs/promises";
 import path from "path";
 import { performSelfVerification } from "@/lib/selfVerificationService";
+import { headers } from "@/lib/httpHeaders";
 
 export const runtime = "nodejs";
-
-const headers = {
-  "Content-Type": "application/json",
-  "Cache-Control": "no-store",
-  "X-Content-Type-Options": "nosniff",
-  "Access-Control-Allow-Origin": "*"
-};
 
 export async function POST(req: NextRequest) {
   try {

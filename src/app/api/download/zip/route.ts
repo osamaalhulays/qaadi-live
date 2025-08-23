@@ -4,18 +4,17 @@ import { readFile } from "fs/promises";
 import { type SnapshotEntry } from "@/lib/utils/snapshot";
 import path from "path";
 import crypto from "crypto";
+import { headers } from "@/lib/httpHeaders";
 
 export const runtime = "nodejs";
 
 function headersZip(name: string, size: number, shaHex: string) {
   return {
-    "Cache-Control": "no-store",
+    ...headers,
     "Content-Type": "application/zip",
     "Content-Disposition": `attachment; filename=\"${name}\"`,
-    "X-Content-Type-Options": "nosniff",
     "ETag": `\"sha256:${shaHex}\"`,
     "Content-Length": String(size),
-    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
   };
@@ -23,10 +22,7 @@ function headersZip(name: string, size: number, shaHex: string) {
 
 function headersJSON() {
   return {
-    "Content-Type": "application/json",
-    "Cache-Control": "no-store",
-    "X-Content-Type-Options": "nosniff",
-    "Access-Control-Allow-Origin": "*",
+    ...headers,
     "Access-Control-Allow-Methods": "GET,OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type"
   };

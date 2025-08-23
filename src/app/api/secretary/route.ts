@@ -1,15 +1,9 @@
 import type { NextRequest } from "next/server";
 import { runSecretary } from "@/lib/workers";
 import { accessControl, PermissionError } from "@/lib/accessControl";
+import { headers } from "@/lib/httpHeaders";
 
 export const runtime = "nodejs";
-
-const headers = {
-  "Content-Type": "application/json",
-  "Cache-Control": "no-store",
-  "X-Content-Type-Options": "nosniff",
-  "Access-Control-Allow-Origin": "*",
-};
 
 export async function OPTIONS() {
   return new Response(null, {

@@ -7,32 +7,28 @@ import crypto from "crypto";
 import { checkIdempotency } from "@/lib/utils/idempotency";
 import { sanitizeSlug, type SnapshotEntry } from "@/lib/utils/snapshot";
 import { runGates, gateQn21, type FieldKey } from "@/lib/workflow";
+import { headers } from "@/lib/httpHeaders";
 
 export const runtime = "nodejs";
 
 /* ---------- Common headers ---------- */
 function headersZip(name: string, size: number, shaHex: string) {
   return {
-    "Cache-Control": "no-store",
+    ...headers,
     "Content-Type": "application/zip",
     "Content-Disposition": `attachment; filename="${name}"`,
-    "X-Content-Type-Options": "nosniff",
     "ETag": `"sha256:${shaHex}"`,
     "Content-Length": String(size),
-    "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, X-OpenAI-Key, X-DeepSeek-Key"
+    "Access-Control-Allow-Headers": "Content-Type, X-OpenAI-Key, X-DeepSeek-Key",
   };
 }
 
 function headersJSON() {
   return {
-    "Content-Type": "application/json",
-    "Cache-Control": "no-store",
-    "X-Content-Type-Options": "nosniff",
-    "Access-Control-Allow-Origin": "*",
+    ...headers,
     "Access-Control-Allow-Methods": "GET,POST,OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, X-OpenAI-Key, X-DeepSeek-Key"
+    "Access-Control-Allow-Headers": "Content-Type, X-OpenAI-Key, X-DeepSeek-Key",
   };
 }
 

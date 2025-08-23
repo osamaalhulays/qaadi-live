@@ -1,15 +1,9 @@
 import type { NextRequest } from "next/server";
 import { createCard } from "../../../../../lib/cardStore";
 import { z } from "zod";
+import { headers } from "@/lib/httpHeaders";
 
 export const runtime = "nodejs";
-
-const headers = {
-  "Content-Type": "application/json",
-  "Cache-Control": "no-store",
-  "X-Content-Type-Options": "nosniff",
-  "Access-Control-Allow-Origin": "*",
-};
 
 const PayloadSchema = z.object({
   tracking_id: z.string().optional(),

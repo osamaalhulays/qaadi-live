@@ -1,3 +1,5 @@
+import { headers } from "@/lib/httpHeaders";
+
 export const runtime = "edge";
 export async function GET() {
   const storage = process.env.NEXT_PUBLIC_STORAGE ?? "storage unavailable";
@@ -22,13 +24,6 @@ export async function GET() {
       kv,
       capsule: { name: capsuleName, sha256: capsuleSha256, ts: capsuleTs }
     }),
-    {
-      headers: {
-        "Content-Type": "application/json",
-        "Cache-Control": "no-store",
-        "X-Content-Type-Options": "nosniff",
-        "Access-Control-Allow-Origin": "*"
-      }
-    }
+    { headers }
   );
 }

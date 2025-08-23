@@ -5,15 +5,9 @@ import {
   updateCriterion,
   deleteCriterion,
 } from "@/lib/criteria";
+import { headers } from "@/lib/httpHeaders";
 
 export const runtime = "nodejs";
-
-const headers = {
-  "Content-Type": "application/json",
-  "Cache-Control": "no-store",
-  "X-Content-Type-Options": "nosniff",
-  "Access-Control-Allow-Origin": "*",
-};
 
 export async function GET() {
   const criteria = await loadCriteria();
