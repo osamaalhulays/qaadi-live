@@ -33,7 +33,6 @@ const REQUIRED_FIELDS: FieldKey[] = [
   "dimensional_analysis",
   "limitations_risks",
   "preliminary_references",
-  "overflow_log",
   "identity",
 ];
 
@@ -50,7 +49,7 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
     dimensional_analysis: 0,
     limitations_risks: 0,
     preliminary_references: 0,
-    overflow_log: 0,
+    overflow_log: 1,
     identity: 0,
   };
 
@@ -64,7 +63,7 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
       value === undefined ||
       value === null ||
       (typeof value === "string" && !value.trim()) ||
-      (Array.isArray(value) && value.length === 0 && field !== "overflow_log");
+      (Array.isArray(value) && value.length === 0);
     fields[field] = isMissing ? 0 : 1;
     if (isMissing) missing.push(field);
   }
