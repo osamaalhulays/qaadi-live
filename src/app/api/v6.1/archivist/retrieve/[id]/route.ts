@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
 import { getCard } from "../../../../../../lib/cardStore";
 import { accessControl, PermissionError } from "../../../../../../lib/accessControl";
+import type { Card } from "../../../../../../lib/schema/card";
 
 export const runtime = "nodejs";
 
@@ -24,7 +25,7 @@ export async function OPTIONS() {
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   const tracking_id = req.nextUrl.searchParams.get("tracking_id") || "";
-  const card = getCard(params.id);
+  const card: Card | undefined = getCard(params.id);
   if (!card) {
     return new Response(
       JSON.stringify({ error: "not_found", version: "v6.1", tracking_id }),

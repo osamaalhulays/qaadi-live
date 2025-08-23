@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { createCard } from "../../../../../lib/cardStore";
+import type { Card } from "../../../../../lib/schema/card";
 
 export const runtime = "nodejs";
 
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
   }
 
   const tracking_id = typeof payload?.tracking_id === "string" ? payload.tracking_id : "";
-  const cardData = payload?.card;
+  const cardData: Card["data"] = payload?.card;
 
   const card = createCard(cardData);
 

@@ -1,17 +1,9 @@
-export interface Card {
-  id: string;
-  data: any;
-  version: string;
-  status: "open" | "closed" | "archived";
-  parent_id: string | null;
-  date_created: string;
-  last_modified: string;
-}
+import type { Card } from "./schema/card";
 
 const store = new Map<string, Card>();
 let nextId = 1;
 
-export function createCard(data: any): Card {
+export function createCard(data: Card["data"]): Card {
   const id = String(nextId++);
   const now = new Date().toISOString();
   const card: Card = {

@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { updateCard } from "../../../../../../lib/cardStore";
+import type { Card } from "../../../../../../lib/schema/card";
 
 export const runtime = "nodejs";
 
@@ -33,7 +34,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   const tracking_id = typeof payload?.tracking_id === "string" ? payload.tracking_id : "";
-  const cardData = payload?.card;
+  const cardData: Partial<Card> = payload?.card;
 
   const card = updateCard(params.id, cardData);
   if (!card) {
