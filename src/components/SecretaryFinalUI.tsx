@@ -13,9 +13,11 @@ export default function SecretaryFinalUI() {
   const [references, setReferences] = useState("");
   const [overflow, setOverflow] = useState("");
   const [identity, setIdentity] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
+    setError(null);
     const data = {
       abstract,
       keywords: keywords
@@ -45,6 +47,7 @@ export default function SecretaryFinalUI() {
         .map((o) => o.trim())
         .filter(Boolean),
     };
+    try {
       const base = process.env.NEXT_PUBLIC_QAADI_API_BASE?.replace(/\/$/, "");
       const url = base ? `${base}/secretary` : "/api/secretary";
       const res = await fetch(url, {
@@ -55,11 +58,18 @@ export default function SecretaryFinalUI() {
       if (res.ok) {
         const json = (await res.json()) as { identity?: string };
         if (json.identity) setIdentity(json.identity);
+      } else {
+        setError("Failed to save. Please try again.");
       }
+    } catch (err) {
+      console.error("Error submitting secretary form:", err);
+      setError("Failed to save. Please try again.");
     }
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
+      {error && <p className="text-red-600">{error}</p>}
       <div>
         <label className="block font-semibold">Abstract (150–300 words)</label>
         <textarea
