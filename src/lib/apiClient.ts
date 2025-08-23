@@ -12,7 +12,7 @@ export async function apiClient<T>(url: string, options: ApiClientOptions = {}):
   }
   const res = await fetch(fullUrl, options);
   if (!res.ok) {
-    let message = `Request failed with status ${res.status}`;
+    let message = `Request to ${url} failed with status ${res.status}`;
     try {
       const err = await res.json();
       if (err?.error) message = err.error;
