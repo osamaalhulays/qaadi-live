@@ -23,11 +23,11 @@ test('evaluateText maps accepted classification to approved verdict', async () =
   assert.strictEqual(result.verdict, 'approved');
 });
 
-test('evaluateText maps needs_improvement classification to pending verdict', async () => {
+test('evaluateText maps needs_improvement classification to needs_improvement verdict', async () => {
   const evaluateText = await setupMocks(3, 5);
   const result = await evaluateText('x');
   assert.strictEqual(result.classification, 'needs_improvement');
-  assert.strictEqual(result.verdict, 'pending');
+  assert.strictEqual(result.verdict, 'needs_improvement');
 });
 
 test('evaluateText maps weak classification to rejected verdict', async () => {

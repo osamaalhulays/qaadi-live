@@ -53,3 +53,12 @@ The system evaluates scientific drafts using the QN-21 criteria and optional cus
 The secretary gate validates these sections according to the template in
 [`secretary.md`](templates/secretary.md).
 
+## Evaluation Verdicts
+
+`evaluateText` produces a `classification` which is mapped to a simplified
+`verdict`:
+
+- `accepted` → `approved`
+- `needs_improvement` → `needs_improvement`
+- `weak` → `rejected`
+
