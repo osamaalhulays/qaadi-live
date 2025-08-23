@@ -4,6 +4,8 @@ import QN21Radar from "@/components/QN21Radar";
 import QN21Timeline from "@/components/QN21Timeline";
 import SecretaryFinalUI from "@/components/SecretaryFinalUI";
 
+// Render the secretary workflow using the finalized UI component
+
 export default function Page() {
   const radar = [
     { label: "QN-21-1", score: 3 },
