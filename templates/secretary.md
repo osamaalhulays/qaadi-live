@@ -1,39 +1,41 @@
 <!-- mandatory fields: identity, abstract, keywords, nomenclature, core_equations, boundary_conditions, dimensional_analysis, limitations_risks, preliminary_references, overflow_log -->
 
-## Abstract
+# ملخص
+
+## الملخص
 A concise summary of the theoretical framework and its main hypotheses.
 
-## Keywords
+## الكلمات المفتاحية
 - example
 - placeholder
 
-## Nomenclature
-| Symbol | Description | SI Unit |
+## المصطلحات
+| الرمز | الوصف | وحدة SI |
 |--------|-------------|---------|
-| c      | speed of light | m·s^{-1} |
-| m      | mass | kg |
+| c      | سرعة الضوء | m·s^{-1} |
+| m      | الكتلة | kg |
 
-## Core Equations
+## المعادلات الأساسية
 \[
 E = mc^2
 \]
 
-## Boundary Conditions
-- \(t = 0\): initial state of the system  
+## الشروط الحدية
+- \(t = 0\): initial state of the system
 - \(x \to \infty\): energy dispersion tends to zero
 
-## Dimensional Analysis
+## التحليل البعدي
 All equations satisfy dimensional consistency, e.g., \([E] = [M][L]^2[T]^{-2}\).
 
-## Limitations & Risks
-- Oversimplified assumptions may lead to misleading conclusions.  
+## القيود والمخاطر
+- Oversimplified assumptions may lead to misleading conclusions.
 - Valid only for \(v < c\).
 
-## Preliminary References
+## المراجع الأولية
 1. A. Author, *Title*, Journal **1**, 1 (2023).
 
-## Overflow Log
+## سجل الفائض
 - None
 
-## Identity
+## المعرف
 Unique identifier (e.g., arXiv:1234.56789 or DOI:10.1234/example).
