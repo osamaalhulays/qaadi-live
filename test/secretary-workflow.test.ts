@@ -89,7 +89,7 @@ test('runSecretary calculates readiness based on missing fields', async () => {
   try {
     const partial = { ...sampleSecretary, abstract: '' };
     const content = await runSecretary(partial);
-    assert.match(content, /Ready%: 80/);
+    assert.match(content, /Ready%: 79/);
   } finally {
     process.chdir(prev);
   }

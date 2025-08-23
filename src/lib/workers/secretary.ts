@@ -161,7 +161,7 @@ export async function runSecretary(
   };
   const missing = (Object.keys(fields) as FieldKey[]).filter((k) => fields[k] === 0);
   const readySum = (Object.keys(fields) as FieldKey[]).reduce(
-    (sum, key) => sum + fields[key] * READY_WEIGHTS[key],
+    (sum, key) => sum + fields[key] * (READY_WEIGHTS[key] ?? 0),
     0
   );
   const ready_percent = Math.round((readySum / READY_TOTAL) * 100);

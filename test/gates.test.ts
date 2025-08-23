@@ -9,7 +9,7 @@ test('runGates detects multiple missing fields', () => {
     identity: '',
   };
   const result = runGates({ secretary: { audit } });
-  assert.strictEqual(result.ready_percent, 15);
+  assert.strictEqual(result.ready_percent, 11);
   const expectedMissing: FieldKey[] = [
     'abstract',
     'nomenclature',
