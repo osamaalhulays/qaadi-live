@@ -41,3 +41,33 @@ test('export and generate buttons require api key, target, lang, and text', asyn
   assert.doesNotMatch(withValues, /<button class="btn btn-primary"[^>]*disabled[^>]*>Export ZIP<\/button>/);
   assert.doesNotMatch(withValues, /<button class="btn"[^>]*disabled[^>]*>Generate<\/button>/);
 });
+
+test('buttons stay disabled when slug is blank', async () => {
+  const { TextEncoder, TextDecoder } = await import('util');
+  // @ts-ignore
+  if (!global.TextEncoder) global.TextEncoder = TextEncoder;
+  // @ts-ignore
+  if (!global.TextDecoder) global.TextDecoder = TextDecoder;
+
+  jest.resetModules();
+  let React = (await import('react')).default;
+  let { renderToStaticMarkup } = await import('react-dom/server');
+  const origUseState = React.useState;
+  let calls = 0;
+  jest.spyOn(React, 'useState').mockImplementation((init: any) => {
+    calls++;
+    if (calls === 1) return ['sk-abc', () => {}]; // openaiKey
+    if (calls === 3) return ['revtex', () => {}]; // target
+    if (calls === 4) return ['en', () => {}]; // lang
+    if (calls === 7) return ['sample text', () => {}]; // text
+    if (calls === 23) return ['', () => {}]; // slug blank
+    return origUseState(init);
+  });
+  const { default: Editor } = await import('@/components/Editor');
+  const html = renderToStaticMarkup(<Editor />);
+  (React.useState as any).mockRestore();
+
+  assert.match(html, /<button class="btn"[^>]*disabled[^>]*>Export \(compose demo\)<\/button>/);
+  assert.match(html, /<button class="btn btn-primary"[^>]*disabled[^>]*>Export ZIP<\/button>/);
+  assert.match(html, /<button class="btn"[^>]*disabled[^>]*>Generate<\/button>/);
+});
