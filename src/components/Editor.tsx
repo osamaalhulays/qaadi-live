@@ -37,8 +37,14 @@ interface JudgeCriterion {
   covered?: boolean;
 }
 
-interface Judge {
+interface JudgeScore {
+  total: number;
+  max: number;
   percentage: number;
+}
+
+interface Judge {
+  score: JudgeScore;
   classification: "accepted" | "needs_improvement" | "weak";
   criteria: JudgeCriterion[];
 }
@@ -492,11 +498,11 @@ export default function Editor() {
         )}
         {judge && (
           <div className="charts">
-            {typeof judge.percentage === "number" && judge.classification && (
-              <div className="judge-summary" style={{marginBottom:8}}>
-                {judge.classification} • {judge.percentage.toFixed(1)}%
-              </div>
-            )}
+            {typeof judge.score?.percentage === "number" && judge.classification && (
+                <div className="judge-summary" style={{marginBottom:8}}>
+                  {judge.classification} • {judge.score.percentage.toFixed(1)}%
+                </div>
+              )}
             {judge.criteria && (
               <ScoreCharts criteria={judge.criteria} />
             )}
