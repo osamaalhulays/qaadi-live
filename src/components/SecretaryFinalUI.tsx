@@ -14,6 +14,7 @@ export default function SecretaryFinalUI() {
   const [references, setReferences] = useState("");
   const [overflow, setOverflow] = useState("");
   const [identity, setIdentity] = useState("");
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -46,15 +47,22 @@ export default function SecretaryFinalUI() {
         .map((o) => o.trim())
         .filter(Boolean),
     };
-      try {
-        const json = await apiClient<{ identity?: string }>("/api/secretary", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-        if (json.identity) setIdentity(json.identity);
-      } catch {}
+    const url = "/api/secretary";
+    const headers = { "Content-Type": "application/json" };
+    const body = JSON.stringify(data);
+    setError(null);
+    try {
+      const json = await apiClient<{ identity?: string }>(url, {
+        method: "POST",
+        headers,
+        body,
+      });
+      if (json.identity) setIdentity(json.identity);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "An unexpected error occurred";
+      setError(message);
     }
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
@@ -149,6 +157,7 @@ export default function SecretaryFinalUI() {
           className="w-full border p-2 bg-gray-100"
         />
       </div>
+      {error && <div className="text-red-600">{error}</div>}
       <button type="submit" className="px-4 py-2 bg-blue-600 text-white">
         Save
       </button>
