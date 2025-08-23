@@ -1,8 +1,8 @@
-import { apiFetch } from '@/lib/apiClient';
+import apiClient from '@/lib/apiClient';
 
 const ENV_KEY = 'NEXT_PUBLIC_QAADI_API_BASE';
 
-describe('apiFetch', () => {
+describe('apiClient', () => {
   const originalFetch = global.fetch;
   const originalBase = process.env[ENV_KEY];
 
@@ -21,7 +21,7 @@ describe('apiFetch', () => {
     const response = new Response('ok', { status: 200 });
     global.fetch = jest.fn().mockResolvedValue(response);
 
-    const result = await apiFetch('/test', { raw: true });
+    const result = await apiClient('/test', { raw: true });
     expect(result).toBe(response);
   });
 
@@ -30,7 +30,7 @@ describe('apiFetch', () => {
     const response = new Response('not-json', { status: 200 });
     global.fetch = jest.fn().mockResolvedValue(response);
 
-    await expect(apiFetch('/test')).rejects.toBe('invalid_json');
+    await expect(apiClient('/test')).rejects.toBe('invalid_json');
   });
 });
 
