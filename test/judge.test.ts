@@ -28,9 +28,9 @@ test('runJudge computes scores, gaps, and classification', async () => {
 
     const result = await runJudge(text);
 
-    assert.strictEqual(result.score.total, expectedTotal);
-    assert.strictEqual(result.score.max, expectedMax);
-    assert.strictEqual(result.percentage, expectedPercentage);
+      assert.strictEqual(result.score.total, expectedTotal);
+      assert.strictEqual(result.score.max, expectedMax);
+      assert.strictEqual(result.score.percentage, expectedPercentage);
     assert.strictEqual(result.classification, expectedClassification);
     const safety = result.criteria.find((c: any) => c.name === 'Safety compliance');
     assert.ok(safety);

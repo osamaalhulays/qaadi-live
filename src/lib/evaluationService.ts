@@ -47,7 +47,6 @@ export async function evaluateText(text: string) {
     verdict: "approved" as const,
     criteria: combined,
     score: { total, max, percentage },
-    percentage,
     gaps,
     classification,
   };
