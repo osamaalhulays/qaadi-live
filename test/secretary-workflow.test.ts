@@ -17,8 +17,6 @@ const sampleSecretary = {
   dimensional_analysis: 'dimensionless',
   limitations_risks: 'oversimplification',
   preliminary_references: ['Doe 2020'],
-  overflow_log: [],
-  symbols_units: ['c|m/s', 'm|kg'],
   assumptions_scope: ['vacuum', 'relativistic limits'],
   version: '1.0',
   status: 'draft',
@@ -105,7 +103,6 @@ test('runGates requires identity among fields', () => {
     dimensional_analysis: 'd',
     limitations_risks: 'r',
     preliminary_references: ['p'],
-    overflow_log: [],
     identity: 'abcd1234',
   };
   const result = runGates({ secretary: { audit: report } });
