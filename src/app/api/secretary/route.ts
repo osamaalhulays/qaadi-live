@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { runSecretary } from "@/lib/workers";
+import { accessControl, PermissionError } from "@/lib/accessControl";
 
 export const runtime = "nodejs";
 
@@ -30,6 +31,18 @@ export async function POST(req: NextRequest) {
       status: 400,
       headers,
     });
+  }
+
+  try {
+    accessControl("secretary", null, "write");
+  } catch (err) {
+    if (err instanceof PermissionError) {
+      return new Response(JSON.stringify({ error: "forbidden" }), {
+        status: 403,
+        headers,
+      });
+    }
+    throw err;
   }
 
   const content = await runSecretary(data);

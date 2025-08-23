@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { accessControl, PermissionError } from "../../../../../../lib/accessControl";
 
 export const runtime = "nodejs";
 
@@ -33,6 +34,18 @@ export async function POST(req: NextRequest) {
 
   const tracking_id = typeof payload?.tracking_id === "string" ? payload.tracking_id : "";
   const text = typeof payload?.text === "string" ? payload.text : "";
+  try {
+    accessControl("judge", null, "write");
+  } catch (err) {
+    if (err instanceof PermissionError) {
+      return new Response(
+        JSON.stringify({ error: "forbidden", version: "v6.1", tracking_id }),
+        { status: 403, headers }
+      );
+    }
+    throw err;
+  }
+
   const score = text.length;
 
   return new Response(
