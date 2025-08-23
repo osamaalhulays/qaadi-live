@@ -2,11 +2,16 @@ export interface SecretaryReport {
   abstract?: string;
   keywords?: string[];
   nomenclature?: string[];
+  symbols_units?: string[];
   core_equations?: string[];
   boundary_conditions?: string[];
+  assumptions_scope?: string[];
   dimensional_analysis?: string;
   limitations_risks?: string;
   preliminary_references?: string[];
+  version?: string;
+  status?: string;
+  parent_id?: string;
   overflow_log?: string[];
   identity?: string;
 }
@@ -26,11 +31,16 @@ const REQUIRED_FIELDS: FieldKey[] = [
   "abstract",
   "keywords",
   "nomenclature",
+  "symbols_units",
   "core_equations",
   "boundary_conditions",
+  "assumptions_scope",
   "dimensional_analysis",
   "limitations_risks",
   "preliminary_references",
+  "version",
+  "status",
+  "parent_id",
   "overflow_log",
   "identity",
 ];
@@ -43,11 +53,16 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
     abstract: 0,
     keywords: 0,
     nomenclature: 0,
+    symbols_units: 0,
     core_equations: 0,
     boundary_conditions: 0,
+    assumptions_scope: 0,
     dimensional_analysis: 0,
     limitations_risks: 0,
     preliminary_references: 0,
+    version: 0,
+    status: 0,
+    parent_id: 0,
     overflow_log: 0,
     identity: 0,
   };

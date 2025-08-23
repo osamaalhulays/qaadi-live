@@ -8,11 +8,16 @@ export interface SecretaryData {
   abstract: string;
   keywords: string[];
   nomenclature: string[];
+  symbols_units: string[];
   boundary_conditions: string[];
   core_equations: string[];
+  assumptions_scope: string[];
   dimensional_analysis: string;
   limitations_risks: string;
   preliminary_references: string[];
+  version: string;
+  status: string;
+  parent_id: string;
   overflow_log?: string[];
 }
 
@@ -34,11 +39,16 @@ export async function runSecretary(
   let abstract: string;
   let keywords: string[];
   let nomenclature: string[];
+  let symbols_units: string[];
   let boundary_conditions: string[];
   let core_equations: string[];
+  let assumptions_scope: string[];
   let dimensional_analysis: string;
   let limitations_risks: string;
   let preliminary_references: string[];
+  let version: string;
+  let status: string;
+  let parent_id: string;
   let overflow_log: string[];
 
   if (!data) {
@@ -59,6 +69,13 @@ export async function runSecretary(
         .split(",")
         .map((n) => n.trim())
         .filter(Boolean);
+      const symInput = await rl.question(
+        "Symbols & units (symbol|unit, comma separated): "
+      );
+      symbols_units = symInput
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
       const boundInput = await rl.question(
         "Boundary conditions (comma separated): "
       );
@@ -73,6 +90,13 @@ export async function runSecretary(
         .split(",")
         .map((e) => e.trim())
         .filter(Boolean);
+      const assumpInput = await rl.question(
+        "Assumptions & scope (comma separated): "
+      );
+      assumptions_scope = assumpInput
+        .split(",")
+        .map((a) => a.trim())
+        .filter(Boolean);
       dimensional_analysis = await rl.question("Dimensional analysis: ");
       limitations_risks = await rl.question("Limitations & Risks: ");
       const refInput = await rl.question(
@@ -82,6 +106,9 @@ export async function runSecretary(
         .split(",")
         .map((r) => r.trim())
         .filter(Boolean);
+      version = await rl.question("Version: ");
+      status = await rl.question("Status: ");
+      parent_id = await rl.question("Parent ID: ");
       const overflowInput = await rl.question(
         "Overflow log (comma separated, optional): "
       );
@@ -97,11 +124,16 @@ export async function runSecretary(
       abstract = "",
       keywords = [],
       nomenclature = [],
+      symbols_units = [],
       boundary_conditions = [],
       core_equations = [],
+      assumptions_scope = [],
       dimensional_analysis = "",
       limitations_risks = "",
       preliminary_references = [],
+      version = "",
+      status = "",
+      parent_id = "",
       overflow_log = [],
     } = data);
   }
@@ -114,11 +146,16 @@ export async function runSecretary(
     abstract,
     keywords.join(","),
     nomenclature.join(","),
+    symbols_units.join(","),
     boundary_conditions.join(","),
     core_equations.join(","),
+    assumptions_scope.join(","),
     dimensional_analysis,
     limitations_risks,
     preliminary_references.join(","),
+    version,
+    status,
+    parent_id,
     overflow_log.join(","),
   ].join("|");
   const identity = createHash("sha256").update(identityInput).digest("hex").slice(0, 8);
@@ -138,11 +175,16 @@ export async function runSecretary(
     abstract,
     keywords,
     nomenclature,
+    symbols_units,
     boundary_conditions,
     core_equations,
+    assumptions_scope,
     dimensional_analysis,
     limitations_risks,
     preliminary_references,
+    version,
+    status,
+    parent_id,
     identity,
   };
   const missing = Object.entries(fields)
@@ -168,14 +210,29 @@ export async function runSecretary(
     "## Identity",
     identity,
     "",
+    "## Version",
+    version,
+    "",
+    "## Status",
+    status,
+    "",
+    "## Parent ID",
+    parent_id,
+    "",
     "## Abstract",
     abstract,
     "",
     "## Keywords",
     ...keywords.map((k) => `- ${k}`),
     "",
+    "## Symbols & Units",
+    ...symbols_units.map((s) => `- ${s}`),
+    "",
     "## Nomenclature",
     ...nomenclature.map((n) => `- ${n}`),
+    "",
+    "## Assumptions & Scope",
+    ...assumptions_scope.map((a) => `- ${a}`),
     "",
     "## Core Equations",
     ...core_equations.map((e) => `- ${e}`),

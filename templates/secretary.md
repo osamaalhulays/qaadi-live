@@ -1,4 +1,4 @@
-<!-- mandatory fields: identity, abstract, keywords, nomenclature, core_equations, boundary_conditions, dimensional_analysis, limitations_risks, preliminary_references, overflow_log -->
+<!-- mandatory fields: identity, abstract, keywords, symbols_units, nomenclature, assumptions_scope, core_equations, boundary_conditions, dimensional_analysis, limitations_risks, preliminary_references, version, status, parent_id, overflow_log -->
 
 # ملخص
 
@@ -9,11 +9,21 @@ A concise summary of the theoretical framework and its main hypotheses.
 - example
 - placeholder
 
+## الرموز والوحدات
+| الرمز | الوحدة |
+|-------|--------|
+| c     | m·s^{-1} |
+| m     | kg |
+
 ## المصطلحات
 | الرمز | الوصف | وحدة SI |
 |--------|-------------|---------|
 | c      | سرعة الضوء | m·s^{-1} |
 | m      | الكتلة | kg |
+
+## الافتراضات والنطاق
+- النظام مغلق
+- غير نسبي
 
 ## المعادلات الأساسية
 \[
@@ -36,6 +46,15 @@ All equations satisfy dimensional consistency, e.g., \([E] = [M][L]^2[T]^{-2}\).
 
 ## سجل الفائض
 - None
+
+## الإصدار
+1.0
+
+## الحالة
+draft
+
+## المعرّف الأب
+root
 
 ## المعرف
 Unique identifier (e.g., arXiv:1234.56789 or DOI:10.1234/example).

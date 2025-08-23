@@ -39,12 +39,17 @@ export default function SecretaryFinalUI() {
         .split("\n")
         .map((e) => e.trim())
         .filter(Boolean),
+      symbols_units: [],
       dimensional_analysis: dimensional,
       limitations_risks: limitationsRisks,
       preliminary_references: references
         .split("\n")
         .map((r) => r.trim())
         .filter(Boolean),
+      assumptions_scope: [],
+      version: "",
+      status: "",
+      parent_id: "",
       overflow_log: overflow
         .split(",")
         .map((o) => o.trim())

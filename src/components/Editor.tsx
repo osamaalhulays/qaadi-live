@@ -263,11 +263,16 @@ export default function Editor() {
         abstract: "demo abstract",
         keywords: ["demo"],
         nomenclature: ["demo term"],
+        symbols_units: ["d|u"],
         core_equations: ["E=mc^2"],
         boundary_conditions: ["demo"],
+        assumptions_scope: ["demo"],
         dimensional_analysis: "demo",
         limitations_risks: "demo",
         preliminary_references: ["demo"],
+        version: "v1",
+        status: "draft",
+        parent_id: "root",
         overflow_log: ["demo"],
         identity: "demo"
       };

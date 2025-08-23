@@ -11,11 +11,16 @@ const sampleSecretary = {
   abstract: 'Project overview',
   keywords: ['analysis', 'physics'],
   nomenclature: ['c|m/s|speed of light', 'm|kg|mass'],
+  symbols_units: ['c|m/s', 'm|kg'],
   boundary_conditions: ['t=0', 'x->∞'],
   core_equations: ['E=mc^2'],
+  assumptions_scope: ['non-relativistic', 'closed system'],
   dimensional_analysis: 'dimensionless',
   limitations_risks: 'oversimplification',
   preliminary_references: ['Doe 2020'],
+  version: '1.0',
+  status: 'draft',
+  parent_id: 'root',
   overflow_log: [],
 };
 
@@ -48,7 +53,15 @@ test('runSecretary generates a complete secretary.md', async () => {
     );
     assert.match(
       fileContent,
+      /## Symbols & Units\n- c\|m\/s\n- m\|kg/
+    );
+    assert.match(
+      fileContent,
       /## Nomenclature\n- c\|m\/s\|speed of light\n- m\|kg\|mass/
+    );
+    assert.match(
+      fileContent,
+      /## Assumptions & Scope\n- non-relativistic\n- closed system/
     );
     assert.match(
       fileContent,
@@ -65,6 +78,9 @@ test('runSecretary generates a complete secretary.md', async () => {
     );
     assert.match(fileContent, /## Preliminary References\n- Doe 2020/);
     assert.match(fileContent, /## Overflow Log\n- none/);
+    assert.match(fileContent, /## Version\n1.0/);
+    assert.match(fileContent, /## Status\ndraft/);
+    assert.match(fileContent, /## Parent ID\nroot/);
   } finally {
     process.chdir(prev);
   }
@@ -78,7 +94,7 @@ test('runSecretary calculates readiness based on missing fields', async () => {
   try {
     const partial = { ...sampleSecretary, abstract: '' };
     const content = await runSecretary(partial);
-    assert.match(content, /Ready%: 89/);
+    assert.match(content, /Ready%: 93/);
   } finally {
     process.chdir(prev);
   }
@@ -89,18 +105,23 @@ test('runGates requires identity among fields', () => {
     abstract: 's',
     keywords: ['k'],
     nomenclature: ['n'],
+    symbols_units: ['s|u'],
     core_equations: ['e'],
     boundary_conditions: ['b'],
+    assumptions_scope: ['a'],
     dimensional_analysis: 'd',
     limitations_risks: 'r',
     preliminary_references: ['p'],
+    version: '1.0',
+    status: 'draft',
+    parent_id: 'root',
     overflow_log: [],
     identity: 'abcd1234',
   };
   const result = runGates({ secretary: { audit: report } });
   assert.strictEqual(result.ready_percent, 100);
   const missing = runGates({ secretary: { audit: { ...report, identity: '' } } });
-  assert.strictEqual(missing.ready_percent, 90);
+  assert.strictEqual(missing.ready_percent, 93);
   assert.ok(missing.missing.includes('identity'));
 });
 
@@ -130,7 +151,7 @@ test('runSecretary outputs empty references section when none provided', async (
   try {
     const noRefs = { ...sampleSecretary, preliminary_references: [] };
     const content = await runSecretary(noRefs);
-    assert.match(content, /Ready%: 89/);
+    assert.match(content, /Ready%: 93/);
     assert.match(content, /## Preliminary References\n\n## Overflow Log\n- none/);
   } finally {
     process.chdir(prev);
