@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { latestFilesFor } from "@/lib/utils/manifest";
-import { apiClient } from "@/lib/apiClient";
+import apiClient from "@/lib/apiClient";
 import ScoreCharts from "./ScoreCharts";
 import type { Criterion } from "@/lib/criteria";
 import { runGates, type SecretaryReport } from "@/lib/workflow";
@@ -131,11 +131,8 @@ export default function Editor() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`/api/selftest?slug=${slug}`);
-        if (res.ok) {
-          const j: SelfTest = await res.json();
-          setSelfTest(j);
-        }
+        const j = await apiClient<SelfTest>(`/api/selftest?slug=${slug}`);
+        setSelfTest(j);
       } catch {}
     })();
   }, [slug]);
@@ -166,13 +163,11 @@ export default function Editor() {
         target === "inquiry"
           ? { lang, plan: text, slug, v }
           : { target, lang, model, max_tokens: maxTokens, text, slug, v };
-      const res = await fetch(url, {
+      const j = await apiClient<any>(url, {
         method: "POST",
         headers,
         body: JSON.stringify(payload)
       });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j?.error || "generate_failed");
       setOut(j?.text || "");
       if (target !== "inquiry") setVerify(j?.checks || null);
       else setVerify(null);
@@ -223,10 +218,6 @@ export default function Editor() {
           input: { text }
         })
       });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || `status_${res.status}`);
-      }
       const blob = await res.blob();
       downloadBlob(blob, "qaadi_export.zip");
       setMsg("ZIP جاهز (orchestrate).");
@@ -271,10 +262,6 @@ export default function Editor() {
           meta: { target, lang, model, max_tokens: maxTokens }
         })
       });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || `status_${res.status}`);
-      }
       const blob = await res.blob();
       downloadBlob(blob, "qaadi_export.zip");
       setMsg("ZIP جاهز (compose).");
@@ -293,32 +280,24 @@ export default function Editor() {
 
   async function refreshCriteriaList() {
     try {
-      const res = await fetch("/api/criteria");
-      if (res.ok) {
-        const list = await res.json();
-        setCriteria(Array.isArray(list) ? list : []);
-      } else setCriteria([]);
+      const list = await apiClient<Criterion[]>("/api/criteria");
+      setCriteria(Array.isArray(list) ? list : []);
     } catch { setCriteria([]); }
   }
 
   async function refreshFiles() {
     try {
-      const res = await fetch("/snapshots/manifest.json");
-      if (!res.ok) { setFiles([]); return; }
-      const list = await res.json();
+      const list = await apiClient<any>("/snapshots/manifest.json");
       if (Array.isArray(list) && list.length) {
         const fl = latestFilesFor(list, slug, v);
         setFiles(fl);
       } else setFiles([]);
     } catch { setFiles([]); }
     try {
-      const jr = await fetch("/paper/judge.json");
-      if (jr.ok) {
-        const jj: Judge = await jr.json();
-        setJudge(jj);
-      } else setJudge(null);
+      const jj = await apiClient<Judge>("/paper/judge.json");
+      setJudge(jj);
     } catch { setJudge(null); }
-    await refreshCriteriaList();
+    try { await refreshCriteriaList(); } catch {}
   }
 
   async function addCustomCriterion() {
@@ -329,16 +308,13 @@ export default function Editor() {
         weight: Number(newWeight),
         keywords: newKeywords.split(",").map(k => k.trim()).filter(Boolean),
       };
-      const res = await fetch("/api/criteria", {
+      const c = await apiClient<Criterion>("/api/criteria", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (res.ok) {
-        const c = await res.json();
-        setCriteria(prev => [...prev, c]);
-        setNewId(""); setNewDesc(""); setNewWeight(1); setNewKeywords("");
-      }
+      setCriteria(prev => [...prev, c]);
+      setNewId(""); setNewDesc(""); setNewWeight(1); setNewKeywords("");
     } catch {}
   }
 
@@ -346,15 +322,12 @@ export default function Editor() {
     const c = criteria.find(c => c.id === id);
     if (!c) return;
     try {
-      const res = await fetch("/api/criteria", {
+      const upd = await apiClient<Criterion>("/api/criteria", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, enabled: !c.enabled }),
       });
-      if (res.ok) {
-        const upd = await res.json();
-        setCriteria(prev => prev.map(x => x.id === id ? upd : x));
-      }
+      setCriteria(prev => prev.map(x => x.id === id ? upd : x));
     } catch {}
   }
 
