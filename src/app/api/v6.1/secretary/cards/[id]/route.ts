@@ -35,8 +35,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   const tracking_id = typeof payload?.tracking_id === "string" ? payload.tracking_id : "";
   const cardData = payload?.card;
 
-  const ok = updateCard(params.id, cardData);
-  if (!ok) {
+  const card = updateCard(params.id, cardData);
+  if (!card) {
     return new Response(
       JSON.stringify({ error: "not_found", version: "v6.1", tracking_id }),
       { status: 404, headers }
@@ -44,7 +44,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 
   return new Response(
-    JSON.stringify({ id: params.id, version: "v6.1", tracking_id }),
+    JSON.stringify({ id: card.id, card, version: "v6.1", tracking_id }),
     { status: 200, headers }
   );
 }
