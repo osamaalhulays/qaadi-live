@@ -10,12 +10,25 @@ export async function apiClient<T>(url: string, options: ApiClientOptions = {}):
   if (base && url.startsWith("/")) {
     fullUrl = url.startsWith("/api/") ? `${base}${url.slice(4)}` : `${base}${url}`;
   }
-  const res = await fetch(fullUrl, options);
+
+  let res: Response;
+  try {
+    res = await fetch(fullUrl, options);
+  } catch (err) {
+    throw new Error(`Request to ${url} failed: ${(err as Error).message}`);
+  }
+
   if (options.raw) {
     return res;
   }
   if (!res.ok) {
-    throw new Error(`Request failed with status ${res.status}`);
+    throw new Error(`Request to ${url} failed with status ${res.status}`);
   }
-  return res.json() as Promise<T>;
+  try {
+    return (await res.json()) as T;
+  } catch {
+    throw "invalid_json";
+  }
 }
+
+export const apiFetch = apiClient;

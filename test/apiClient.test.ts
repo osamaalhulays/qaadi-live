@@ -32,5 +32,20 @@ describe('apiFetch', () => {
 
     await expect(apiFetch('/test')).rejects.toBe('invalid_json');
   });
+
+  test('includes path in error on network failure', async () => {
+    process.env[ENV_KEY] = 'https://example.com';
+    global.fetch = jest.fn().mockRejectedValue(new Error('network down'));
+
+    await expect(apiFetch('/fail')).rejects.toThrow('/fail');
+  });
+
+  test('includes path and status in error on non-OK response', async () => {
+    process.env[ENV_KEY] = 'https://example.com';
+    const response = new Response('error', { status: 500 });
+    global.fetch = jest.fn().mockResolvedValue(response);
+
+    await expect(apiFetch('/error')).rejects.toThrow(/\/error.*500/);
+  });
 });
 
