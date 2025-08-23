@@ -1,7 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
-import LangDirProvider from "../components/LangDirProvider";
-import ServiceWorkerRegister from "../components/ServiceWorkerRegister";
+import LangDirProvider from "@/components/LangDirProvider";
+import ServiceWorkerRegister from "@/components/ServiceWorkerRegister";
 
 export const metadata: Metadata = {
   title: "Qaadi Live",

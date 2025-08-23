@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server";
-import { runSecretary } from "../../../lib/workers";
+import { runSecretary } from "@/lib/workers";
 
 export const runtime = "nodejs";
 

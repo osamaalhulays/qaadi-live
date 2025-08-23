@@ -26,7 +26,7 @@ The response returns the generated `session_id` (SHA256 of
 In a Node.js script:
 
 ```ts
-import { runHead, cleanupHead } from '../src/lib/workers';
+import { runHead, cleanupHead } from '@/lib/workers';
 
 const session = await runHead({ card_id: 'abc123', user: 'alice', nonce: '1' });
 console.log(session.session_id);

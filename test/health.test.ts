@@ -1,4 +1,4 @@
-import { GET } from '../src/app/api/health/route';
+import { GET } from '@/app/api/health/route';
 
 // Ensure the health endpoint exposes the complete diagnostic schema.
 test('health endpoint exposes policies, storage, kv, and capsule fields', async () => {

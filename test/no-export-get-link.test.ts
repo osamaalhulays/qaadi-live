@@ -12,7 +12,7 @@ test('editor has no direct GET export link', async () => {
 
   const React = await import('react');
   const { renderToStaticMarkup } = await import('react-dom/server');
-  const Editor = (await import('../src/components/Editor')).default;
+  const Editor = (await import('@/components/Editor')).default;
 
   const markup = renderToStaticMarkup(React.createElement(Editor));
   assert.doesNotMatch(markup, /<a[^>]+href="\/api\/export"/);

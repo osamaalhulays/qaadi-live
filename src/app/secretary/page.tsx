@@ -1,8 +1,8 @@
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
-import QN21Radar from "../../components/QN21Radar";
-import QN21Timeline from "../../components/QN21Timeline";
-import SecretaryArabic from "../../components/SecretaryArabic";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import QN21Radar from "@/components/QN21Radar";
+import QN21Timeline from "@/components/QN21Timeline";
+import SecretaryArabic from "@/components/SecretaryArabic";
 
 export default function Page() {
   const radar = [

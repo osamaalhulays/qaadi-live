@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import { mkdtemp, writeFile, readFile, mkdir } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
-import { runConsultant } from '../src/lib/workers/index.ts';
+import { runConsultant } from '@/lib/workers/index.ts';
 
 test('runConsultant builds priority table with QN-21 links', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));

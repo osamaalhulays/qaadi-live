@@ -1,8 +1,8 @@
 "use client";
 
-import Header from "../../components/Header";
-import Footer from "../../components/Footer";
-import { useLanguage } from "../../components/LangDirProvider";
+import Header from "@/components/Header";
+import Footer from "@/components/Footer";
+import { useLanguage } from "@/components/LangDirProvider";
 
 export default function AboutPage() {
   const { t } = useLanguage();

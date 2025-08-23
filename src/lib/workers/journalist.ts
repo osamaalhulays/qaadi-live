@@ -1,7 +1,7 @@
 import { writeFile, readFile, mkdir } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { freezeText, restoreText } from "../utils/freeze";
+import { freezeText, restoreText } from "@/lib/utils/freeze";
 
 function wrapMath(text: string) {
   return text

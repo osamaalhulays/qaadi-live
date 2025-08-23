@@ -3,7 +3,7 @@ import assert from 'node:assert';
 import { NextRequest } from 'next/server';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
-import { GET } from '../src/app/api/templates/route';
+import { GET } from '@/app/api/templates/route';
 const base = 'http://localhost/api/templates';
 
 const files = ['secretary.md', 'judge.json', 'plan.md', 'comparison.md'] as const;

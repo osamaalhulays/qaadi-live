@@ -22,6 +22,9 @@ const config = {
   extensionsToTreatAsEsm: ['.ts', '.tsx'],
   // Match all test files within any `test` directory
   testMatch: ['**/test/**/*.test.ts?(x)'],
+  moduleNameMapper: {
+    '^@/(.*)$': '<rootDir>/src/$1',
+  },
 };
 
 export default createJestConfig(config);

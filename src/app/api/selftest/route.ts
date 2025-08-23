@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server";
 import { readFile, mkdir, readdir } from "fs/promises";
 import path from "path";
-import { performSelfVerification } from "../../../lib/selfVerificationService";
+import { performSelfVerification } from "@/lib/selfVerificationService";
 
 export const runtime = "nodejs";
 

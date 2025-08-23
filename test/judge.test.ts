@@ -4,9 +4,9 @@ import path from 'node:path';
 import { tmpdir } from 'node:os';
 import { jest } from '@jest/globals';
 
-import { runJudge } from '../src/lib/workers/judge';
-import { evaluateQN21 } from '../src/lib/q21';
-import { loadCriteria, evaluateCriteria } from '../src/lib/criteria';
+import { runJudge } from '@/lib/workers/judge';
+import { evaluateQN21 } from '@/lib/q21';
+import { loadCriteria, evaluateCriteria } from '@/lib/criteria';
 
 test('runJudge computes scores, gaps, and classification', async () => {
   const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));

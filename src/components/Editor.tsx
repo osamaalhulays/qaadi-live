@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { latestFilesFor } from "../lib/utils/manifest";
+import { latestFilesFor } from "@/lib/utils/manifest";
 import ScoreCharts from "./ScoreCharts";
-import type { Criterion } from "../lib/criteria";
-import { runGates, type SecretaryReport } from "../lib/workflow";
+import type { Criterion } from "@/lib/criteria";
+import { runGates, type SecretaryReport } from "@/lib/workflow";
 
 type Target =
   | "wide"

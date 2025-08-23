@@ -1,7 +1,7 @@
 import { NextRequest } from "next/server";
-import { makeZip, type ZipFile } from "../../../../lib/utils/zip";
+import { makeZip, type ZipFile } from "@/lib/utils/zip";
 import { readFile } from "fs/promises";
-import { type SnapshotEntry } from "../../../../lib/utils/snapshot";
+import { type SnapshotEntry } from "@/lib/utils/snapshot";
 import path from "path";
 import crypto from "crypto";
 

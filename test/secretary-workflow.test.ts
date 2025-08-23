@@ -3,8 +3,8 @@ import assert from 'node:assert';
 import { mkdtemp, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { tmpdir } from 'node:os';
-import { runSecretary, runResearchSecretary } from '../src/lib/workers/index.ts';
-import { runGates } from '../src/lib/workflow/gates.ts';
+import { runSecretary, runResearchSecretary } from '@/lib/workers/index.ts';
+import { runGates } from '@/lib/workflow/gates.ts';
 
 // Build sample data using revised secretary fields
 const sampleSecretary = {

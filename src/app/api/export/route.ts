@@ -1,12 +1,12 @@
 import { NextRequest } from "next/server";
-import { makeZip, type ZipFile } from "../../../lib/utils/zip";
-import { generateText } from "../../../lib/generationService";
+import { makeZip, type ZipFile } from "@/lib/utils/zip";
+import { generateText } from "@/lib/generationService";
 import { mkdir, readFile, writeFile } from "fs/promises";
 import path from "path";
 import crypto from "crypto";
-import { checkIdempotency } from "../../../lib/utils/idempotency";
-import { sanitizeSlug, type SnapshotEntry } from "../../../lib/utils/snapshot";
-import { runGates, gateQn21, type FieldKey } from "../../../lib/workflow";
+import { checkIdempotency } from "@/lib/utils/idempotency";
+import { sanitizeSlug, type SnapshotEntry } from "@/lib/utils/snapshot";
+import { runGates, gateQn21, type FieldKey } from "@/lib/workflow";
 
 export const runtime = "nodejs";
 
