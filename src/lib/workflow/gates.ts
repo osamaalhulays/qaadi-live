@@ -1,3 +1,5 @@
+import { READY_WEIGHTS, READY_TOTAL } from './readyWeights';
+
 export interface SecretaryReport {
   abstract?: string;
   keywords?: string[];
@@ -67,10 +69,11 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
     if (isMissing) missing.push(field);
   }
 
-  const ready_percent = Math.round(
-    (Object.values(fields).reduce((a, b) => a + b, 0) / REQUIRED_FIELDS.length) *
-      100
+  const readySum = (Object.keys(fields) as FieldKey[]).reduce(
+    (sum, key) => sum + fields[key] * READY_WEIGHTS[key],
+    0
   );
+  const ready_percent = Math.round((readySum / READY_TOTAL) * 100);
 
   return { ready_percent, missing, fields };
 }

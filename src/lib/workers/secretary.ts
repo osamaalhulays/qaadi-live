@@ -3,6 +3,8 @@ import path from "path";
 import { createInterface } from "readline/promises";
 import { stdin as input, stdout as output } from "node:process";
 import { createHash } from "crypto";
+import type { FieldKey, FieldScore } from "@/lib/workflow/gates";
+import { READY_WEIGHTS, READY_TOTAL } from "@/lib/workflow/readyWeights";
 
 export interface SecretaryData {
   abstract: string;
@@ -134,33 +136,28 @@ export async function runSecretary(
   const fingerprint = `${pkg.name ?? ""}/${pkg.version ?? ""}/${date}/${identity}`;
   debug(`Fingerprint: ${fingerprint}`);
 
-  const fields = {
-    abstract,
-    keywords,
-    nomenclature,
-    boundary_conditions,
-    core_equations,
-    dimensional_analysis,
-    limitations_risks,
-    preliminary_references,
-    identity,
+  const fields: Record<FieldKey, FieldScore> = {
+    abstract: abstract.trim() ? 1 : 0,
+    keywords: keywords.length ? 1 : 0,
+    nomenclature: nomenclature.length ? 1 : 0,
+    boundary_conditions: boundary_conditions.length ? 1 : 0,
+    core_equations: core_equations.length ? 1 : 0,
+    dimensional_analysis: dimensional_analysis.trim() ? 1 : 0,
+    limitations_risks: limitations_risks.trim() ? 1 : 0,
+    preliminary_references: preliminary_references.length ? 1 : 0,
+    overflow_log: overflow_log.length ? 1 : 0,
+    identity: identity.trim() ? 1 : 0,
   };
-  const missing = Object.entries(fields)
-    .filter(([, v]) =>
-      v === undefined ||
-      v === null ||
-      (typeof v === "string" && !v.trim()) ||
-      (Array.isArray(v) && v.length === 0)
-    )
-    .map(([k]) => k);
-  const ready_percent = Math.round(
-    ((Object.keys(fields).length - missing.length) /
-      Object.keys(fields).length) *
-      100
+  const missing = (Object.keys(fields) as FieldKey[]).filter((k) => fields[k] === 0);
+  const readySum = (Object.keys(fields) as FieldKey[]).reduce(
+    (sum, key) => sum + fields[key] * READY_WEIGHTS[key],
+    0
   );
+  const ready_percent = Math.round((readySum / READY_TOTAL) * 100);
 
   const content = [
     `Fingerprint: ${fingerprint}`,
+    `fingerprint.calculation_method: v2.1`,
     `Ready%: ${ready_percent}`,
     "",
     "# Secretary",
