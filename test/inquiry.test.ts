@@ -13,6 +13,6 @@ test('buildPrompt handles inquiry in English', () => {
 test('buildPrompt rejects unsupported inquiry language', () => {
   assert.throws(
     () => buildPrompt('inquiry', 'other', 'Hello', null),
-    /unsupported_inquiry_lang/
+    /unsupported_inquiry_lang:other/
   );
 });
