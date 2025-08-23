@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { accessControl, PermissionError } from "../../../../../../lib/accessControl";
+import { z } from "zod";
 
 export const runtime = "nodejs";
 
@@ -9,6 +10,11 @@ const headers = {
   "X-Content-Type-Options": "nosniff",
   "Access-Control-Allow-Origin": "*",
 };
+
+const PayloadSchema = z.object({
+  tracking_id: z.string().optional(),
+  text: z.string().optional(),
+});
 
 export async function OPTIONS() {
   return new Response(null, {
@@ -22,7 +28,7 @@ export async function OPTIONS() {
 }
 
 export async function POST(req: NextRequest) {
-  let payload: any;
+  let payload: unknown;
   try {
     payload = await req.json();
   } catch {
@@ -32,8 +38,15 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const tracking_id = typeof payload?.tracking_id === "string" ? payload.tracking_id : "";
-  const text = typeof payload?.text === "string" ? payload.text : "";
+  const result = PayloadSchema.safeParse(payload);
+  if (!result.success) {
+    return new Response(
+      JSON.stringify({ error: "invalid_payload", version: "v6.1", tracking_id: "" }),
+      { status: 400, headers }
+    );
+  }
+
+  const { tracking_id = "", text = "" } = result.data;
   try {
     accessControl("judge", null, "write");
   } catch (err) {
