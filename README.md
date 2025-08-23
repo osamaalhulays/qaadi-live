@@ -39,16 +39,16 @@ The system evaluates scientific drafts using the QN-21 criteria and optional cus
 
 **Mandatory fields** checked by the secretary gate:
 
-- summary
+- abstract
 - keywords
-- tokens
-- boundary
-- post-analysis
-- risks
-- predictions
-- testability
+- nomenclature
+- core equations
+- boundary conditions
+- dimensional analysis
+- limitations & risks
+- preliminary references
+- overflow log (optional)
 - identity
-- overflow (optional)
 
 The secretary gate validates these sections according to the template in
 [`secretary.md`](templates/secretary.md).
