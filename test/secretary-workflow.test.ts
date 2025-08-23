@@ -17,6 +17,11 @@ const sampleSecretary = {
   limitations_risks: 'oversimplification',
   preliminary_references: ['Doe 2020'],
   overflow_log: [],
+  symbols_units: ['c|m/s', 'm|kg'],
+  assumptions_scope: ['vacuum', 'relativistic limits'],
+  version: '1.0',
+  status: 'draft',
+  parent_id: '',
 };
 
 const samplePlan = [

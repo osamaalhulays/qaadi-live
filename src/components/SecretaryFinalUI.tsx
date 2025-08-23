@@ -16,6 +16,11 @@ export default function SecretaryFinalUI() {
   const [limitationsRisks, setLimitationsRisks] = useState("");
   const [references, setReferences] = useState("");
   const [overflow, setOverflow] = useState("");
+  const [symbolsUnits, setSymbolsUnits] = useState("");
+  const [assumptionsScope, setAssumptionsScope] = useState("");
+  const [version, setVersion] = useState("");
+  const [status, setStatus] = useState("");
+  const [parentId, setParentId] = useState("");
   const [identity, setIdentity] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -49,6 +54,17 @@ export default function SecretaryFinalUI() {
         .split(",")
         .map((o) => o.trim())
         .filter(Boolean),
+      symbols_units: symbolsUnits
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean),
+      assumptions_scope: assumptionsScope
+        .split("\n")
+        .map((a) => a.trim())
+        .filter(Boolean),
+      version: version.trim(),
+      status: status.trim(),
+      parent_id: parentId.trim(),
     };
     const url = "/api/secretary";
     const headers = { "Content-Type": "application/json" };
@@ -148,6 +164,53 @@ export default function SecretaryFinalUI() {
           type="text"
           value={overflow}
           onChange={(e) => setOverflow(e.target.value)}
+          className="w-full border p-2"
+        />
+      </div>
+      <div>
+        <label className="block font-semibold">
+          Symbols &amp; Units (symbol | unit per line)
+        </label>
+        <textarea
+          value={symbolsUnits}
+          onChange={(e) => setSymbolsUnits(e.target.value)}
+          className="w-full border p-2"
+        />
+      </div>
+      <div>
+        <label className="block font-semibold">
+          Assumptions &amp; Scope (one per line)
+        </label>
+        <textarea
+          value={assumptionsScope}
+          onChange={(e) => setAssumptionsScope(e.target.value)}
+          className="w-full border p-2"
+        />
+      </div>
+      <div>
+        <label className="block font-semibold">Version</label>
+        <input
+          type="text"
+          value={version}
+          onChange={(e) => setVersion(e.target.value)}
+          className="w-full border p-2"
+        />
+      </div>
+      <div>
+        <label className="block font-semibold">Status</label>
+        <input
+          type="text"
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          className="w-full border p-2"
+        />
+      </div>
+      <div>
+        <label className="block font-semibold">Parent ID</label>
+        <input
+          type="text"
+          value={parentId}
+          onChange={(e) => setParentId(e.target.value)}
           className="w-full border p-2"
         />
       </div>
