@@ -31,7 +31,6 @@ const REQUIRED_FIELDS: FieldKey[] = [
   "dimensional_analysis",
   "limitations_risks",
   "preliminary_references",
-  "overflow_log",
   "identity",
 ];
 
@@ -48,12 +47,16 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
     dimensional_analysis: 0,
     limitations_risks: 0,
     preliminary_references: 0,
-    overflow_log: 0,
     identity: 0,
+    overflow_log: 0,
   };
 
   if (!report || typeof report !== "object") {
     return { ready_percent: 0, missing: [...REQUIRED_FIELDS], fields };
+  }
+
+  if (Array.isArray(report.overflow_log) && report.overflow_log.length > 0) {
+    fields.overflow_log = 1;
   }
 
   for (const field of REQUIRED_FIELDS) {
@@ -62,13 +65,13 @@ export function runGates(data: { secretary?: { audit?: SecretaryReport } }): Gat
       value === undefined ||
       value === null ||
       (typeof value === "string" && !value.trim()) ||
-      (Array.isArray(value) && value.length === 0 && field !== "overflow_log");
+      (Array.isArray(value) && value.length === 0);
     fields[field] = isMissing ? 0 : 1;
     if (isMissing) missing.push(field);
   }
 
   const ready_percent = Math.round(
-    (Object.values(fields).reduce((a, b) => a + b, 0) / REQUIRED_FIELDS.length) *
+    (REQUIRED_FIELDS.reduce((a, f) => a + fields[f], 0) / REQUIRED_FIELDS.length) *
       100
   );
 

@@ -8,7 +8,7 @@ test('runGates detects multiple missing fields', () => {
     identity: '',
   };
   const result = runGates({ secretary: { audit } });
-  assert.strictEqual(result.ready_percent, 10);
+  assert.strictEqual(result.ready_percent, 11);
   const expectedMissing: FieldKey[] = [
     'abstract',
     'nomenclature',
@@ -17,7 +17,6 @@ test('runGates detects multiple missing fields', () => {
     'dimensional_analysis',
     'limitations_risks',
     'preliminary_references',
-    'overflow_log',
     'identity',
   ];
   assert.deepStrictEqual(result.missing, expectedMissing);
@@ -45,7 +44,6 @@ test('runGates passes when all required fields are present', () => {
     dimensional_analysis: 'dimensionless',
     limitations_risks: 'oversimplification',
     preliminary_references: ['Doe 2020'],
-    overflow_log: [],
     identity: 'source',
   };
   const result = runGates({ secretary: { audit } });
@@ -60,8 +58,8 @@ test('runGates passes when all required fields are present', () => {
     dimensional_analysis: 1,
     limitations_risks: 1,
     preliminary_references: 1,
-    overflow_log: 1,
     identity: 1,
+    overflow_log: 0,
   });
 });
 

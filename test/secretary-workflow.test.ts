@@ -94,14 +94,31 @@ test('runGates requires identity among fields', () => {
     dimensional_analysis: 'd',
     limitations_risks: 'r',
     preliminary_references: ['p'],
-    overflow_log: [],
     identity: 'abcd1234',
   };
   const result = runGates({ secretary: { audit: report } });
   assert.strictEqual(result.ready_percent, 100);
   const missing = runGates({ secretary: { audit: { ...report, identity: '' } } });
-  assert.strictEqual(missing.ready_percent, 90);
+  assert.strictEqual(missing.ready_percent, 89);
   assert.ok(missing.missing.includes('identity'));
+});
+
+test('runGates and runSecretary handle missing overflow_log', async () => {
+  const dir = await mkdtemp(path.join(tmpdir(), 'qaadi-'));
+  const prev = process.cwd();
+  process.chdir(dir);
+  await writeFile(path.join(dir, 'package.json'), pkg);
+  try {
+    const { overflow_log, ...noOverflow } = sampleSecretary;
+    const content = await runSecretary(noOverflow);
+    assert.match(content, /Ready%: 100/);
+    assert.match(content, /## Overflow Log\n- none/);
+    const gate = runGates({ secretary: { audit: { ...noOverflow, identity: 'abcd1234' } } });
+    assert.strictEqual(gate.ready_percent, 100);
+    assert.ok(!gate.missing.includes('overflow_log'));
+  } finally {
+    process.chdir(prev);
+  }
 });
 
 test('runSecretary handles malformed nomenclature rows', async () => {
