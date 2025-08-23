@@ -1,6 +1,6 @@
 # Health Endpoint Schema
 
-The `/api/health` endpoint exposes diagnostic information about the running
+The `API_HEALTH` endpoint (`/api/health`) exposes diagnostic information about the running
 service. The JSON response has the following structure:
 
 ```json
