@@ -1,5 +1,6 @@
 export interface ApiClientOptions extends RequestInit {
   raw?: boolean;
+  timeout?: number;
 }
 
 export async function apiClient(url: string, options: ApiClientOptions & { raw: true }): Promise<Response>;
@@ -10,8 +11,29 @@ export async function apiClient<T>(url: string, options: ApiClientOptions = {}):
   if (base && url.startsWith("/")) {
     fullUrl = url.startsWith("/api/") ? `${base}${url.slice(4)}` : `${base}${url}`;
   }
-  const res = await fetch(fullUrl, options);
-  if (options.raw) {
+  const { raw, timeout, signal, ...fetchOptions } = options;
+  let controller: AbortController | undefined;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  if (timeout) {
+    controller = new AbortController();
+    if (signal) {
+      if (signal.aborted) controller.abort();
+      else signal.addEventListener("abort", () => controller?.abort());
+    }
+    fetchOptions.signal = controller.signal;
+    timeoutId = setTimeout(() => controller?.abort(), timeout);
+  } else if (signal) {
+    fetchOptions.signal = signal;
+  }
+  let res: Response;
+  try {
+    res = await fetch(fullUrl, fetchOptions);
+  } catch (err) {
+    throw new Error(`network_error: ${(err as Error).message}`);
+  } finally {
+    if (timeoutId) clearTimeout(timeoutId);
+  }
+  if (raw) {
     return res;
   }
   if (!res.ok) {
