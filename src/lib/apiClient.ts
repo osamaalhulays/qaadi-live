@@ -11,6 +11,9 @@ export async function apiClient<T>(url: string, options: ApiClientOptions = {}):
     fullUrl = url.startsWith("/api/") ? `${base}${url.slice(4)}` : `${base}${url}`;
   }
   const res = await fetch(fullUrl, options);
+  if (options.raw) {
+    return res;
+  }
   if (!res.ok) {
     let message = `Request to ${url} failed with status ${res.status}`;
     try {
@@ -18,9 +21,6 @@ export async function apiClient<T>(url: string, options: ApiClientOptions = {}):
       if (err?.error) message = err.error;
     } catch {}
     throw new Error(message);
-  }
-  if (options.raw) {
-    return res;
   }
   try {
     return (await res.json()) as Promise<T>;
