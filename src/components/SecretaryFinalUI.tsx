@@ -3,6 +3,8 @@
 import { useState, FormEvent } from "react";
 import { apiClient } from "@/lib/apiClient";
 
+// Handles API submission with error state preservation
+
 export default function SecretaryFinalUI() {
   const [abstract, setAbstract] = useState("");
   const [keywords, setKeywords] = useState("");
