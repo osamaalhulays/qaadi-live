@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { apiClient } from "@/lib/apiClient";
 
 export default function SecretaryFinalUI() {
   const [abstract, setAbstract] = useState("");
@@ -45,17 +46,14 @@ export default function SecretaryFinalUI() {
         .map((o) => o.trim())
         .filter(Boolean),
     };
-      const base = process.env.NEXT_PUBLIC_QAADI_API_BASE?.replace(/\/$/, "");
-      const url = base ? `${base}/secretary` : "/api/secretary";
-      const res = await fetch(url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (res.ok) {
-        const json = (await res.json()) as { identity?: string };
+      try {
+        const json = await apiClient<{ identity?: string }>("/api/secretary", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        });
         if (json.identity) setIdentity(json.identity);
-      }
+      } catch {}
     }
 
   return (

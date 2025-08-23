@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { latestFilesFor } from "@/lib/utils/manifest";
+import { apiClient } from "@/lib/apiClient";
 import ScoreCharts from "./ScoreCharts";
 import type { Criterion } from "@/lib/criteria";
 import { runGates, type SecretaryReport } from "@/lib/workflow";
@@ -189,13 +190,11 @@ export default function Editor() {
   async function runSelfTest() {
     setSelfBusy(true); setMsg("");
     try {
-      const res = await fetch("/api/selftest", {
+      const j = await apiClient<SelfTest>("/api/selftest", {
         method: "POST",
         headers,
         body: JSON.stringify({ slug, sample: text })
       });
-      const j: SelfTest = await res.json();
-      if (!res.ok) throw new Error((j as any)?.error || "selftest_failed");
       setSelfTest(j);
       setMsg(`Self-Test ${(j.ratio * 100).toFixed(0)}%`);
     } catch (e:any) {
@@ -208,7 +207,8 @@ export default function Editor() {
     setZipBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
-      const res = await fetch("/api/export", {
+      const res = await apiClient("/api/export", {
+        raw: true,
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -254,7 +254,8 @@ export default function Editor() {
         identity: "demo"
       };
       const gate = runGates({ secretary: { audit: secFields } });
-      const res = await fetch("/api/export", {
+      const res = await apiClient("/api/export", {
+        raw: true,
         method: "POST",
         headers,
         body: JSON.stringify({
