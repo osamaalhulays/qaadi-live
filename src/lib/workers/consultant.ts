@@ -1,6 +1,10 @@
 import { writeFile, mkdir, readFile } from "fs/promises";
 import path from "path";
 
+const QN21_BASE_URL =
+  process.env.QN21_BASE_URL?.replace(/\/$/, "") ||
+  "https://example.com/qn-21";
+
 /**
  * Analyze the judge results and produce a concise report highlighting
  * strengths and gaps. The output is written to `paper/notes.txt` in a
@@ -34,20 +38,20 @@ export async function runConsultant() {
       if (score <= 3) priority = "P0";
       else if (score <= 6) priority = "P1";
       else priority = "P2";
-      const link = `[QN-21-${c.id}](https://example.com/qn-21#${c.id})`;
+      const link = `[QN-21-${c.id}](${QN21_BASE_URL}#${c.id})`;
       tableRows.push(`| ${name} | ${priority} | ${link} |`);
     }
   }
 
-    const content = [
-      "# Consultant Review",
-      "",
-      ...header,
-      ...tableRows,
-      "",
-      "## Strengths",
-      strengths.length ? strengths.map((s) => `- ${s}`).join("\n") : "- None identified",
-      "## Gaps",
+  const content = [
+    "# Consultant Review",
+    "",
+    ...header,
+    ...tableRows,
+    "",
+    "## Strengths",
+    strengths.length ? strengths.map((s) => `- ${s}`).join("\n") : "- None identified",
+    "## Gaps",
     gaps.length ? gaps.map((g) => `- ${g}`).join("\n") : "- None identified",
   ].join("\n");
 
