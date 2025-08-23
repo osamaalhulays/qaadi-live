@@ -38,6 +38,7 @@ test('runSecretary generates a complete secretary.md', async () => {
     assert.strictEqual(fileContent, content);
     const fingerprintMatch = fileContent.match(/^Fingerprint: qaadi-live\/0\.1\.0\/\d{4}-\d{2}-\d{2}\/([a-f0-9]{8})/m);
     assert.ok(fingerprintMatch, 'Fingerprint line missing or incorrect');
+    assert.match(fileContent, /^fingerprint.calculation_method: v2\.1$/m);
     const actualId = fingerprintMatch[1];
     assert.match(fileContent, /Ready%: 100/);
     assert.match(fileContent, new RegExp(`## Identity\\n${actualId}`));
@@ -78,7 +79,7 @@ test('runSecretary calculates readiness based on missing fields', async () => {
   try {
     const partial = { ...sampleSecretary, abstract: '' };
     const content = await runSecretary(partial);
-    assert.match(content, /Ready%: 89/);
+    assert.match(content, /Ready%: 80/);
   } finally {
     process.chdir(prev);
   }
@@ -100,7 +101,7 @@ test('runGates requires identity among fields', () => {
   const result = runGates({ secretary: { audit: report } });
   assert.strictEqual(result.ready_percent, 100);
   const missing = runGates({ secretary: { audit: { ...report, identity: '' } } });
-  assert.strictEqual(missing.ready_percent, 90);
+  assert.strictEqual(missing.ready_percent, 95);
   assert.ok(missing.missing.includes('identity'));
 });
 
@@ -128,10 +129,10 @@ test('runSecretary outputs empty references section when none provided', async (
   process.chdir(dir);
   await writeFile(path.join(dir, 'package.json'), pkg);
   try {
-    const noRefs = { ...sampleSecretary, preliminary_references: [] };
-    const content = await runSecretary(noRefs);
-    assert.match(content, /Ready%: 89/);
-    assert.match(content, /## Preliminary References\n\n## Overflow Log\n- none/);
+      const noRefs = { ...sampleSecretary, preliminary_references: [] };
+      const content = await runSecretary(noRefs);
+      assert.match(content, /Ready%: 95/);
+      assert.match(content, /## Preliminary References\n\n## Overflow Log\n- none/);
   } finally {
     process.chdir(prev);
   }
