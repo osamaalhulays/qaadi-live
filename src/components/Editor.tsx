@@ -4,6 +4,15 @@ import { latestFilesFor } from "../lib/utils/manifest";
 import ScoreCharts from "./ScoreCharts";
 import type { Criterion } from "../lib/criteria";
 import { runGates, type SecretaryReport } from "../lib/workflow";
+import {
+  API_SELFTEST,
+  API_INQUIRY,
+  API_GENERATE,
+  API_EXPORT,
+  API_CRITERIA,
+  SNAPSHOTS_MANIFEST,
+  PAPER_JUDGE
+} from "../lib/endpoints";
 
 type Target =
   | "wide"
@@ -130,7 +139,7 @@ export default function Editor() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`/api/selftest?slug=${slug}`);
+        const res = await fetch(`${API_SELFTEST}?slug=${slug}`);
         if (res.ok) {
           const j: SelfTest = await res.json();
           setSelfTest(j);
@@ -160,7 +169,7 @@ export default function Editor() {
     setBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
-      const url = target === "inquiry" ? "/api/inquiry" : "/api/generate";
+      const url = target === "inquiry" ? API_INQUIRY : API_GENERATE;
       const payload =
         target === "inquiry"
           ? { lang, plan: text, slug, v }
@@ -189,7 +198,7 @@ export default function Editor() {
   async function runSelfTest() {
     setSelfBusy(true); setMsg("");
     try {
-      const res = await fetch("/api/selftest", {
+      const res = await fetch(API_SELFTEST, {
         method: "POST",
         headers,
         body: JSON.stringify({ slug, sample: text })
@@ -208,7 +217,7 @@ export default function Editor() {
     setZipBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
-      const res = await fetch("/api/export", {
+      const res = await fetch(API_EXPORT, {
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -254,7 +263,7 @@ export default function Editor() {
         identity: "demo"
       };
       const gate = runGates({ secretary: { audit: secFields } });
-      const res = await fetch("/api/export", {
+      const res = await fetch(API_EXPORT, {
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -292,7 +301,7 @@ export default function Editor() {
 
   async function refreshCriteriaList() {
     try {
-      const res = await fetch("/api/criteria");
+      const res = await fetch(API_CRITERIA);
       if (res.ok) {
         const list = await res.json();
         setCriteria(Array.isArray(list) ? list : []);
@@ -302,7 +311,7 @@ export default function Editor() {
 
   async function refreshFiles() {
     try {
-      const res = await fetch("/snapshots/manifest.json");
+      const res = await fetch(SNAPSHOTS_MANIFEST);
       if (!res.ok) { setFiles([]); return; }
       const list = await res.json();
       if (Array.isArray(list) && list.length) {
@@ -311,7 +320,7 @@ export default function Editor() {
       } else setFiles([]);
     } catch { setFiles([]); }
     try {
-      const jr = await fetch("/paper/judge.json");
+      const jr = await fetch(PAPER_JUDGE);
       if (jr.ok) {
         const jj: Judge = await jr.json();
         setJudge(jj);
@@ -328,7 +337,7 @@ export default function Editor() {
         weight: Number(newWeight),
         keywords: newKeywords.split(",").map(k => k.trim()).filter(Boolean),
       };
-      const res = await fetch("/api/criteria", {
+      const res = await fetch(API_CRITERIA, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -345,7 +354,7 @@ export default function Editor() {
     const c = criteria.find(c => c.id === id);
     if (!c) return;
     try {
-      const res = await fetch("/api/criteria", {
+      const res = await fetch(API_CRITERIA, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, enabled: !c.enabled }),

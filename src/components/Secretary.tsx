@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { API_SECRETARY } from "../lib/endpoints";
 
 export default function Secretary() {
   const [abstract, setAbstract] = useState("");
@@ -45,7 +46,7 @@ export default function Secretary() {
         .map((o) => o.trim())
         .filter(Boolean),
     };
-      const res = await fetch("/api/secretary", {
+      const res = await fetch(API_SECRETARY, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
