@@ -43,12 +43,14 @@ export async function evaluateText(text: string) {
     .filter((c) => c.gap > 0)
     .map((c) => ({ id: c.id, name: c.name, gap: c.gap }));
 
+  // Map internal classifications to user-facing verdict semantics.
+  // accepted -> approved, needs_improvement -> needs_improvement, weak -> rejected
   const verdictMap: Record<
     "accepted" | "needs_improvement" | "weak",
-    "approved" | "pending" | "rejected"
+    "approved" | "needs_improvement" | "rejected"
   > = {
     accepted: "approved",
-    needs_improvement: "pending",
+    needs_improvement: "needs_improvement",
     weak: "rejected",
   };
   const verdict = verdictMap[classification];

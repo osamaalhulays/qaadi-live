@@ -10,3 +10,9 @@ test('evaluateText combines QN21 and custom criteria', async () => {
   assert.ok(safety);
   assert.ok((safety as any).score > 0);
 });
+
+test('evaluateText rejects low scoring text', async () => {
+  const result = await evaluateText('nonsense');
+  assert.strictEqual(result.classification, 'weak');
+  assert.strictEqual(result.verdict, 'rejected');
+});
