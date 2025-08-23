@@ -35,10 +35,10 @@ export async function POST(req: NextRequest) {
   const tracking_id = typeof payload?.tracking_id === "string" ? payload.tracking_id : "";
   const cardData = payload?.card;
 
-  const id = createCard(cardData);
+  const card = createCard(cardData);
 
   return new Response(
-    JSON.stringify({ id, version: "v6.1", tracking_id }),
+    JSON.stringify({ id: card.id, card, version: "v6.1", tracking_id }),
     { status: 200, headers }
   );
 }
