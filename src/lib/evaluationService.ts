@@ -43,8 +43,18 @@ export async function evaluateText(text: string) {
     .filter((c) => c.gap > 0)
     .map((c) => ({ id: c.id, name: c.name, gap: c.gap }));
 
+  const verdictMap: Record<
+    "accepted" | "needs_improvement" | "weak",
+    "approved" | "pending" | "rejected"
+  > = {
+    accepted: "approved",
+    needs_improvement: "pending",
+    weak: "rejected",
+  };
+  const verdict = verdictMap[classification];
+
   return {
-    verdict: "approved" as const,
+    verdict,
     criteria: combined,
     score: { total, max, percentage },
     gaps,
