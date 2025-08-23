@@ -4,6 +4,7 @@ import { useState, FormEvent } from "react";
 import { apiClient } from "@/lib/apiClient";
 
 // Final UI for secretary with API submission and error handling
+// Maintained after merging latest changes from main
 
 export default function SecretaryFinalUI() {
   const [abstract, setAbstract] = useState("");
