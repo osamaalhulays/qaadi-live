@@ -2,7 +2,7 @@
 
 import { useState, FormEvent } from "react";
 
-export default function Secretary() {
+export default function SecretaryFinalUI() {
   const [abstract, setAbstract] = useState("");
   const [keywords, setKeywords] = useState("");
   const [nomenclature, setNomenclature] = useState("");
@@ -45,7 +45,9 @@ export default function Secretary() {
         .map((o) => o.trim())
         .filter(Boolean),
     };
-      const res = await fetch("/api/secretary", {
+      const base = process.env.NEXT_PUBLIC_QAADI_API_BASE?.replace(/\/$/, "");
+      const url = base ? `${base}/secretary` : "/api/secretary";
+      const res = await fetch(url, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),

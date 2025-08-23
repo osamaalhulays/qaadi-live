@@ -18,6 +18,12 @@ npm install
 npm test
 ```
 
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_QAADI_API_BASE` | Base URL for the QAADI API (e.g. `https://api.example.com`). When undefined, the UI falls back to relative Next.js API routes. |
+
 ## Testing
 
 Jest discovers test files using the pattern `**/test/**/*.test.ts`. Place your
