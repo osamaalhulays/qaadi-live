@@ -1,3 +1,5 @@
+import { API_HEALTH } from "../src/lib/endpoints";
+
 const CACHE_NAME = "qaadi-cache-v1";
 const CORE_ASSETS = ["/"];
 const OPTIONAL_CORE_ASSETS = [
@@ -44,7 +46,7 @@ self.addEventListener("fetch", (e) => {
   const req = e.request;
   const url = new URL(req.url);
   if (req.method !== "GET") return;
-  if (url.pathname === "/api/health") {
+  if (url.pathname === API_HEALTH) {
     e.respondWith(
       fetch(req)
         .then((res) => {
