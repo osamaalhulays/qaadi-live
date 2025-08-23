@@ -22,7 +22,7 @@ export async function OPTIONS() {
 }
 
 const InputSchema = z.object({
-  lang: z.enum(["ar","en","tr","fr","es","de","ru","zh-Hans","ja","other"]),
+  lang: z.enum(["ar", "en"]),
   plan: z.string().optional(),
   slug: z.string().default("default"),
   v: z.string().default("default")

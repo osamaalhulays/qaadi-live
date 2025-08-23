@@ -11,18 +11,7 @@ export const InputSchema = z.object({
     "ieee",
     "arxiv"
   ]),
-  lang: z.enum([
-    "ar",
-    "en",
-    "tr",
-    "fr",
-    "es",
-    "de",
-    "ru",
-    "zh-Hans",
-    "ja",
-    "other"
-  ]),
+  lang: z.enum(["ar", "en"]),
   model: z
     .enum(["openai", "deepseek", "auto"])
     .default("auto"),

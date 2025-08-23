@@ -20,7 +20,7 @@ test('buildPrompt handles revtex template in English', () => {
 
 test('buildPrompt rejects unsupported template language', () => {
   assert.throws(
-    () => buildPrompt('revtex', 'other', 'Hi', null),
-    /unsupported_template_lang:revtex:other/
+    () => buildPrompt('revtex', 'tr' as any, 'Hi', null),
+    /unsupported_target_lang:revtex:tr/
   );
 });
