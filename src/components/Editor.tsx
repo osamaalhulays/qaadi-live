@@ -4,6 +4,7 @@ import { latestFilesFor } from "../lib/utils/manifest";
 import ScoreCharts from "./ScoreCharts";
 import type { Criterion } from "../lib/criteria";
 import { runGates, type SecretaryReport } from "../lib/workflow";
+import { apiFetch } from "../lib/apiClient";
 
 type Target =
   | "wide"
@@ -130,11 +131,8 @@ export default function Editor() {
   useEffect(() => {
     (async () => {
       try {
-        const res = await fetch(`/api/selftest?slug=${slug}`);
-        if (res.ok) {
-          const j: SelfTest = await res.json();
-          setSelfTest(j);
-        }
+        const j: SelfTest = await apiFetch(`/api/selftest?slug=${slug}`);
+        setSelfTest(j);
       } catch {}
     })();
   }, [slug]);
@@ -165,13 +163,11 @@ export default function Editor() {
         target === "inquiry"
           ? { lang, plan: text, slug, v }
           : { target, lang, model, max_tokens: maxTokens, text, slug, v };
-      const res = await fetch(url, {
+      const j = await apiFetch(url, {
         method: "POST",
         headers,
         body: JSON.stringify(payload)
       });
-      const j = await res.json();
-      if (!res.ok) throw new Error(j?.error || "generate_failed");
       setOut(j?.text || "");
       if (target !== "inquiry") setVerify(j?.checks || null);
       else setVerify(null);
@@ -189,13 +185,11 @@ export default function Editor() {
   async function runSelfTest() {
     setSelfBusy(true); setMsg("");
     try {
-      const res = await fetch("/api/selftest", {
+      const j: SelfTest = await apiFetch("/api/selftest", {
         method: "POST",
         headers,
         body: JSON.stringify({ slug, sample: text })
       });
-      const j: SelfTest = await res.json();
-      if (!res.ok) throw new Error((j as any)?.error || "selftest_failed");
       setSelfTest(j);
       setMsg(`Self-Test ${(j.ratio * 100).toFixed(0)}%`);
     } catch (e:any) {
@@ -208,7 +202,7 @@ export default function Editor() {
     setZipBusy(true); setMsg("");
     try {
       if (!target || !lang) throw new Error("missing_target_lang");
-      const res = await fetch("/api/export", {
+      const res = await apiFetch("/api/export", {
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -221,12 +215,9 @@ export default function Editor() {
           slug,
           v,
           input: { text }
-        })
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || `status_${res.status}`);
-      }
+        }),
+        raw: true
+      }) as Response;
       const blob = await res.blob();
       downloadBlob(blob, "qaadi_export.zip");
       setMsg("ZIP جاهز (orchestrate).");
@@ -254,7 +245,7 @@ export default function Editor() {
         identity: "demo"
       };
       const gate = runGates({ secretary: { audit: secFields } });
-      const res = await fetch("/api/export", {
+      const res = await apiFetch("/api/export", {
         method: "POST",
         headers,
         body: JSON.stringify({
@@ -268,12 +259,9 @@ export default function Editor() {
           consultant: { plan: out || "plan(demo)" },
           journalist: { summary: (out && out.slice(0, 400)) || "summary(demo)" },
           meta: { target, lang, model, max_tokens: maxTokens }
-        })
-      });
-      if (!res.ok) {
-        const j = await res.json().catch(() => ({}));
-        throw new Error(j?.error || `status_${res.status}`);
-      }
+        }),
+        raw: true
+      }) as Response;
       const blob = await res.blob();
       downloadBlob(blob, "qaadi_export.zip");
       setMsg("ZIP جاهز (compose).");
@@ -292,31 +280,28 @@ export default function Editor() {
 
   async function refreshCriteriaList() {
     try {
-      const res = await fetch("/api/criteria");
-      if (res.ok) {
-        const list = await res.json();
-        setCriteria(Array.isArray(list) ? list : []);
-      } else setCriteria([]);
+      const list = await apiFetch("/api/criteria");
+      setCriteria(Array.isArray(list) ? list : []);
     } catch { setCriteria([]); }
   }
 
   async function refreshFiles() {
     try {
-      const res = await fetch("/snapshots/manifest.json");
-      if (!res.ok) { setFiles([]); return; }
-      const list = await res.json();
+      const list = await apiFetch("/snapshots/manifest.json");
       if (Array.isArray(list) && list.length) {
         const fl = latestFilesFor(list, slug, v);
         setFiles(fl);
       } else setFiles([]);
-    } catch { setFiles([]); }
+    } catch {
+      setFiles([]);
+      return;
+    }
     try {
-      const jr = await fetch("/paper/judge.json");
-      if (jr.ok) {
-        const jj: Judge = await jr.json();
-        setJudge(jj);
-      } else setJudge(null);
-    } catch { setJudge(null); }
+      const jj: Judge = await apiFetch("/paper/judge.json");
+      setJudge(jj);
+    } catch {
+      setJudge(null);
+    }
     await refreshCriteriaList();
   }
 
@@ -328,16 +313,13 @@ export default function Editor() {
         weight: Number(newWeight),
         keywords: newKeywords.split(",").map(k => k.trim()).filter(Boolean),
       };
-      const res = await fetch("/api/criteria", {
+      const c = await apiFetch("/api/criteria", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      if (res.ok) {
-        const c = await res.json();
-        setCriteria(prev => [...prev, c]);
-        setNewId(""); setNewDesc(""); setNewWeight(1); setNewKeywords("");
-      }
+      setCriteria(prev => [...prev, c]);
+      setNewId(""); setNewDesc(""); setNewWeight(1); setNewKeywords("");
     } catch {}
   }
 
@@ -345,15 +327,12 @@ export default function Editor() {
     const c = criteria.find(c => c.id === id);
     if (!c) return;
     try {
-      const res = await fetch("/api/criteria", {
+      const upd = await apiFetch("/api/criteria", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, enabled: !c.enabled }),
       });
-      if (res.ok) {
-        const upd = await res.json();
-        setCriteria(prev => prev.map(x => x.id === id ? upd : x));
-      }
+      setCriteria(prev => prev.map(x => x.id === id ? upd : x));
     } catch {}
   }
 

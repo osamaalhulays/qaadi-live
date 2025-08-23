@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import { apiFetch } from "../lib/apiClient";
 
 export default function Secretary() {
   const [abstract, setAbstract] = useState("");
@@ -45,16 +46,15 @@ export default function Secretary() {
         .map((o) => o.trim())
         .filter(Boolean),
     };
-      const res = await fetch("/api/secretary", {
+    try {
+      const json = (await apiFetch("/api/secretary", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
-      });
-      if (res.ok) {
-        const json = (await res.json()) as { identity?: string };
-        if (json.identity) setIdentity(json.identity);
-      }
-    }
+      })) as { identity?: string };
+      if (json.identity) setIdentity(json.identity);
+    } catch {}
+  }
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
