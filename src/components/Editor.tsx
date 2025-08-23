@@ -116,10 +116,24 @@ export default function Editor() {
       setDeepseekKey(localStorage.getItem("DEEPSEEK_KEY") || "");
       const storedLang = localStorage.getItem("lang");
       if (storedLang) setLang(storedLang as Lang);
-    } catch {}
+    } catch (e) {
+      console.error("Failed to read from localStorage", e);
+    }
   }, []);
-  useEffect(() => { try { localStorage.setItem("OPENAI_KEY", openaiKey); } catch {} }, [openaiKey]);
-  useEffect(() => { try { localStorage.setItem("DEEPSEEK_KEY", deepseekKey); } catch {} }, [deepseekKey]);
+  useEffect(() => {
+    try {
+      localStorage.setItem("OPENAI_KEY", openaiKey);
+    } catch (e) {
+      console.error("Failed to save OPENAI_KEY", e);
+    }
+  }, [openaiKey]);
+  useEffect(() => {
+    try {
+      localStorage.setItem("DEEPSEEK_KEY", deepseekKey);
+    } catch (e) {
+      console.error("Failed to save DEEPSEEK_KEY", e);
+    }
+  }, [deepseekKey]);
   useEffect(() => {
     try {
       if (lang) {
@@ -129,7 +143,9 @@ export default function Editor() {
         document.documentElement.lang = lang;
         document.documentElement.dir = d;
       }
-    } catch {}
+    } catch (e) {
+      console.error("Failed to persist language preference", e);
+    }
   }, [lang]);
   useEffect(() => { refreshFiles(); }, [slug, v]);
   useEffect(() => { refreshCriteriaList(); }, []);
@@ -139,7 +155,9 @@ export default function Editor() {
       try {
         const j = await apiClient<SelfTest>(`/api/selftest?slug=${slug}`);
         setSelfTest(j);
-      } catch {}
+      } catch (e) {
+        console.error("Failed to load self-test", e);
+      }
     })();
   }, [slug]);
 
@@ -183,6 +201,7 @@ export default function Editor() {
       if (Array.isArray(j?.files)) setFiles(j.files);
       else await refreshFiles();
     } catch (e:any) {
+      console.error("Generation failed", e);
       setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `ERROR: ${e?.message || e}`);
       setVerify(null);
     } finally { setBusy(false); }
@@ -199,6 +218,7 @@ export default function Editor() {
       setSelfTest(j);
       setMsg(`Self-Test ${(j.ratio * 100).toFixed(0)}%`);
     } catch (e:any) {
+      console.error("Self-test failed", e);
       setMsg(`Self-Test ERROR: ${e?.message || e}`);
     } finally { setSelfBusy(false); }
   }
@@ -229,6 +249,7 @@ export default function Editor() {
       setMsg("ZIP جاهز (orchestrate).");
       await refreshFiles();
     } catch (e:any) {
+      console.error("Export orchestrate failed", e);
       setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `EXPORT ERROR: ${e?.message || e}`);
     } finally { setZipBusy(false); }
   }
@@ -273,6 +294,7 @@ export default function Editor() {
       setMsg("ZIP جاهز (compose).");
       await refreshFiles();
     } catch (e:any) {
+      console.error("Export compose failed", e);
       setMsg(e?.message === "missing_target_lang" ? "يرجى اختيار الهدف واللغة" : `EXPORT ERROR: ${e?.message || e}`);
     } finally { setZipBusy(false); }
   }
@@ -288,7 +310,10 @@ export default function Editor() {
     try {
       const list = await apiClient<Criterion[]>("/api/criteria");
       setCriteria(Array.isArray(list) ? list : []);
-    } catch { setCriteria([]); }
+    } catch (e) {
+      console.error("Failed to load criteria", e);
+      setCriteria([]);
+    }
   }
 
   async function refreshFiles() {
@@ -298,12 +323,22 @@ export default function Editor() {
         const fl = latestFilesFor(list, slug, v);
         setFiles(fl);
       } else setFiles([]);
-    } catch { setFiles([]); }
+    } catch (e) {
+      console.error("Failed to load manifest", e);
+      setFiles([]);
+    }
     try {
       const jj = await apiClient<Judge>("/paper/judge.json");
       setJudge(jj);
-    } catch { setJudge(null); }
-    try { await refreshCriteriaList(); } catch {}
+    } catch (e) {
+      console.error("Failed to load judge", e);
+      setJudge(null);
+    }
+    try {
+      await refreshCriteriaList();
+    } catch (e) {
+      console.error("Failed to refresh criteria list", e);
+    }
   }
 
   async function addCustomCriterion() {
@@ -321,7 +356,10 @@ export default function Editor() {
       });
       setCriteria(prev => [...prev, c]);
       setNewId(""); setNewDesc(""); setNewWeight(1); setNewKeywords("");
-    } catch {}
+    } catch (e:any) {
+      console.error("Failed to add criterion", e);
+      setMsg(`Add criterion error: ${e?.message || e}`);
+    }
   }
 
   async function toggleCriterion(id: string) {
@@ -334,8 +372,11 @@ export default function Editor() {
         body: JSON.stringify({ id, enabled: !c.enabled }),
       });
       setCriteria(prev => prev.map(x => x.id === id ? upd : x));
-    } catch {}
-  }
+      } catch (e:any) {
+        console.error("Failed to toggle criterion", e);
+        setMsg(`Toggle criterion error: ${e?.message || e}`);
+      }
+    }
 
   const hasApiKey = Boolean(openaiKey.trim() || deepseekKey.trim());
   const requiredFilled = [hasApiKey, target, lang, text].filter(Boolean).length;
